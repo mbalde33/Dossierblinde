@@ -176,51 +176,57 @@
         const TYPES_PIECE_IDENTITE = {
             cni: { label: "Carte Nationale d'Identité (CNI)", rectoVerso: true },
             passeport: { label: "Passeport", rectoVerso: false },
+            permis: { label: "Permis de conduire", rectoVerso: true },
             titre_sejour: { label: "Titre de séjour / Carte de résident", rectoVerso: true }
         };
 
         const REFERENTIEL_DOSSIERS = {
             loc_indep: [
-                { id: "cni", titre: "Pièce d'identité", info: "Choisissez votre document d'identité en cours de validité", estIdentite: true },
-                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture d'eau, d'électricité, internet ou quittance de loyer", estIdentite: false },
-                { id: "urssaf", titre: "Attestation de vigilance / Revenus URSSAF", info: "Relevés de chiffre d'affaires des 3 derniers mois", estIdentite: false },
-                { id: "impots", titre: "Dernier avis d'imposition", info: "Avis d'impôt sur le revenu complet de l'année N-1", estIdentite: false }
+                { id: "cni", titre: "Pièce d'identité", info: "Choisissez votre document d'identité en cours de validité", typeSpecifique: "identite" },
+                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture à votre nom ou dossier d'hébergement", typeSpecifique: "domicile" },
+                { id: "urssaf", titre: "Attestation de vigilance / Revenus URSSAF", info: "Relevés de chiffre d'affaires des 3 derniers mois" },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Avis d'impôt sur le revenu complet de l'année N-1" }
             ],
             loc_salarie: [
-                { id: "cni", titre: "Pièce d'identité", info: "Choisissez votre document d'identité lisible et non expiré", estIdentite: true },
-                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture énergie, téléphone fixe ou attestation d'hébergement", estIdentite: false },
-                { id: "paie", titre: "3 derniers bulletins de salaire", info: "Les 3 mois consécutifs précédant la demande", estIdentite: false },
-                { id: "contrat", titre: "Contrat de travail ou attestation employeur", info: "Signé et daté (précisant CDI ou durée du CDD)", estIdentite: false },
-                { id: "impots", titre: "Dernier avis d'imposition", info: "Avis d'impôt sur le revenu complet", estIdentite: false }
+                { id: "cni", titre: "Pièce d'identité", info: "Choisissez votre document d'identité lisible et non expiré", typeSpecifique: "identite" },
+                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture à votre nom ou dossier d'hébergement", typeSpecifique: "domicile" },
+                { id: "paie", titre: "3 derniers bulletins de salaire", info: "Les 3 mois consécutifs précédant la demande" },
+                { id: "contrat", titre: "Contrat de travail ou attestation employeur", info: "Signé et daté (précisant CDI ou durée du CDD)" },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Avis d'impôt sur le revenu complet" }
             ],
             loc_etudiant: [
-                { id: "cni", titre: "Pièce d'identité de l'étudiant", info: "Choisissez le document d'identité de l'étudiant", estIdentite: true },
-                { id: "etudiant", titre: "Carte étudiante ou certificat de scolarité", info: "Pour l'année universitaire en cours", estIdentite: false },
-                { id: "garant_cni", titre: "Pièce d'identité du Garant", info: "Obligatoire si vous n'utilisez pas la garantie Visale", estIdentite: true },
-                { id: "garant_rev", titre: "Justificatifs de revenus du Garant", info: "3 dernières fiches de paie + dernier avis d'imposition du garant", estIdentite: false }
+                { id: "cni", titre: "Pièce d'identité de l'étudiant", info: "Choisissez le document d'identité de l'étudiant", typeSpecifique: "identite" },
+                { id: "etudiant", titre: "Carte étudiante ou certificat de scolarité", info: "Pour l'année universitaire en cours" },
+                { id: "garant_cni", titre: "Pièce d'identité du Garant", info: "Obligatoire si vous n'utilisez pas la garantie Visale", typeSpecifique: "identite" },
+                { id: "garant_rev", titre: "Justificatifs de revenus du Garant", info: "3 dernières fiches de paie + dernier avis d'imposition du garant" }
             ],
             aide_pub: [
-                { id: "cni", titre: "Pièce d'identité du demandeur", info: "Choisissez votre document d'identité en cours de validité", estIdentite: true },
-                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "Avec IBAN et BIC lisibles au nom du demandeur", estIdentite: false },
-                { id: "impots", titre: "Dernier avis d'imposition", info: "Permet de vérifier le revenu fiscal de référence", estIdentite: false },
-                { id: "justif_projet", titre: "Devis ou facture justificative", info: "Document daté détaillant le besoin de l'aide", estIdentite: false }
+                { id: "cni", titre: "Pièce d'identité du demandeur", info: "Choisissez votre document d'identité en cours de validité", typeSpecifique: "identite" },
+                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "Avec IBAN et BIC lisibles au nom du demandeur" },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Permet de vérifier le revenu fiscal de référence" },
+                { id: "justif_projet", titre: "Devis ou facture justificative", info: "Document daté détaillant le besoin de l'aide" }
             ]
         };
 
         let coffrePhotos = {};
         let choixIdentite = {};
+        let modeDomicile = 'direct';
+
         try {
             coffrePhotos = JSON.parse(localStorage.getItem('dossierBlinde_coffre_local') || '{}');
             choixIdentite = JSON.parse(localStorage.getItem('dossierBlinde_choix_id') || '{}');
+            modeDomicile = localStorage.getItem('dossierBlinde_mode_domicile') || 'direct';
         } catch (e) {
             coffrePhotos = {};
             choixIdentite = {};
+            modeDomicile = 'direct';
         }
 
         function sauvegarderCoffre() {
             try {
                 localStorage.setItem('dossierBlinde_coffre_local', JSON.stringify(coffrePhotos));
                 localStorage.setItem('dossierBlinde_choix_id', JSON.stringify(choixIdentite));
+                localStorage.setItem('dossierBlinde_mode_domicile', modeDomicile);
                 mettreAJourCompteurCoffre();
             } catch (err) {
                 alert("Mémoire locale pleine. Supprimez d'anciennes photos dans 'Mon Coffre Privé'.");
@@ -233,14 +239,30 @@
             if (el) el.textContent = nb;
         }
 
-        function changerTypeIdentite(itemId, nouveauType) {
-            choixIdentite[itemId] = nouveauType;
-            // Si on passe sur passeport, on supprime un eventuel verso precedent
+        function changerTypeIdentite(cleChoix, nouveauType) {
+            choixIdentite[cleChoix] = nouveauType;
             if (!TYPES_PIECE_IDENTITE[nouveauType].rectoVerso) {
-                delete coffrePhotos[itemId + '_verso'];
+                delete coffrePhotos[cleChoix + '_verso'];
             }
             sauvegarderCoffre();
             chargerChecklist();
+        }
+
+        function changerModeDomicile(nouveauMode) {
+            modeDomicile = nouveauMode;
+            sauvegarderCoffre();
+            chargerChecklist();
+        }
+
+        function genererSelecteurIdentite(cleChoix, typeChoisi) {
+            return '<div class="mt-2 max-w-xs">' +
+                '<select onchange="changerTypeIdentite(\'' + cleChoix + '\', this.value)" class="w-full bg-white border border-slate-300 focus:border-blue-900 text-slate-900 text-xs font-bold rounded-lg px-3 py-2 outline-none transition">' +
+                    '<option value="cni"' + (typeChoisi === 'cni' ? ' selected' : '') + '>Carte Nationale d\'Identité (Recto / Verso)</option>' +
+                    '<option value="passeport"' + (typeChoisi === 'passeport' ? ' selected' : '') + '>Passeport (Page identité)</option>' +
+                    '<option value="permis"' + (typeChoisi === 'permis' ? ' selected' : '') + '>Permis de conduire (Recto / Verso)</option>' +
+                    '<option value="titre_sejour"' + (typeChoisi === 'titre_sejour' ? ' selected' : '') + '>Titre de séjour (Recto / Verso)</option>' +
+                '</select>' +
+            '</div>';
         }
 
         function chargerChecklist() {
@@ -251,17 +273,11 @@
             let valides = 0;
 
             container.innerHTML = liste.map(function(item) {
-                if (item.estIdentite) {
+                // CAS 1 : PIECE D'IDENTITE (DEMANDEUR OU GARANT)
+                if (item.typeSpecifique === 'identite') {
                     const typeChoisi = choixIdentite[item.id] || 'cni';
                     const configId = TYPES_PIECE_IDENTITE[typeChoisi] || TYPES_PIECE_IDENTITE.cni;
-
-                    const selecteurHtml = '<div class="mt-2.5 max-w-xs">' +
-                        '<select onchange="changerTypeIdentite(\'' + item.id + '\', this.value)" class="w-full bg-slate-50 border border-slate-300 focus:border-blue-900 text-slate-900 text-xs font-bold rounded-lg px-3 py-2 outline-none transition">' +
-                            '<option value="cni"' + (typeChoisi === 'cni' ? ' selected' : '') + '>Carte Nationale d\'Identité (Recto / Verso)</option>' +
-                            '<option value="passeport"' + (typeChoisi === 'passeport' ? ' selected' : '') + '>Passeport (Page identité)</option>' +
-                            '<option value="titre_sejour"' + (typeChoisi === 'titre_sejour' ? ' selected' : '') + '>Titre de séjour (Recto / Verso)</option>' +
-                        '</select>' +
-                    '</div>';
+                    const selecteurHtml = genererSelecteurIdentite(item.id, typeChoisi);
 
                     if (configId.rectoVerso) {
                         const docRecto = coffrePhotos[item.id + '_recto'];
@@ -318,44 +334,135 @@
                             '</div>' +
                         '</div>';
                     }
-                } else {
-                    const docSauvegarde = coffrePhotos[item.id];
-                    const estValide = docSauvegarde && docSauvegarde.statut === 'valide';
-                    if (estValide) valides++;
-
-                    let iconeStatut = '<i class="fa-regular fa-circle text-slate-300 text-xl"></i>';
-                    if (docSauvegarde) {
-                        iconeStatut = estValide
-                            ? '<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>'
-                            : '<i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>';
-                    }
-
-                    const btnCouleur = (docSauvegarde && !estValide) ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-900 hover:bg-blue-800';
-                    const btnLabel = docSauvegarde ? 'Refaire' : 'Photo / Galerie';
-                    const miniature = docSauvegarde
-                        ? '<img src="' + docSauvegarde.image + '" alt="Aperçu" class="w-12 h-12 object-cover rounded-lg border border-slate-300 shadow-sm cursor-pointer" onclick="ouvrirCoffreFort()">'
-                        : '';
-                    const badge = docSauvegarde ? renderBadgeIA(docSauvegarde) : '';
-
-                    return '<div class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition" id="row-' + item.id + '">' +
-                        '<div class="flex items-start space-x-3.5">' +
-                            '<div class="mt-1">' + iconeStatut + '</div>' +
-                            '<div>' +
-                                '<h3 class="font-bold text-slate-900 text-sm sm:text-base">' + item.titre + '</h3>' +
-                                '<p class="text-xs text-slate-500 mt-0.5">' + item.info + '</p>' +
-                                '<div id="status-' + item.id + '" class="mt-2">' + badge + '</div>' +
-                            '</div>' +
-                        '</div>' +
-                        '<div class="flex items-center space-x-2 shrink-0 self-end sm:self-center">' +
-                            miniature +
-                            '<label class="cursor-pointer ' + btnCouleur + ' text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">' +
-                                '<i class="fa-solid fa-camera"></i>' +
-                                '<span>' + btnLabel + '</span>' +
-                                '<input type="file" accept="image/*" class="hidden" data-cle="' + item.id + '" data-titre="' + item.titre.replace(/"/g, '&quot;') + '" onchange="capturerDepuisInput(this)">' +
-                            '</label>' +
-                        '</div>' +
-                    '</div>';
                 }
+
+                // CAS 2 : JUSTIFICATIF DE DOMICILE (DIRECT OU HEBERGE)
+                if (item.typeSpecifique === 'domicile') {
+                    const docDom = coffrePhotos['domicile'];
+                    const okDom = docDom && docDom.statut === 'valide';
+
+                    const selectDomicileHtml = '<div class="mt-2.5 max-w-md">' +
+                        '<select onchange="changerModeDomicile(this.value)" class="w-full bg-slate-50 border border-slate-300 focus:border-blue-900 text-slate-900 text-xs font-bold rounded-lg px-3 py-2 outline-none transition">' +
+                            '<option value="direct"' + (modeDomicile === 'direct' ? ' selected' : '') + '>Facture à mon nom (Eau, Électricité, Internet, Loyer)</option>' +
+                            '<option value="heberge"' + (modeDomicile === 'heberge' ? ' selected' : '') + '>Je suis hébergé(e) (+ Attestation + Pièce d\'identité du logeur)</option>' +
+                        '</select>' +
+                    '</div>';
+
+                    if (modeDomicile === 'direct') {
+                        if (okDom) valides++;
+
+                        let iconeStatut = '<i class="fa-regular fa-circle text-slate-300 text-xl"></i>';
+                        if (docDom) {
+                            iconeStatut = okDom
+                                ? '<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>'
+                                : '<i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>';
+                        }
+
+                        return '<div class="p-5 sm:p-6 flex flex-col gap-4 hover:bg-slate-50/70 transition" id="row-domicile">' +
+                            '<div class="flex items-start space-x-3.5">' +
+                                '<div class="mt-1">' + iconeStatut + '</div>' +
+                                '<div class="flex-1">' +
+                                    '<h3 class="font-bold text-slate-900 text-sm sm:text-base">' + item.titre + '</h3>' +
+                                    '<p class="text-xs text-slate-500 mt-0.5">Facture d\'eau, d\'électricité, internet ou quittance de loyer de moins de 3 mois</p>' +
+                                    selectDomicileHtml +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="pl-0 sm:pl-8">' +
+                                renderBlocFace('domicile', 'Justificatif de domicile (- de 3 mois)', 'Facture ou quittance (- de 3 mois)', docDom, okDom) +
+                            '</div>' +
+                        '</div>';
+                    } else {
+                        const typeLogeur = choixIdentite['heb_cni'] || 'cni';
+                        const configLogeur = TYPES_PIECE_IDENTITE[typeLogeur] || TYPES_PIECE_IDENTITE.cni;
+                        const selectLogeurHtml = genererSelecteurIdentite('heb_cni', typeLogeur);
+
+                        const docAttest = coffrePhotos['heb_attestation'];
+                        const docIdRecto = coffrePhotos['heb_cni_recto'];
+                        const docIdVerso = coffrePhotos['heb_cni_verso'];
+
+                        const okAttest = docAttest && docAttest.statut === 'valide';
+                        const okIdR = docIdRecto && docIdRecto.statut === 'valide';
+                        const okIdV = !configLogeur.rectoVerso || (docIdVerso && docIdVerso.statut === 'valide');
+
+                        const toutOk = okDom && okAttest && okIdR && okIdV;
+                        if (toutOk) valides++;
+
+                        const aUneErreur = (docDom && !okDom) || (docAttest && !okAttest) || (docIdRecto && !okIdR) || (configLogeur.rectoVerso && docIdVerso && !okIdV);
+                        let iconeStatut = '<i class="fa-regular fa-circle text-slate-300 text-xl"></i>';
+                        if (toutOk) {
+                            iconeStatut = '<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>';
+                        } else if (aUneErreur) {
+                            iconeStatut = '<i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>';
+                        }
+
+                        const blocsIdentiteLogeur = configLogeur.rectoVerso
+                            ? '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2.5">' +
+                                renderBlocFace('heb_cni_recto', configLogeur.label + ' de l\'hébergeur - FACE RECTO', 'Recto (Face avant)', docIdRecto, okIdR) +
+                                renderBlocFace('heb_cni_verso', configLogeur.label + ' de l\'hébergeur - FACE VERSO', 'Verso (Face arrière)', docIdVerso, okIdV) +
+                              '</div>'
+                            : '<div class="mt-2.5">' +
+                                renderBlocFace('heb_cni_recto', configLogeur.label + ' de l\'hébergeur (Page identité)', 'Page identité du Passeport', docIdRecto, okIdR) +
+                              '</div>';
+
+                        return '<div class="p-5 sm:p-6 flex flex-col gap-4 hover:bg-slate-50/70 transition" id="row-domicile">' +
+                            '<div class="flex items-start space-x-3.5">' +
+                                '<div class="mt-1">' + iconeStatut + '</div>' +
+                                '<div class="flex-1">' +
+                                    '<h3 class="font-bold text-slate-900 text-sm sm:text-base">' + item.titre + ' (Hébergé)</h3>' +
+                                    '<p class="text-xs text-slate-500 mt-0.5">Facture au nom de l\'hébergeur + attestation d\'hébergement + pièce d\'identité de l\'hébergeur</p>' +
+                                    selectDomicileHtml +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="space-y-3 pl-0 sm:pl-8">' +
+                                renderBlocFace('domicile', 'Justificatif de domicile de l\'hébergeur (- de 3 mois)', '1. Facture / Quittance de l\'hébergeur (- de 3 mois)', docDom, okDom) +
+                                renderBlocFace('heb_attestation', 'Attestation d\'hébergement datée et signée par l\'hébergeur', '2. Attestation d\'hébergement signée (- de 3 mois)', docAttest, okAttest) +
+                                '<div class="border border-slate-200 bg-slate-100/70 rounded-xl p-3.5">' +
+                                    '<p class="text-xs font-extrabold text-slate-800">3. Pièce d\'identité de l\'hébergeur</p>' +
+                                    selectLogeurHtml +
+                                    blocsIdentiteLogeur +
+                                '</div>' +
+                            '</div>' +
+                        '</div>';
+                    }
+                }
+
+                // CAS 3 : AUTRES DOCUMENTS CLASSIQUES
+                const docSauvegarde = coffrePhotos[item.id];
+                const estValide = docSauvegarde && docSauvegarde.statut === 'valide';
+                if (estValide) valides++;
+
+                let iconeStatut = '<i class="fa-regular fa-circle text-slate-300 text-xl"></i>';
+                if (docSauvegarde) {
+                    iconeStatut = estValide
+                        ? '<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>'
+                        : '<i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>';
+                }
+
+                const btnCouleur = (docSauvegarde && !estValide) ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-900 hover:bg-blue-800';
+                const btnLabel = docSauvegarde ? 'Refaire' : 'Photo / Galerie';
+                const miniature = docSauvegarde
+                    ? '<img src="' + docSauvegarde.image + '" alt="Aperçu" class="w-12 h-12 object-cover rounded-lg border border-slate-300 shadow-sm cursor-pointer" onclick="ouvrirCoffreFort()">'
+                    : '';
+                const badge = docSauvegarde ? renderBadgeIA(docSauvegarde) : '';
+
+                return '<div class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition" id="row-' + item.id + '">' +
+                    '<div class="flex items-start space-x-3.5">' +
+                        '<div class="mt-1">' + iconeStatut + '</div>' +
+                        '<div>' +
+                            '<h3 class="font-bold text-slate-900 text-sm sm:text-base">' + item.titre + '</h3>' +
+                            '<p class="text-xs text-slate-500 mt-0.5">' + item.info + '</p>' +
+                            '<div id="status-' + item.id + '" class="mt-2">' + badge + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="flex items-center space-x-2 shrink-0 self-end sm:self-center">' +
+                        miniature +
+                        '<label class="cursor-pointer ' + btnCouleur + ' text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">' +
+                            '<i class="fa-solid fa-camera"></i>' +
+                            '<span>' + btnLabel + '</span>' +
+                            '<input type="file" accept="image/*" class="hidden" data-cle="' + item.id + '" data-titre="' + item.titre.replace(/"/g, '&quot;') + '" onchange="capturerDepuisInput(this)">' +
+                        '</label>' +
+                    '</div>' +
+                '</div>';
             }).join('');
 
             const pct = liste.length > 0 ? Math.round((valides / liste.length) * 100) : 0;
@@ -364,7 +471,7 @@
         }
 
         function renderBlocFace(cleId, titreIA, labelFace, docFace, estValide) {
-            const bordure = docFace ? (estValide ? 'border-emerald-200 bg-emerald-50/30' : 'border-red-200 bg-red-50/30') : 'border-slate-200 bg-slate-50';
+            const bordure = docFace ? (estValide ? 'border-emerald-200 bg-emerald-50/30' : 'border-red-200 bg-red-50/30') : 'border-slate-200 bg-white';
             const btnCouleur = (docFace && !estValide) ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-900 hover:bg-blue-800';
             const btnLabel = docFace ? 'Refaire' : 'Ajouter';
             const miniature = docFace
@@ -407,7 +514,7 @@
                 const img = new Image();
                 img.onload = function() {
                     const canvas = document.createElement('canvas');
-                    const maxDim = 1200;
+                    const maxDim = 900;
                     let width = img.width;
                     let height = img.height;
 
@@ -424,7 +531,7 @@
                     const ctx = canvas.getContext('2d');
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.65);
                     callback(dataUrl);
                 };
                 img.src = event.target.result;
@@ -454,6 +561,10 @@
                         })
                     });
 
+                    if (!reponse.ok) {
+                        throw new Error('Serveur HTTP ' + reponse.status);
+                    }
+
                     const resultat = await reponse.json();
 
                     coffrePhotos[id] = {
@@ -471,7 +582,7 @@
                         image: imageLegere,
                         dateAjout: new Date().toLocaleDateString('fr-FR'),
                         statut: 'refuse',
-                        messageIA: "Erreur de connexion avec l'IA. Vérifiez votre réseau et réessayez."
+                        messageIA: "Erreur réseau (" + err.message + "). Réessayez."
                     };
                 }
 
@@ -488,7 +599,7 @@
 
             const docsValides = [];
             liste.forEach(function(item) {
-                if (item.estIdentite) {
+                if (item.typeSpecifique === 'identite') {
                     const typeChoisi = choixIdentite[item.id] || 'cni';
                     const configId = TYPES_PIECE_IDENTITE[typeChoisi] || TYPES_PIECE_IDENTITE.cni;
                     const r = coffrePhotos[item.id + '_recto'];
@@ -496,6 +607,22 @@
                     if (configId.rectoVerso) {
                         const v = coffrePhotos[item.id + '_verso'];
                         if (v && v.statut === 'valide') docsValides.push(v);
+                    }
+                } else if (item.typeSpecifique === 'domicile') {
+                    const d = coffrePhotos['domicile'];
+                    if (d && d.statut === 'valide') docsValides.push(d);
+                    if (modeDomicile === 'heberge') {
+                        const att = coffrePhotos['heb_attestation'];
+                        if (att && att.statut === 'valide') docsValides.push(att);
+
+                        const typeLogeur = choixIdentite['heb_cni'] || 'cni';
+                        const configLogeur = TYPES_PIECE_IDENTITE[typeLogeur] || TYPES_PIECE_IDENTITE.cni;
+                        const lr = coffrePhotos['heb_cni_recto'];
+                        if (lr && lr.statut === 'valide') docsValides.push(lr);
+                        if (configLogeur.rectoVerso) {
+                            const lv = coffrePhotos['heb_cni_verso'];
+                            if (lv && lv.statut === 'valide') docsValides.push(lv);
+                        }
                     }
                 } else {
                     const d = coffrePhotos[item.id];
@@ -559,6 +686,7 @@
         function viderCoffre() {
             coffrePhotos = {};
             choixIdentite = {};
+            modeDomicile = 'direct';
             sauvegarderCoffre();
             chargerChecklist();
             ouvrirCoffreFort();
@@ -569,6 +697,7 @@
     </script>
 </body>
 </html>
+
 
 
 
