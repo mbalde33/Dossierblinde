@@ -10,42 +10,31 @@ export default async function handler(req, res) {
         if (!apiKey) {
             return res.status(200).json({ 
                 valide: false, 
-                message: "Clé API absente : redéployez le projet sur Vercel." 
+                message: "Clé API absente sur Vercel." 
             });
         }
 
         if (!imageBase64 || !imageBase64.includes(',')) {
             return res.status(200).json({ 
                 valide: false, 
-                message: "Format d'image non reconnu." 
+                message: "Image invalide." 
             });
         }
 
         const base64Data = imageBase64.split(',')[1];
 
-        const prompt = `Tu es un contrôleur administratif en France.
-Le client doit fournir ce document : "${documentAttendu}".
-Analyse cette image et réponds en JSON avec deux clés : "valide" (booleen true ou false) et "message" (une phrase courte et claire en français expliquant le verdict).
-Règles :
-1. Vérifie que le document correspond bien à "${documentAttendu}".
-2. Vérifie qu'il est globalement lisible.
-3. Si c'est un justificatif de domicile, bulletin de salaire ou relevé URSSAF, vérifie qu'il est récent (année 2026). Si c'est une pièce d'identité, vérifie qu'elle n'est pas expirée.`;
+        const prompt = `Tu es un vérificateur de documents administratifs français.
+Document attendu : "${documentAttendu}".
+Analyse cette image et réponds UNIQUEMENT par un objet JSON valide (sans texte autour, sans markdown) :
+{"valide": true, "message": "Explication courte en français"}
 
-        const bodyPayload = JSON.stringify({
-            contents: [{
-                parts: [
-                    { text: prompt },
-                    { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
-                ]
-            }],
-            generationConfig: {
-                responseMimeType: "application/json"
-            }
-        });
+Règles de contrôle :
+- Si l'image correspond bien au type de document demandé ("${documentAttendu}") et que le texte principal est lisible, mets "valide": true.
+- Si c'est un autre type de document (ex: une facture à la place d'une carte d'identité), un objet quelconque ou totalement illisible, mets "valide": false et explique pourquoi en une phrase courte.
+- Sois pragmatique : accepte les captures d'écran de documents officiels (URSSAF, impôts, factures numériques, photos de CNI recto ou verso).`;
 
-        // Les deux modèles officiels recommandés par Google AI Studio
         const modeles = ['gemini-3.5-flash-lite', 'gemini-3.8-flash'];
-        let data = null;
+        let texteBrut = "";
         let succes = false;
         let derniereErreur = "";
 
@@ -53,16 +42,24 @@ Règles :
             const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent?key=${apiKey}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: bodyPayload
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: prompt },
+                            { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
+                        ]
+                    }]
+                })
             });
 
-            data = await response.json();
+            const data = await response.json();
 
-            if (response.ok) {
+            if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                texteBrut = data.candidates[0].content.parts[0].text;
                 succes = true;
                 break;
             }
-            derniereErreur = data?.error?.message || "Erreur IA";
+            derniereErreur = data?.error?.message || "Réponse vide de l'IA";
         }
 
         if (!succes) {
@@ -72,8 +69,15 @@ Règles :
             });
         }
 
-        const texteReponse = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-        const resultat = JSON.parse(texteReponse);
+        const matchJson = texteBrut.match(/\{[\s\S]*\}/);
+        if (!matchJson) {
+            return res.status(200).json({ 
+                valide: false, 
+                message: "Lecture IA incomplète, réessayez." 
+            });
+        }
+
+        const resultat = JSON.parse(matchJson[0]);
 
         return res.status(200).json({
             valide: Boolean(resultat.valide),
