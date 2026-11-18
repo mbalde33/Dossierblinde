@@ -43,8 +43,8 @@ Règles :
             }
         });
 
-        // Appel immédiat sans attente sur gemini-3.8-flash puis bascule instantanée sur gemini-2.5-flash-lite
-        const modeles = ['gemini-3.8-flash', 'gemini-2.5-flash-lite'];
+        // Les deux modèles officiels recommandés par Google AI Studio
+        const modeles = ['gemini-3.5-flash-lite', 'gemini-3.8-flash'];
         let data = null;
         let succes = false;
         let derniereErreur = "";
@@ -66,12 +66,6 @@ Règles :
         }
 
         if (!succes) {
-            if (derniereErreur.includes("high demand") || derniereErreur.includes("overloaded")) {
-                return res.status(200).json({
-                    valide: false,
-                    message: "Serveur IA très sollicité. Appuyez sur Refaire dans 5 secondes."
-                });
-            }
             return res.status(200).json({ 
                 valide: false, 
                 message: `Erreur IA : ${derniereErreur}` 
@@ -93,6 +87,7 @@ Règles :
         });
     }
 }
+
 
 
 
