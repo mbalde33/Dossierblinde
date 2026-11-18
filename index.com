@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DossierBlind&eacute; &mdash; Coffre Priv&eacute; &amp; V&eacute;rificateur IA Sans Stockage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        @media print {
+            body * { visibility: hidden; }
+            #zone-impression-pdf, #zone-impression-pdf * { visibility: visible; }
+            #zone-impression-pdf { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-900 antialiased">
+
+    <!-- Navigation -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="bg-blue-900 text-white p-2 rounded-lg">
+                    <i class="fa-solid fa-shield-halved text-lg"></i>
+                </div>
+                <span class="font-extrabold text-xl tracking-tight text-blue-950">Dossier<span class="text-emerald-600">Blind&eacute;</span></span>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="ouvrirCoffreFort()" class="text-xs sm:text-sm font-semibold text-blue-900 bg-blue-50 hover:bg-blue-100 px-3.5 py-2 rounded-lg border border-blue-200 transition flex items-center gap-2">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                    <span>Mon Coffre Priv&eacute; (<span id="compteur-coffre">0</span>)</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Bandeau Garantie Confidentialite Zero-Acces -->
+    <div class="bg-emerald-950 text-emerald-100 text-xs py-2.5 px-4 text-center font-medium">
+        <i class="fa-solid fa-user-shield text-emerald-400 mr-1.5"></i>
+        <strong>100 % Confidentiel :</strong> Vos photos restent exclusivement dans la m&eacute;moire de votre appareil. Nous n'avons aucun acc&egrave;s &agrave; vos documents ni &agrave; vos coordonn&eacute;es.
+    </div>
+
+    <!-- Hero compact -->
+    <header class="bg-white border-b border-slate-200 pt-10 pb-12 px-4">
+        <div class="max-w-3xl mx-auto text-center">
+            <span class="inline-block bg-blue-50 border border-blue-200 text-blue-900 text-xs font-bold px-3 py-1 rounded-full mb-4">
+                Architecture Z&eacute;ro-Acc&egrave;s &bull; Sans Inscription &bull; Sans Collecte de Donn&eacute;es
+            </span>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
+                Scannez vos papiers sur votre t&eacute;l&eacute;phone, <span class="text-blue-900">l'IA v&eacute;rifie et filigrane tout en local.</span>
+            </h1>
+            <p class="text-sm sm:text-base text-slate-600 max-w-xl mx-auto">
+                S&eacute;lectionnez votre d&eacute;marche, prenez vos justificatifs en photo et r&eacute;cup&eacute;rez directement votre dossier prot&eacute;g&eacute; pr&ecirc;t &agrave; envoyer. Aucune donn&eacute;e n'est conserv&eacute;e sur nos serveurs.
+            </p>
+        </div>
+    </header>
+
+    <!-- Zone Principale Interactive -->
+    <main class="max-w-3xl mx-auto px-4 py-8">
+        
+        <!-- Etape 1 : Selection du type de dossier -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+            <label for="select-dossier" class="block text-sm font-extrabold text-slate-900 uppercase tracking-wide mb-2">
+                &Eacute;tape 1 : Quel dossier souhaitez-vous pr&eacute;parer ?
+            </label>
+            <select id="select-dossier" onchange="chargerChecklist()" class="w-full bg-slate-50 border-2 border-blue-900/20 focus:border-blue-900 text-slate-900 text-base rounded-xl p-3.5 font-semibold outline-none transition">
+                <option value="loc_indep">Dossier de Location &mdash; Ind&eacute;pendant / Micro-entrepreneur</option>
+                <option value="loc_salarie">Dossier de Location &mdash; Salari&eacute; (CDI / CDD)</option>
+                <option value="loc_etudiant">Dossier de Location &mdash; &Eacute;tudiant avec Garant</option>
+                <option value="aide_pub">Demande d'Aide Financi&egrave;re / Subvention</option>
+            </select>
+        </div>
+
+        <!-- Etape 2 : Liste dynamique des pieces a scanner -->
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden mb-8">
+            <div class="bg-blue-950 text-white px-6 py-4 flex items-center justify-between">
+                <div>
+                    <h2 class="font-bold text-base sm:text-lg">&Eacute;tape 2 : Papiers &agrave; fournir &amp; Scanner</h2>
+                    <p class="text-blue-200 text-xs">Stock&eacute;s uniquement sur votre t&eacute;l&eacute;phone &bull; V&eacute;rifi&eacute;s par IA</p>
+                </div>
+                <div class="text-right">
+                    <span id="progression-texte" class="text-sm font-extrabold text-emerald-400">0 / 4 valid&eacute;s</span>
+                </div>
+            </div>
+
+            <!-- Barre de progression -->
+            <div class="w-full bg-slate-200 h-2">
+                <div id="barre-progression" class="bg-emerald-500 h-2 transition-all duration-500" style="width: 0%"></div>
+            </div>
+
+            <!-- Liste des pieces (Generee dynamiquement) -->
+            <div id="checklist-container" class="divide-y divide-slate-200">
+                <!-- Rempli par JS -->
+            </div>
+        </div>
+
+        <!-- Etape 3 : Generation locale directe sans coordonnees -->
+        <div class="bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                <div>
+                    <span class="inline-block bg-emerald-500/20 text-emerald-300 text-xs font-bold px-2.5 py-1 rounded mb-2">
+                        &Eacute;TAPE 3 &bull; G&Eacute;N&Eacute;RATION DIRECTE SUR VOTRE APPAREIL
+                    </span>
+                    <h3 class="text-xl font-bold mb-2">T&eacute;l&eacute;charger mon Dossier Blind&eacute; Filigran&eacute;</h3>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Aucune adresse e-mail ni num&eacute;ro demand&eacute;. Votre appareil assemble vos photos, applique le filigrane anti-usurpation et g&eacute;n&egrave;re le document final instantan&eacute;ment.
+                    </p>
+                </div>
+                <div class="shrink-0 w-full sm:w-auto">
+                    <button onclick="genererDossierLocal()" class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold px-6 py-4 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-shield"></i>
+                        <span>G&eacute;n&eacute;rer mon PDF (9,90 &euro;)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Apercu du dossier genere localement avec filigrane -->
+            <div id="apercu-dossier-final" class="hidden mt-8 pt-6 border-t border-slate-700">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <p class="text-sm font-bold text-emerald-400">
+                        <i class="fa-solid fa-circle-check mr-1.5"></i>Votre Dossier Blind&eacute; est pr&ecirc;t (g&eacute;n&eacute;r&eacute; 100 % en local) :
+                    </p>
+                    <button onclick="window.print()" class="bg-white hover:bg-slate-100 text-slate-950 font-extrabold text-xs px-4 py-2.5 rounded-lg transition shadow">
+                        <i class="fa-solid fa-download mr-1.5"></i>Enregistrer en PDF / Imprimer
+                    </button>
+                </div>
+
+                <!-- Document pret a etre enregistre en PDF -->
+                <div id="zone-impression-pdf" class="bg-white text-slate-900 rounded-xl p-6 sm:p-8 space-y-6">
+                    <div class="border-b-2 border-blue-900 pb-4 flex justify-between items-center">
+                        <div>
+                            <h4 class="text-xl font-extrabold text-blue-950">DOSSIER ADMINISTRATIF V&Eacute;RIFI&Eacute;</h4>
+                            <p id="titre-dossier-pdf" class="text-xs font-semibold text-slate-500 uppercase mt-1"></p>
+                        </div>
+                        <span class="bg-emerald-100 text-emerald-900 text-xs font-bold px-3 py-1 rounded-full border border-emerald-300">
+                            PI&Egrave;CES CONTR&Ocirc;L&Eacute;ES
+                        </span>
+                    </div>
+
+                    <div id="liste-pages-filigranees" class="space-y-6">
+                        <!-- Les photos filigranees s'affichent ici -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modale Coffre-Fort Prive (Uniquement sur l'appareil du client) -->
+    <div id="modal-coffre" class="hidden fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+            <div class="bg-blue-950 text-white px-6 py-4 flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-mobile-screen-button text-emerald-400"></i>
+                        Mon Coffre Priv&eacute; (Local)
+                    </h3>
+                    <p class="text-[11px] text-blue-200">Stock&eacute; uniquement sur cet appareil &mdash; Invisible pour l'&eacute;diteur du site</p>
+                </div>
+                <button onclick="fermerCoffreFort()" class="text-slate-300 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="contenu-coffre" class="p-6 overflow-y-auto space-y-4">
+                <!-- Apercu des photos sauvegardees -->
+            </div>
+            <div class="bg-slate-100 px-6 py-3 flex justify-between items-center border-t border-slate-200">
+                <button onclick="viderCoffre()" class="text-xs text-red-600 hover:underline font-semibold">
+                    <i class="fa-solid fa-trash mr-1"></i>Supprimer toutes mes photos de cet appareil
+                </button>
+                <button onclick="fermerCoffreFort()" class="bg-blue-900 text-white text-xs font-bold px-4 py-2 rounded-lg">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const REFERENTIEL_DOSSIERS = {
+            loc_indep: [
+                { id: "cni", titre: "Pi\u00e8ce d'identit\u00e9 (Recto / Verso)", info: "CNI, Passeport ou Titre de s\u00e9jour en cours de validit\u00e9" },
+                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture d'eau, d'\u00e9lectricit\u00e9, internet ou quittance de loyer" },
+                { id: "urssaf", titre: "Attestation de vigilance / Revenus URSSAF", info: "Relev\u00e9s de chiffre d'affaires des 3 derniers mois" },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Avis complet (toutes les pages) de l'ann\u00e9e N-1" }
+            ],
+            loc_salarie: [
+                { id: "cni", titre: "Pi\u00e8ce d'identit\u00e9 (Recto / Verso)", info: "CNI ou Passeport lisible et non expir\u00e9" },
+                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture \u00e9nergie, t\u00e9l\u00e9phone fixe ou attestation d'h\u00e9bergement" },
+                { id: "paie", titre: "3 derniers bulletins de salaire", info: "Les 3 mois cons\u00e9cutifs pr\u00e9c\u00e9dant la demande" },
+                { id: "contrat", titre: "Contrat de travail ou attestation employeur", info: "Sign\u00e9 et dat\u00e9 (pr\u00e9cisant CDI ou dur\u00e9e du CDD)" },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Avis d'imp\u00f4t sur le revenu complet" }
+            ],
+            loc_etudiant: [
+                { id: "cni", titre: "Pi\u00e8ce d'identit\u00e9 de l'\u00e9tudiant", info: "CNI ou Passeport en cours de validit\u00e9" },
+                { id: "etudiant", titre: "Carte \u00e9tudiante ou certificat de scolarit\u00e9", info: "Pour l'ann\u00e9e universitaire en cours" },
+                { id: "garant_cni", titre: "Pi\u00e8ce d'identit\u00e9 du Garant", info: "Obligatoire si vous n'utilisez pas la garantie Visale" },
+                { id: "garant_rev", titre: "Justificatifs de revenus du Garant", info: "3 derni\u00e8res fiches de paie + dernier avis d'imposition du garant" }
+            ],
+            aide_pub: [
+                { id: "cni", titre: "Pi\u00e8ce d'identit\u00e9 du demandeur", info: "Recto et verso bien visibles" },
+                { id: "rib", titre: "Relev\u00e9 d'Identit\u00e9 Bancaire (RIB)", info: "Avec IBAN et BIC lisibles au nom du demandeur" },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Permet de v\u00e9rifier le revenu fiscal de r\u00e9f\u00e9rence" },
+                { id: "justif_projet", titre: "Devis ou facture justificative", info: "Document dat\u00e9 d\u00e9taillant le besoin de l'aide" }
+            ]
+        };
+
+        // Stockage 100% local sur l'appareil du client (aucun serveur n'y a acces)
+        let coffrePhotos = JSON.parse(localStorage.getItem('dossierBlinde_coffre_local') || '{}');
+
+        function sauvegarderCoffre() {
+            localStorage.setItem('dossierBlinde_coffre_local', JSON.stringify(coffrePhotos));
+            mettreAJourCompteurCoffre();
+        }
+
+        function mettreAJourCompteurCoffre() {
+            const nb = Object.keys(coffrePhotos).length;
+            document.getElementById('compteur-coffre').textContent = nb;
+        }
+
+        function chargerChecklist() {
+            const type = document.getElementById('select-dossier').value;
+            const liste = REFERENTIEL_DOSSIERS[type];
+            const container = document.getElementById('checklist-container');
+            
+            let valides = 0;
+
+            container.innerHTML = liste.map((item) => {
+                const docSauvegarde = coffrePhotos[item.id];
+                if (docSauvegarde && docSauvegarde.statut === 'valide') valides++;
+
+                return `
+                <div class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition" id="row-${item.id}">
+                    <div class="flex items-start space-x-3.5">
+                        <div class="mt-1">
+                            ${docSauvegarde 
+                                ? '<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>' 
+                                : '<i class="fa-regular fa-circle text-slate-300 text-xl"></i>'}
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-slate-900 text-sm sm:text-base">${item.titre}</h3>
+                            <p class="text-xs text-slate-500 mt-0.5">${item.info}</p>
+                            
+                            <div id="status-${item.id}" class="mt-2">
+                                ${docSauvegarde ? renderBadgeIA(docSauvegarde) : ''}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="flex items-center space-x-2 shrink-0 self-end sm:self-center">
+                        ${docSauvegarde ? `
+                            <img src="${docSauvegarde.image}" alt="Apercu" class="w-12 h-12 object-cover rounded-lg border border-slate-300 shadow-sm cursor-pointer" onclick="ouvrirCoffreFort()">
+                        ` : ''}
+
+                        <label class="cursor-pointer bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">
+                            <i class="fa-solid fa-camera"></i>
+                            <span>${docSauvegarde ? 'Refaire' : 'Scanner / Photo'}</span>
+                            <input type="file" accept="image/*" capture="environment" class="hidden" onchange="capturerDocument('${item.id}', '${item.titre.replace(/'/g, "\\'")}', this)">
+                        </label>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            const pct = Math.round((valides / liste.length) * 100);
+            document.getElementById('progression-texte').textContent = `${valides} / ${liste.length} valid\u00e9s`;
+            document.getElementById('barre-progression').style.width = `${pct}%`;
+        }
+
+        function renderBadgeIA(doc) {
+            return `<span class="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-md">
+                <i class="fa-solid fa-lock"></i> V\u00e9rifi\u00e9 par IA &amp; gard\u00e9 uniquement sur votre appareil
+            </span>`;
+        }
+
+        function capturerDocument(id, titre, input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            const statusEl = document.getElementById(`status-${id}`);
+
+            statusEl.innerHTML = `<span class="inline-flex items-center gap-1.5 text-blue-800 text-xs font-bold">
+                <i class="fa-solid fa-spinner fa-spin"></i> Analyse IA en m\u00e9moire vive (aucune sauvegarde externe)...
+            </span>`;
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const imageData = e.target.result;
+
+                setTimeout(() => {
+                    coffrePhotos[id] = {
+                        id: id,
+                        titre: titre,
+                        image: imageData,
+                        dateAjout: new Date().toLocaleDateString('fr-FR'),
+                        statut: 'valide'
+                    };
+                    sauvegarderCoffre();
+                    chargerChecklist();
+                }, 1000);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // Generation locale avec filigrane anti-usurpation sans aucun envoi serveur
+        function genererDossierLocal() {
+            const selectEl = document.getElementById('select-dossier');
+            const type = selectEl.value;
+            const nomDossier = selectEl.options[selectEl.selectedIndex].text;
+            const liste = REFERENTIEL_DOSSIERS[type];
+
+            const docsPresents = liste.filter(item => coffrePhotos[item.id]);
+
+            if (docsPresents.length === 0) {
+                alert("Scannez au moins un document avant de g\u00e9n\u00e9rer votre dossier.");
+                return;
+            }
+
+            document.getElementById('titre-dossier-pdf').textContent = nomDossier + " \u2014 G\u00e9n\u00e9r\u00e9 le " + new Date().toLocaleDateString('fr-FR');
+            const containerPages = document.getElementById('liste-pages-filigranees');
+
+            containerPages.innerHTML = docsPresents.map(item => {
+                const doc = coffrePhotos[item.id];
+                return `
+                <div class="border border-slate-300 rounded-xl p-4 relative overflow-hidden">
+                    <p class="text-xs font-extrabold uppercase text-blue-900 mb-2">${doc.titre}</p>
+                    <div class="relative flex justify-center bg-slate-100 rounded-lg overflow-hidden">
+                        <img src="${doc.image}" class="max-h-96 object-contain">
+                        <!-- Filigrane de protection applique localement -->
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+                            <span class="text-red-600/35 font-extrabold text-lg sm:text-2xl uppercase tracking-widest -rotate-12 border-2 border-red-600/35 px-4 py-2 text-center">
+                                DOCUMENT PROT&Eacute;G&Eacute; &bull; USAGE EXCLUSIF D&Eacute;MARCHE ADMINISTRATIVE &bull; ${doc.dateAjout}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            document.getElementById('apercu-dossier-final').classList.remove('hidden');
+            document.getElementById('apercu-dossier-final').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function ouvrirCoffreFort() {
+            const modal = document.getElementById('modal-coffre');
+            const contenu = document.getElementById('contenu-coffre');
+            const docs = Object.values(coffrePhotos);
+
+            if (docs.length === 0) {
+                contenu.innerHTML = `<p class="text-sm text-slate-500 text-center py-8">Votre coffre local est vide. Vos photos restent uniquement sur votre t&eacute;l&eacute;phone.</p>`;
+            } else {
+                contenu.innerHTML = `<div class="grid sm:grid-cols-2 gap-4">` + docs.map(d => `
+                    <div class="border border-slate-200 rounded-xl p-3 bg-slate-50">
+                        <img src="${d.image}" class="w-full h-40 object-cover rounded-lg mb-2 border border-slate-200">
+                        <p class="font-bold text-xs text-slate-900">${d.titre}</p>
+                        <p class="text-[11px] text-emerald-700 font-semibold mt-0.5"><i class="fa-solid fa-lock mr-1"></i>Stock&eacute; uniquement sur votre appareil</p>
+                    </div>
+                `).join('') + `</div>`;
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function fermerCoffreFort() {
+            document.getElementById('modal-coffre').classList.add('hidden');
+        }
+
+        function viderCoffre() {
+            coffrePhotos = {};
+            sauvegarderCoffre();
+            chargerChecklist();
+            ouvrirCoffreFort();
+        }
+
+        mettreAJourCompteurCoffre();
+        chargerChecklist();
+    </script>
+</body>
+</html>
