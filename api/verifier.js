@@ -31,29 +31,52 @@ Règles :
 2. Vérifie qu'il est globalement lisible.
 3. Si c'est un justificatif de domicile, bulletin de salaire ou relevé URSSAF, vérifie qu'il est récent (année 2026). Si c'est une pièce d'identité, vérifie qu'elle n'est pas expirée.`;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [
-                        { text: prompt },
-                        { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
-                    ]
-                }],
-                generationConfig: {
-                    responseMimeType: "application/json"
-                }
-            })
-        });
+        // Liste de modèles avec bascule automatique en cas de pic de demande
+        const modeles = ['gemini-3.8-flash', 'gemini-3.8-flash-lite', 'gemini-2.5-flash-lite'];
+        let data = null;
+        let succes = false;
 
-        const data = await response.json();
+        for (const modele of modeles) {
+            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent?key=${apiKey}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{
+                        parts: [
+                            { text: prompt },
+                            { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
+                        ]
+                    }],
+                    generationConfig: {
+                        responseMimeType: "application/json"
+                    }
+                })
+            });
 
-        if (!response.ok) {
-            const erreurGoogle = data.error?.message || "Erreur API Google";
+            data = await response.json();
+
+            if (response.ok) {
+                succes = true;
+                break;
+            }
+
+            // Si ce n'est pas une surcharge temporaire (503/429), on arrête la boucle
+            if (response.status !== 503 && response.status !== 429) {
+                break;
+            }
+        }
+
+        if (!succes) {
+            const msgBrut = data?.error?.message || "";
+            if (msgBrut.includes("high demand") || msgBrut.includes("overloaded")) {
+                return res.status(200).json({
+                    valide: false,
+                    message: "Serveur IA très sollicité à l'instant. Appuyez sur Refaire dans 5 secondes."
+                });
+            }
             return res.status(200).json({ 
                 valide: false, 
-                message: `Erreur IA : ${erreurGoogle}` 
+                message: `Erreur IA : ${msgBrut || "Service indisponible"}` 
             });
         }
 
@@ -72,5 +95,6 @@ Règles :
         });
     }
 }
+
 
 
