@@ -88,7 +88,7 @@
 
             <!-- Barre de progression -->
             <div class="w-full bg-slate-200 h-2">
-                <div id="barre-progression" class="bg-emerald-500 h-2 transition-all duration-500" style="width: 0%"></div>
+                <div id="barre-progression" class="bg-emerald-500 h-2 transition-all duration-300" style="width: 0%"></div>
             </div>
 
             <!-- Liste des pieces (Generee dynamiquement) -->
@@ -207,12 +207,15 @@
             ]
         };
 
-        // Stockage 100% local sur l'appareil du client (aucun serveur n'y a acces)
         let coffrePhotos = JSON.parse(localStorage.getItem('dossierBlinde_coffre_local') || '{}');
 
         function sauvegarderCoffre() {
-            localStorage.setItem('dossierBlinde_coffre_local', JSON.stringify(coffrePhotos));
-            mettreAJourCompteurCoffre();
+            try {
+                localStorage.setItem('dossierBlinde_coffre_local', JSON.stringify(coffrePhotos));
+                mettreAJourCompteurCoffre();
+            } catch (err) {
+                alert("M\u00e9moire locale pleine. Supprimez d'anciennes photos dans 'Mon Coffre Priv\u00e9'.");
+            }
         }
 
         function mettreAJourCompteurCoffre() {
@@ -229,15 +232,21 @@
 
             container.innerHTML = liste.map((item) => {
                 const docSauvegarde = coffrePhotos[item.id];
-                if (docSauvegarde && docSauvegarde.statut === 'valide') valides++;
+                const estValide = docSauvegarde && docSauvegarde.statut === 'valide';
+                if (estValide) valides++;
+
+                let iconeStatut = '<i class="fa-regular fa-circle text-slate-300 text-xl"></i>';
+                if (docSauvegarde) {
+                    iconeStatut = estValide
+                        ? '<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>'
+                        : '<i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>';
+                }
 
                 return `
                 <div class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition" id="row-${item.id}">
                     <div class="flex items-start space-x-3.5">
                         <div class="mt-1">
-                            ${docSauvegarde 
-                                ? '<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>' 
-                                : '<i class="fa-regular fa-circle text-slate-300 text-xl"></i>'}
+                            ${iconeStatut}
                         </div>
                         <div>
                             <h3 class="font-bold text-slate-900 text-sm sm:text-base">${item.titre}</h3>
@@ -254,7 +263,7 @@
                             <img src="${docSauvegarde.image}" alt="Apercu" class="w-12 h-12 object-cover rounded-lg border border-slate-300 shadow-sm cursor-pointer" onclick="ouvrirCoffreFort()">
                         ` : ''}
 
-                        <label class="cursor-pointer bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">
+                        <label class="cursor-pointer ${docSauvegarde && !estValide ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-900 hover:bg-blue-800'} text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">
                             <i class="fa-solid fa-camera"></i>
                             <span>${docSauvegarde ? 'Refaire' : 'Scanner / Photo'}</span>
                             <input type="file" accept="image/*" capture="environment" class="hidden" onchange="capturerDocument('${item.id}', '${item.titre.replace(/'/g, "\\'")}', this)">
@@ -270,9 +279,46 @@
         }
 
         function renderBadgeIA(doc) {
-            return `<span class="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-md">
-                <i class="fa-solid fa-lock"></i> V\u00e9rifi\u00e9 par IA &amp; gard\u00e9 uniquement sur votre appareil
-            </span>`;
+            if (doc.statut === 'valide') {
+                return `<span class="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold px-2.5 py-1 rounded-md">
+                    <i class="fa-solid fa-check-circle text-emerald-600"></i> ${doc.messageIA || 'Document valid\u00e9 par l\'IA'}
+                </span>`;
+            } else {
+                return `<span class="inline-flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-800 text-xs font-semibold px-2.5 py-1 rounded-md">
+                    <i class="fa-solid fa-triangle-exclamation text-red-600"></i> ${doc.messageIA || 'Document refus\u00e9, merci de reprendre la photo'}
+                </span>`;
+            }
+        }
+
+        function compresserImage(file, callback) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 1200;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height && width > maxDim) {
+                        height *= maxDim / width;
+                        width = maxDim;
+                    } else if (height > maxDim) {
+                        width *= maxDim / height;
+                        height = maxDim;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+                    callback(dataUrl);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
         }
 
         function capturerDocument(id, titre, input) {
@@ -281,39 +327,56 @@
             const statusEl = document.getElementById(`status-${id}`);
 
             statusEl.innerHTML = `<span class="inline-flex items-center gap-1.5 text-blue-800 text-xs font-bold">
-                <i class="fa-solid fa-spinner fa-spin"></i> Analyse IA en m\u00e9moire vive (aucune sauvegarde externe)...
+                <i class="fa-solid fa-spinner fa-spin"></i> Analyse IA en cours (conformit&eacute; &amp; lisibilit&eacute;)...
             </span>`;
 
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const imageData = e.target.result;
+            compresserImage(file, async function(imageLegere) {
+                try {
+                    const reponse = await fetch('/api/verifier', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            imageBase64: imageLegere,
+                            documentAttendu: titre
+                        })
+                    });
 
-                setTimeout(() => {
+                    const resultat = await reponse.json();
+
                     coffrePhotos[id] = {
                         id: id,
                         titre: titre,
-                        image: imageData,
+                        image: imageLegere,
                         dateAjout: new Date().toLocaleDateString('fr-FR'),
-                        statut: 'valide'
+                        statut: resultat.valide ? 'valide' : 'refuse',
+                        messageIA: resultat.message || (resultat.valide ? 'Document conforme' : 'Document non conforme')
                     };
-                    sauvegarderCoffre();
-                    chargerChecklist();
-                }, 1000);
-            };
-            reader.readAsDataURL(file);
+                } catch (err) {
+                    coffrePhotos[id] = {
+                        id: id,
+                        titre: titre,
+                        image: imageLegere,
+                        dateAjout: new Date().toLocaleDateString('fr-FR'),
+                        statut: 'refuse',
+                        messageIA: "Erreur de connexion avec l'IA. V\u00e9rifiez votre r\u00e9seau et r\u00e9essayez."
+                    };
+                }
+
+                sauvegarderCoffre();
+                chargerChecklist();
+            });
         }
 
-        // Generation locale avec filigrane anti-usurpation sans aucun envoi serveur
         function genererDossierLocal() {
             const selectEl = document.getElementById('select-dossier');
             const type = selectEl.value;
             const nomDossier = selectEl.options[selectEl.selectedIndex].text;
             const liste = REFERENTIEL_DOSSIERS[type];
 
-            const docsPresents = liste.filter(item => coffrePhotos[item.id]);
+            const docsPresents = liste.filter(item => coffrePhotos[item.id] && coffrePhotos[item.id].statut === 'valide');
 
             if (docsPresents.length === 0) {
-                alert("Scannez au moins un document avant de g\u00e9n\u00e9rer votre dossier.");
+                alert("Scannez et faites valider au moins un document par l'IA avant de g\u00e9n\u00e9rer votre dossier.");
                 return;
             }
 
@@ -327,7 +390,6 @@
                     <p class="text-xs font-extrabold uppercase text-blue-900 mb-2">${doc.titre}</p>
                     <div class="relative flex justify-center bg-slate-100 rounded-lg overflow-hidden">
                         <img src="${doc.image}" class="max-h-96 object-contain">
-                        <!-- Filigrane de protection applique localement -->
                         <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
                             <span class="text-red-600/35 font-extrabold text-lg sm:text-2xl uppercase tracking-widest -rotate-12 border-2 border-red-600/35 px-4 py-2 text-center">
                                 DOCUMENT PROT&Eacute;G&Eacute; &bull; USAGE EXCLUSIF D&Eacute;MARCHE ADMINISTRATIVE &bull; ${doc.dateAjout}
@@ -354,7 +416,9 @@
                     <div class="border border-slate-200 rounded-xl p-3 bg-slate-50">
                         <img src="${d.image}" class="w-full h-40 object-cover rounded-lg mb-2 border border-slate-200">
                         <p class="font-bold text-xs text-slate-900">${d.titre}</p>
-                        <p class="text-[11px] text-emerald-700 font-semibold mt-0.5"><i class="fa-solid fa-lock mr-1"></i>Stock&eacute; uniquement sur votre appareil</p>
+                        <p class="text-[11px] ${d.statut === 'valide' ? 'text-emerald-700' : 'text-red-600'} font-semibold mt-0.5">
+                            <i class="fa-solid ${d.statut === 'valide' ? 'fa-check-circle' : 'fa-triangle-exclamation'} mr-1"></i>${d.messageIA || 'Stock\u00e9 uniquement sur votre appareil'}
+                        </p>
                     </div>
                 `).join('') + `</div>`;
             }
@@ -377,3 +441,4 @@
     </script>
 </body>
 </html>
+
