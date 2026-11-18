@@ -25,45 +25,69 @@ export default async function handler(req, res) {
 
         const base64Data = imageBase64.split(',')[1];
 
-        const prompt = `Contrôleur administratif français. Document attendu : "${documentAttendu}".
-Réponds UNIQUEMENT en JSON : {"valide": true, "message": "Court verdict en français (max 12 mots)"}
-Si le document correspond à "${documentAttendu}" et est lisible (photo ou capture d'écran officielle), mets "valide": true. Sinon false.`;
+        const prompt = `Tu es un contrôleur administratif français pragmatique.
+Date : 18 novembre 2026 (les documents datés de fin 2026 sont récents et valides).
+Document attendu : "${documentAttendu}".
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            signal: AbortSignal.timeout(25000),
-            body: JSON.stringify({
-                contents: [{
-                    parts: [
-                        { text: prompt },
-                        { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
-                    ]
-                }],
-                generationConfig: {
-                    maxOutputTokens: 120,
-                    temperature: 0.1
+Réponds UNIQUEMENT en JSON : {"valide": true, "message": "Verdict court en français (max 10 mots)"}
+
+Règles :
+1. Si le document correspond à "${documentAttendu}" et est lisible, mets "valide": true.
+2. Verso pièce d'identité : dès que la face arrière est visible et lisible, mets "valide": true sans bloquer sur l'arrière-plan.
+3. Justificatif de domicile, bulletin de salaire ou URSSAF : accepte tout document daté d'août, septembre, octobre ou novembre 2026.
+4. Mets "valide": false uniquement si mauvais document ou totalement illisible.`;
+
+        const modeles = ['gemini-3.5-flash-lite', 'gemini-3.8-flash'];
+        let texteBrut = "";
+        let succes = false;
+        let derniereErreur = "";
+
+        for (const modele of modeles) {
+            try {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    signal: AbortSignal.timeout(15000),
+                    body: JSON.stringify({
+                        contents: [{
+                            parts: [
+                                { text: prompt },
+                                { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
+                            ]
+                        }],
+                        generationConfig: {
+                            maxOutputTokens: 100,
+                            temperature: 0.1,
+                            thinkingConfig: { thinkingBudget: 0 }
+                        }
+                    })
+                });
+
+                const data = await response.json();
+
+                if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
+                    texteBrut = data.candidates[0].content.parts[0].text;
+                    succes = true;
+                    break;
                 }
-            })
-        });
+                derniereErreur = data?.error?.message || "Serveur IA occupé";
+            } catch (e) {
+                derniereErreur = e.name === 'TimeoutError' ? "Délai dépassé" : e.message;
+            }
+        }
 
-        const data = await response.json();
-
-        if (!response.ok) {
-            const errMsg = data?.error?.message || "Service IA momentanément saturé";
+        if (!succes) {
             return res.status(200).json({ 
                 valide: false, 
-                message: `IA occupée : ${errMsg}` 
+                message: `IA saturée (${derniereErreur}). Appuyez sur Refaire.` 
             });
         }
 
-        const texteBrut = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
         const matchJson = texteBrut.match(/\{[\s\S]*\}/);
-
         if (!matchJson) {
             return res.status(200).json({ 
                 valide: false, 
-                message: "Réponse IA incomplète, appuyez sur Refaire." 
+                message: "Lecture IA incomplète, appuyez sur Refaire." 
             });
         }
 
@@ -75,18 +99,13 @@ Si le document correspond à "${documentAttendu}" et est lisible (photo ou captu
         });
 
     } catch (error) {
-        if (error.name === 'TimeoutError') {
-            return res.status(200).json({ 
-                valide: false, 
-                message: "Serveur Google trop lent. Appuyez sur Refaire." 
-            });
-        }
         return res.status(200).json({ 
             valide: false, 
             message: `Erreur technique : ${error.message}` 
         });
     }
 }
+
 
 
 
