@@ -1,3 +1,5 @@
+export const maxDuration = 60;
+
 export default async function handler(req, res) {
     if (req.method !== 'POST') {
         return res.status(405).json({ valide: false, message: 'Méthode non autorisée' });
@@ -23,27 +25,25 @@ export default async function handler(req, res) {
 
         const base64Data = imageBase64.split(',')[1];
 
-        const prompt = `Tu es un vérificateur de documents administratifs français.
-Document attendu : "${documentAttendu}".
-Analyse cette image et réponds UNIQUEMENT par un objet JSON valide (sans texte autour, sans markdown) :
-{"valide": true, "message": "Explication courte en français"}
-
-Règles de contrôle :
-- Si l'image correspond bien au type de document demandé ("${documentAttendu}") et que le texte principal est lisible, mets "valide": true.
-- Si c'est un autre type de document, un objet quelconque ou totalement illisible, mets "valide": false et explique pourquoi en une phrase courte.
-- Accepte les photos et captures d'écran de CNI recto ou verso, passeport, titre de séjour, factures, attestations URSSAF, avis d'imposition et bulletins de salaire.`;
+        const prompt = `Contrôleur administratif français. Document attendu : "${documentAttendu}".
+Réponds UNIQUEMENT en JSON : {"valide": true, "message": "Court verdict en français (max 12 mots)"}
+Si le document correspond à "${documentAttendu}" et est lisible (photo ou capture d'écran officielle), mets "valide": true. Sinon false.`;
 
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            signal: AbortSignal.timeout(7500),
+            signal: AbortSignal.timeout(25000),
             body: JSON.stringify({
                 contents: [{
                     parts: [
                         { text: prompt },
                         { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
                     ]
-                }]
+                }],
+                generationConfig: {
+                    maxOutputTokens: 120,
+                    temperature: 0.1
+                }
             })
         });
 
@@ -63,7 +63,7 @@ Règles de contrôle :
         if (!matchJson) {
             return res.status(200).json({ 
                 valide: false, 
-                message: "Réponse IA illisible, appuyez sur Refaire." 
+                message: "Réponse IA incomplète, appuyez sur Refaire." 
             });
         }
 
@@ -78,7 +78,7 @@ Règles de contrôle :
         if (error.name === 'TimeoutError') {
             return res.status(200).json({ 
                 valide: false, 
-                message: "Délai dépassé (serveur Google lent). Appuyez sur Refaire." 
+                message: "Serveur Google trop lent. Appuyez sur Refaire." 
             });
         }
         return res.status(200).json({ 
@@ -87,6 +87,7 @@ Règles de contrôle :
         });
     }
 }
+
 
 
 
