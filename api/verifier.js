@@ -30,50 +30,40 @@ Analyse cette image et réponds UNIQUEMENT par un objet JSON valide (sans texte 
 
 Règles de contrôle :
 - Si l'image correspond bien au type de document demandé ("${documentAttendu}") et que le texte principal est lisible, mets "valide": true.
-- Si c'est un autre type de document (ex: une facture à la place d'une carte d'identité), un objet quelconque ou totalement illisible, mets "valide": false et explique pourquoi en une phrase courte.
-- Sois pragmatique : accepte les captures d'écran de documents officiels (URSSAF, impôts, factures numériques, photos de CNI recto ou verso).`;
+- Si c'est un autre type de document, un objet quelconque ou totalement illisible, mets "valide": false et explique pourquoi en une phrase courte.
+- Accepte les photos et captures d'écran de CNI recto ou verso, passeport, titre de séjour, factures, attestations URSSAF, avis d'imposition et bulletins de salaire.`;
 
-        const modeles = ['gemini-3.5-flash-lite', 'gemini-3.8-flash'];
-        let texteBrut = "";
-        let succes = false;
-        let derniereErreur = "";
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${apiKey}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            signal: AbortSignal.timeout(7500),
+            body: JSON.stringify({
+                contents: [{
+                    parts: [
+                        { text: prompt },
+                        { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
+                    ]
+                }]
+            })
+        });
 
-        for (const modele of modeles) {
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{
-                        parts: [
-                            { text: prompt },
-                            { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
-                        ]
-                    }]
-                })
-            });
+        const data = await response.json();
 
-            const data = await response.json();
-
-            if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                texteBrut = data.candidates[0].content.parts[0].text;
-                succes = true;
-                break;
-            }
-            derniereErreur = data?.error?.message || "Réponse vide de l'IA";
-        }
-
-        if (!succes) {
+        if (!response.ok) {
+            const errMsg = data?.error?.message || "Service IA momentanément saturé";
             return res.status(200).json({ 
                 valide: false, 
-                message: `Erreur IA : ${derniereErreur}` 
+                message: `IA occupée : ${errMsg}` 
             });
         }
 
+        const texteBrut = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
         const matchJson = texteBrut.match(/\{[\s\S]*\}/);
+
         if (!matchJson) {
             return res.status(200).json({ 
                 valide: false, 
-                message: "Lecture IA incomplète, réessayez." 
+                message: "Réponse IA illisible, appuyez sur Refaire." 
             });
         }
 
@@ -85,6 +75,12 @@ Règles de contrôle :
         });
 
     } catch (error) {
+        if (error.name === 'TimeoutError') {
+            return res.status(200).json({ 
+                valide: false, 
+                message: "Délai dépassé (serveur Google lent). Appuyez sur Refaire." 
+            });
+        }
         return res.status(200).json({ 
             valide: false, 
             message: `Erreur technique : ${error.message}` 
