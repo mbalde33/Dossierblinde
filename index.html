@@ -1,555 +1,526 @@
-
 <!DOCTYPE html>
 <html lang="fr" class="scroll-smooth">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>DossierBlindé — Coffre Privé & Vérificateur IA</title>
-<script src="https://cdn.tailwindcss.com"></script>
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
-body{font-family:'Inter',sans-serif}
-@media print{
-body *{visibility:hidden}
-#zone-impression-pdf,#zone-impression-pdf *{visibility:visible}
-#zone-impression-pdf{position:absolute;left:0;top:0;width:100%}
-}
-</style>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DossierBlind&eacute; &mdash; Coffre Priv&eacute; &amp; V&eacute;rificateur IA Sans Stockage</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+        body { font-family: 'Inter', sans-serif; }
+        @media print {
+            body * { visibility: hidden; }
+            #zone-impression-pdf, #zone-impression-pdf * { visibility: visible; }
+            #zone-impression-pdf { position: absolute; left: 0; top: 0; width: 100%; }
+        }
+    </style>
 </head>
-
 <body class="bg-slate-50 text-slate-900 antialiased">
 
-<nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
-<div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-<div class="flex items-center gap-2">
-<div class="bg-blue-900 text-white p-2 rounded-lg"><i class="fa-solid fa-shield-halved"></i></div>
-<span class="font-extrabold text-xl text-blue-950">Dossier<span class="text-emerald-600">Blindé</span></span>
-</div>
-<button onclick="ouvrirCoffreFort()" class="text-xs sm:text-sm font-semibold text-blue-900 bg-blue-50 px-3.5 py-2 rounded-lg border border-blue-200">
-<i class="fa-solid fa-mobile-screen-button mr-1"></i>
-Mon Coffre Privé (<span id="compteur-coffre">0</span>)
-</button>
-</div>
-</nav>
-
-<div class="bg-emerald-950 text-emerald-100 text-xs py-3 px-4 text-center">
-<i class="fa-solid fa-user-shield text-emerald-400 mr-1"></i>
-<strong>Confidentialité :</strong> Vos documents sont stockés localement. L'analyse IA nécessite leur transmission au serveur de vérification.
-</div>
-
-<header class="bg-white border-b border-slate-200 pt-10 pb-12 px-4">
-<div class="max-w-3xl mx-auto text-center">
-<span class="inline-block bg-blue-50 border border-blue-200 text-blue-900 text-xs font-bold px-3 py-1 rounded-full mb-4">Architecture locale • Sans inscription</span>
-<h1 class="text-3xl sm:text-4xl font-extrabold mb-4">
-Scannez ou importez vos papiers,
-<span class="text-blue-900">l'IA vérifie et filigrane tout en local.</span>
-</h1>
-<p class="text-sm sm:text-base text-slate-600 max-w-xl mx-auto">
-Sélectionnez votre démarche, choisissez vos justificatifs, prenez vos documents en photo et récupérez votre dossier protégé.
-</p>
-</div>
-</header>
-
-<main class="max-w-3xl mx-auto px-4 py-8">
-
-<section class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
-<label for="select-dossier" class="block text-sm font-extrabold uppercase mb-2">
-Étape 1 : Quel dossier souhaitez-vous préparer ?
-</label>
-<select id="select-dossier" onchange="chargerChecklist()" class="w-full bg-slate-50 border-2 border-blue-900/20 focus:border-blue-900 text-base rounded-xl p-3.5 font-semibold outline-none">
-<option value="loc_indep">Dossier de Location — Indépendant / Micro-entrepreneur</option>
-<option value="loc_salarie">Dossier de Location — Salarié (CDI / CDD)</option>
-<option value="loc_etudiant">Dossier de Location — Étudiant avec Garant</option>
-<option value="aide_pub">Demande d'Aide Financière / Subvention</option>
-</select>
-</section>
-
-<section class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden mb-8">
-<div class="bg-blue-950 text-white px-6 py-4 flex items-center justify-between gap-3">
-<div>
-<h2 class="font-bold text-base sm:text-lg">Étape 2 : Papiers à fournir & vérifier</h2>
-<p class="text-blue-200 text-xs">Appareil photo ou galerie</p>
-</div>
-<span id="progression-texte" class="text-sm font-extrabold text-emerald-400 whitespace-nowrap">0 / 0 validés</span>
-</div>
-<div class="w-full bg-slate-200 h-2">
-<div id="barre-progression" class="bg-emerald-500 h-2 transition-all duration-300" style="width:0%"></div>
-</div>
-<div id="checklist-container" class="divide-y divide-slate-200"></div>
-</section>
-
-<section class="bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-xl">
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
-<div>
-<span class="inline-block bg-emerald-500/20 text-emerald-300 text-xs font-bold px-2.5 py-1 rounded mb-2">ÉTAPE 3 • GÉNÉRATION DU DOSSIER</span>
-<h3 class="text-xl font-bold mb-2">Télécharger mon Dossier Blindé</h3>
-<p class="text-xs sm:text-sm text-slate-300 leading-relaxed">Assemblez vos documents validés, appliquez un filigrane et générez votre dossier administratif.</p>
-</div>
-<button onclick="genererDossierLocal()" class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold px-6 py-4 rounded-xl text-sm shadow-lg">
-<i class="fa-solid fa-file-shield mr-2"></i>Générer mon PDF (9,90 €)
-</button>
-</div>
-
-<div id="apercu-dossier-final" class="hidden mt-8 pt-6 border-t border-slate-700">
-<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
-<p class="text-sm font-bold text-emerald-400"><i class="fa-solid fa-circle-check mr-1"></i>Votre dossier est prêt :</p>
-<button onclick="window.print()" class="bg-white text-slate-950 font-extrabold text-xs px-4 py-2.5 rounded-lg">
-<i class="fa-solid fa-download mr-1"></i>Enregistrer en PDF / Imprimer
-</button>
-</div>
-<div id="zone-impression-pdf" class="bg-white text-slate-900 rounded-xl p-6 sm:p-8 space-y-6">
-<div class="border-b-2 border-blue-900 pb-4 flex justify-between items-center gap-3">
-<div>
-<h4 class="text-xl font-extrabold text-blue-950">DOSSIER ADMINISTRATIF</h4>
-<p id="titre-dossier-pdf" class="text-xs font-semibold text-slate-500 uppercase mt-1"></p>
-</div>
-<span class="bg-emerald-100 text-emerald-900 text-xs font-bold px-3 py-1 rounded-full border border-emerald-300">PIÈCES CONTRÔLÉES</span>
-</div>
-<div id="liste-pages-filigranees" class="space-y-6"></div>
-</div>
-</div>
-</section>
-</main>
-
-<div id="modal-coffre" class="hidden fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4">
-<div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
-<div class="bg-blue-950 text-white px-6 py-4 flex items-center justify-between">
-<div>
-<h3 class="font-bold text-lg"><i class="fa-solid fa-mobile-screen-button text-emerald-400 mr-2"></i>Mon Coffre Privé</h3>
-<p class="text-[11px] text-blue-200">Stockage local sur cet appareil</p>
-</div>
-<button onclick="fermerCoffreFort()" class="text-xl"><i class="fa-solid fa-xmark"></i></button>
-</div>
-<div id="contenu-coffre" class="p-6 overflow-y-auto space-y-4"></div>
-<div class="bg-slate-100 px-6 py-3 flex justify-between items-center gap-3 border-t">
-<button onclick="viderCoffre()" class="text-xs text-red-600 font-semibold"><i class="fa-solid fa-trash mr-1"></i>Supprimer toutes mes photos</button>
-<button onclick="fermerCoffreFort()" class="bg-blue-900 text-white text-xs font-bold px-4 py-2 rounded-lg">Fermer</button>
-</div>
-</div>
-</div>
-
-<script>
-
-/* REFERENTIEL DES DOSSIERS */
-
-const REFERENTIEL_DOSSIERS = {
-loc_indep:[
-{id:"identite",titre:"Pièce d'identité",choixDocument:true},
-{id:"domicile",titre:"Justificatif de domicile (- de 3 mois)",info:"Facture d'eau, d'électricité, internet ou quittance de loyer"},
-{id:"urssaf",titre:"Attestation de vigilance / Revenus URSSAF",info:"Relevés de chiffre d'affaires des 3 derniers mois"},
-{id:"impots",titre:"Dernier avis d'imposition",info:"Avis complet de l'année N-1"}
-],
-loc_salarie:[
-{id:"identite",titre:"Pièce d'identité",choixDocument:true},
-{id:"domicile",titre:"Justificatif de domicile (- de 3 mois)",info:"Facture énergie, téléphone fixe ou attestation d'hébergement"},
-{id:"paie",titre:"3 derniers bulletins de salaire",info:"Les trois derniers mois consécutifs"},
-{id:"contrat",titre:"Contrat de travail ou attestation employeur",info:"Signé et daté (CDI ou durée du CDD)"},
-{id:"impots",titre:"Dernier avis d'imposition",info:"Avis d'impôt complet"}
-],
-loc_etudiant:[
-{id:"identite",titre:"Pièce d'identité de l'étudiant",choixDocument:true},
-{id:"etudiant",titre:"Carte étudiante ou certificat de scolarité",info:"Pour l'année universitaire en cours"},
-{id:"garant_identite",titre:"Pièce d'identité du garant",choixDocument:true},
-{id:"garant_rev",titre:"Justificatifs de revenus du garant",info:"3 dernières fiches de paie et dernier avis d'imposition"}
-],
-aide_pub:[
-{id:"identite",titre:"Pièce d'identité du demandeur",choixDocument:true},
-{id:"rib",titre:"Relevé d'Identité Bancaire (RIB)",info:"Avec IBAN et BIC lisibles au nom du demandeur"},
-{id:"impots",titre:"Dernier avis d'imposition",info:"Permet de vérifier le revenu fiscal de référence"},
-{id:"justif_projet",titre:"Devis ou facture justificative",info:"Document daté détaillant le besoin de l'aide"}
-]
-};
-
-/* TYPES DE PIECES D'IDENTITE */
-
-const TYPES_IDENTITE = {
-cni:{
-titre:"Carte nationale d'identité",
-faces:[
-{id:"recto",label:"Recto (Face avant)"},
-{id:"verso",label:"Verso (Face arrière)"}
-]
-},
-passeport:{
-titre:"Passeport",
-faces:[
-{id:"recto",label:"Page d'identité avec photo"}
-]
-},
-sejour:{
-titre:"Titre de séjour",
-faces:[
-{id:"recto",label:"Recto (Face avant)"},
-{id:"verso",label:"Verso (Face arrière)"}
-]
-}
-};
-
-/* STOCKAGE */
-
-let coffrePhotos={};
-let typeIdentiteChoisi={identite:"cni",garant_identite:"cni"};
-
-try {
-coffrePhotos=JSON.parse(localStorage.getItem("dossierBlinde_coffre_local")||"{}");
-typeIdentiteChoisi={
-...typeIdentiteChoisi,
-...JSON.parse(localStorage.getItem("dossierBlinde_types_identite")||"{}")
-};
-} catch(e) {
-coffrePhotos={};
-}
-
-function sauvegarderCoffre(){
-try{
-localStorage.setItem("dossierBlinde_coffre_local",JSON.stringify(coffrePhotos));
-localStorage.setItem("dossierBlinde_types_identite",JSON.stringify(typeIdentiteChoisi));
-mettreAJourCompteurCoffre();
-return true;
-}catch(e){
-alert("Mémoire locale pleine. Supprimez d'anciens documents.");
-return false;
-}
-}
-
-function mettreAJourCompteurCoffre(){
-document.getElementById("compteur-coffre").textContent=Object.keys(coffrePhotos).length;
-}
-
-function escapeHTML(value){
-return String(value??"").replace(/[&<>"']/g,c=>({
-"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"
-})[c]);
-}
-
-function cleIdentite(id,type,face){
-return `${id}_${type}_${face}`;
-}
-
-function changerTypeIdentite(id,type){
-if(!TYPES_IDENTITE[type])return;
-typeIdentiteChoisi[id]=type;
-sauvegarderCoffre();
-chargerChecklist();
-}
-
-/* BADGES */
-
-function renderBadgeIA(doc){
-if(!doc)return "";
-if(doc.statut==="valide"){
-return `<span class="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold px-2.5 py-1 rounded-md"><i class="fa-solid fa-check-circle text-emerald-600"></i>${escapeHTML(doc.messageIA||"Validé par l'IA")}</span>`;
-}
-return `<span class="inline-flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-800 text-[11px] font-semibold px-2.5 py-1 rounded-md"><i class="fa-solid fa-triangle-exclamation text-red-600"></i>${escapeHTML(doc.messageIA||"Document refusé")}</span>`;
-}
-
-/* BLOC PHOTO */
-
-function renderBlocFace(cleId,titre,labelFace,doc){
-const valide=doc&&doc.statut==="valide";
-return `
-<div class="border ${doc?(valide?"border-emerald-200 bg-emerald-50/30":"border-red-200 bg-red-50/30"):"border-slate-200 bg-slate-50"} rounded-xl p-3.5 flex flex-col gap-3">
-<div class="flex items-center justify-between gap-2">
-<span class="text-xs font-extrabold text-slate-800">${escapeHTML(labelFace)}</span>
-${doc?`<img src="${doc.image}" class="w-10 h-10 object-cover rounded border">`:""}
-</div>
-<div id="status-${cleId}">
-${doc?renderBadgeIA(doc):'<span class="text-[11px] text-slate-400">En attente de photo ou fichier</span>'}
-</div>
-<label class="cursor-pointer bg-blue-900 hover:bg-blue-800 text-white text-[11px] font-bold px-3 py-2.5 rounded-lg flex items-center justify-center gap-2">
-<i class="fa-solid fa-camera"></i>${doc?"Remplacer":"Ajouter une photo"}
-<input type="file" accept="image/*" capture="environment" class="hidden" onchange="capturerDocument('${cleId}','${escapeHTML(titre).replace(/'/g,"\\'")}',this)">
-</label>
-</div>`;
-}
-
-/* PIECE IDENTITE */
-
-function renderIdentite(item){
-const choix=typeIdentiteChoisi[item.id]||"cni";
-const documentChoisi=TYPES_IDENTITE[choix];
-
-const facesHTML=documentChoisi.faces.map(face=>{
-const cle=cleIdentite(item.id,choix,face.id);
-return renderBlocFace(cle,documentChoisi.titre+" - "+face.label,face.label,coffrePhotos[cle]);
-}).join("");
-
-return `
-<div class="p-5 sm:p-6 space-y-4">
-<div>
-<h3 class="font-bold text-slate-900">${escapeHTML(item.titre)}</h3>
-<p class="text-xs text-slate-500 mt-1">Choisissez le document que vous souhaitez présenter.</p>
-</div>
-
-<div>
-<label class="block text-xs font-bold text-blue-950 mb-2">Quel document souhaitez-vous présenter ?</label>
-<select onchange="changerTypeIdentite('${item.id}',this.value)" class="w-full border-2 border-blue-900/20 rounded-xl p-3.5 bg-slate-50 font-semibold text-sm">
-<option value="cni" ${choix==="cni"?"selected":""}>Carte nationale d'identité</option>
-<option value="passeport" ${choix==="passeport"?"selected":""}>Passeport</option>
-<option value="sejour" ${choix==="sejour"?"selected":""}>Titre de séjour</option>
-</select>
-</div>
-
-<div class="bg-blue-50 border border-blue-100 rounded-lg p-3">
-<p class="text-xs font-bold text-blue-950"><i class="fa-solid fa-id-card mr-1"></i>${documentChoisi.titre}</p>
-<p class="text-[11px] text-blue-800 mt-1">
-${choix==="passeport"?"Photographiez la page contenant votre photo et vos informations personnelles.":"Photographiez soigneusement le recto et le verso de votre document."}
-</p>
-</div>
-
-<div class="grid grid-cols-1 sm:grid-cols-2 gap-3">${facesHTML}</div>
-</div>`;
-}
-
-/* CHECKLIST ET PROGRESSION */
-
-function chargerChecklist(){
-const type=document.getElementById("select-dossier").value;
-const liste=REFERENTIEL_DOSSIERS[type];
-const container=document.getElementById("checklist-container");
-let valides=0;
-let total=0;
-
-container.innerHTML=liste.map(item=>{
-
-if(item.choixDocument){
-const choix=typeIdentiteChoisi[item.id]||"cni";
-const documentChoisi=TYPES_IDENTITE[choix];
-
-total+=documentChoisi.faces.length;
-
-documentChoisi.faces.forEach(face=>{
-const cle=cleIdentite(item.id,choix,face.id);
-if(coffrePhotos[cle]?.statut==="valide")valides++;
-});
-
-return renderIdentite(item);
-}
-
-total++;
-const doc=coffrePhotos[item.id];
-if(doc?.statut==="valide")valides++;
-
-return `
-<div class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-<div class="flex items-start gap-3.5 flex-1">
-<div class="mt-1">
-${doc?(doc.statut==="valide"?'<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>':'<i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>'):'<i class="fa-regular fa-circle text-slate-300 text-xl"></i>'}
-</div>
-<div class="flex-1">
-<h3 class="font-bold text-sm sm:text-base">${escapeHTML(item.titre)}</h3>
-<p class="text-xs text-slate-500 mt-1">${escapeHTML(item.info||"")}</p>
-<div id="status-${item.id}" class="mt-2">${doc?renderBadgeIA(doc):""}</div>
-</div>
-</div>
-<div class="flex items-center gap-2 shrink-0">
-${doc?`<img src="${doc.image}" class="w-12 h-12 object-cover rounded-lg border">`:""}
-<label class="cursor-pointer bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl flex items-center gap-2">
-<i class="fa-solid fa-camera"></i>${doc?"Refaire":"Photo / Galerie"}
-<input type="file" accept="image/*" capture="environment" class="hidden" onchange="capturerDocument('${item.id}','${escapeHTML(item.titre).replace(/'/g,"\\'")}',this)">
-</label>
-</div>
-</div>`;
-}).join("");
-
-const pct=total?Math.round(valides/total*100):0;
-document.getElementById("progression-texte").textContent=`${valides} / ${total} validés`;
-document.getElementById("barre-progression").style.width=`${pct}%`;
-}
-
-/* COMPRESSION PHOTO */
-
-function compresserImage(file){
-return new Promise((resolve,reject)=>{
-const reader=new FileReader();
-reader.onerror=()=>reject(new Error("Lecture impossible"));
-reader.onload=event=>{
-const img=new Image();
-img.onerror=()=>reject(new Error("Image invalide"));
-img.onload=()=>{
-const canvas=document.createElement("canvas");
-const maxDim=1200;
-let width=img.width;
-let height=img.height;
-if(width>height&&width>maxDim){height*=maxDim/width;width=maxDim;}
-else if(height>maxDim){width*=maxDim/height;height=maxDim;}
-canvas.width=Math.round(width);
-canvas.height=Math.round(height);
-canvas.getContext("2d").drawImage(img,0,0,canvas.width,canvas.height);
-resolve(canvas.toDataURL("image/jpeg",0.75));
-};
-img.src=event.target.result;
-};
-reader.readAsDataURL(file);
-});
-}
-
-/* CAPTURE ET VERIFICATION IA */
-
-async function capturerDocument(id,titre,input){
-if(!input.files||!input.files[0])return;
-const file=input.files[0];
-if(!file.type.startsWith("image/")){
-alert("Veuillez sélectionner une image.");
-input.value="";
-return;
-}
-
-const statusEl=document.getElementById("status-"+id);
-if(statusEl){
-statusEl.innerHTML='<span class="text-blue-800 text-[11px] font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Analyse IA en cours...</span>';
-}
-
-try{
-const imageLegere=await compresserImage(file);
-let resultat;
-
-try{
-const reponse=await fetch("/api/verifier",{
-method:"POST",
-headers:{"Content-Type":"application/json"},
-body:JSON.stringify({
-imageBase64:imageLegere,
-documentAttendu:titre
-})
-});
-if(!reponse.ok)throw new Error("Erreur serveur");
-resultat=await reponse.json();
-}catch(error){
-resultat={
-valide:false,
-message:"Erreur de connexion avec l'IA. Vérifiez votre réseau et réessayez."
-};
-}
-
-coffrePhotos[id]={
-id:id,
-titre:titre,
-image:imageLegere,
-dateAjout:new Date().toLocaleDateString("fr-FR"),
-statut:resultat.valide?"valide":"refuse",
-messageIA:resultat.message||(resultat.valide?"Document conforme":"Document non conforme")
-};
-
-sauvegarderCoffre();
-chargerChecklist();
-
-}catch(error){
-alert("Impossible de traiter cette image. Veuillez réessayer.");
-chargerChecklist();
-}finally{
-input.value="";
-}
-}
-
-/* RECUPERATION DOCUMENTS VALIDES */
-
-function recupererDocumentsValides(){
-const type=document.getElementById("select-dossier").value;
-const liste=REFERENTIEL_DOSSIERS[type];
-const documents=[];
-
-liste.forEach(item=>{
-if(item.choixDocument){
-const choix=typeIdentiteChoisi[item.id]||"cni";
-TYPES_IDENTITE[choix].faces.forEach(face=>{
-const cle=cleIdentite(item.id,choix,face.id);
-const doc=coffrePhotos[cle];
-if(doc?.statut==="valide")documents.push(doc);
-});
-}else{
-const doc=coffrePhotos[item.id];
-if(doc?.statut==="valide")documents.push(doc);
-}
-});
-
-return documents;
-}
-
-/* GENERATION DU DOSSIER */
-
-function genererDossierLocal(){
-const selectEl=document.getElementById("select-dossier");
-const nomDossier=selectEl.options[selectEl.selectedIndex].text;
-const documents=recupererDocumentsValides();
-
-if(documents.length===0){
-alert("Scannez et faites valider au moins un document par l'IA avant de générer votre dossier.");
-return;
-}
-
-document.getElementById("titre-dossier-pdf").textContent=nomDossier+" — Généré le "+new Date().toLocaleDateString("fr-FR");
-
-document.getElementById("liste-pages-filigranees").innerHTML=documents.map(doc=>`
-<div class="border border-slate-300 rounded-xl p-4 relative overflow-hidden">
-<p class="text-xs font-extrabold uppercase text-blue-900 mb-2">${escapeHTML(doc.titre)}</p>
-<div class="relative flex justify-center bg-slate-100 rounded-lg overflow-hidden p-2">
-<img src="${doc.image}" class="max-h-96 max-w-full object-contain">
-<div class="absolute inset-0 flex items-center justify-center pointer-events-none">
-<span class="text-red-600/35 font-extrabold text-lg sm:text-2xl uppercase tracking-widest -rotate-12 border-2 border-red-600/35 px-4 py-2 text-center">
-DOCUMENT PROTÉGÉ<br>USAGE EXCLUSIF DÉMARCHE ADMINISTRATIVE<br>${escapeHTML(doc.dateAjout)}
-</span>
-</div>
-</div>
-</div>
-`).join("");
-
-document.getElementById("apercu-dossier-final").classList.remove("hidden");
-document.getElementById("apercu-dossier-final").scrollIntoView({behavior:"smooth"});
-}
-
-/* COFFRE PRIVE */
-
-function ouvrirCoffreFort(){
-const modal=document.getElementById("modal-coffre");
-const contenu=document.getElementById("contenu-coffre");
-const docs=Object.values(coffrePhotos);
-
-if(docs.length===0){
-contenu.innerHTML='<p class="text-sm text-slate-500 text-center py-8">Votre coffre local est vide.</p>';
-}else{
-contenu.innerHTML='<div class="grid sm:grid-cols-2 gap-4">'+docs.map(d=>`
-<div class="border border-slate-200 rounded-xl p-3 bg-slate-50">
-<img src="${d.image}" class="w-full h-40 object-cover rounded-lg mb-2 border">
-<p class="font-bold text-xs text-slate-900">${escapeHTML(d.titre)}</p>
-<p class="text-[11px] ${d.statut==="valide"?"text-emerald-700":"text-red-600"} font-semibold mt-1">${escapeHTML(d.messageIA||"Document enregistré")}</p>
-<button onclick="supprimerDocument('${d.id}')" class="text-xs text-red-600 mt-2 font-semibold">
-<i class="fa-solid fa-trash mr-1"></i>Supprimer
-</button>
-</div>`).join("")+'</div>';
-}
-modal.classList.remove("hidden");
-}
-
-function supprimerDocument(id){
-if(!confirm("Supprimer ce document de votre coffre ?"))return;
-delete coffrePhotos[id];
-sauvegarderCoffre();
-chargerChecklist();
-ouvrirCoffreFort();
-}
-
-function fermerCoffreFort(){
-document.getElementById("modal-coffre").classList.add("hidden");
-}
-
-function viderCoffre(){
-if(!confirm("Supprimer toutes les photos de votre coffre privé ?"))return;
-coffrePhotos={};
-sauvegarderCoffre();
-chargerChecklist();
-ouvrirCoffreFort();
-}
-
-/* INITIALISATION */
-
-mettreAJourCompteurCoffre();
-chargerChecklist();
-
-</script>
+    <!-- Navigation -->
+    <nav class="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-2">
+                <div class="bg-blue-900 text-white p-2 rounded-lg">
+                    <i class="fa-solid fa-shield-halved text-lg"></i>
+                </div>
+                <span class="font-extrabold text-xl tracking-tight text-blue-950">Dossier<span class="text-emerald-600">Blind&eacute;</span></span>
+            </div>
+            <div class="flex items-center space-x-3">
+                <button onclick="ouvrirCoffreFort()" class="text-xs sm:text-sm font-semibold text-blue-900 bg-blue-50 hover:bg-blue-100 px-3.5 py-2 rounded-lg border border-blue-200 transition flex items-center gap-2">
+                    <i class="fa-solid fa-mobile-screen-button"></i>
+                    <span>Mon Coffre Priv&eacute; (<span id="compteur-coffre">0</span>)</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Bandeau Garantie Confidentialite Zero-Acces -->
+    <div class="bg-emerald-950 text-emerald-100 text-xs py-2.5 px-4 text-center font-medium">
+        <i class="fa-solid fa-user-shield text-emerald-400 mr-1.5"></i>
+        <strong>100 % Confidentiel :</strong> Vos photos restent exclusivement dans la m&eacute;moire de votre appareil. Nous n'avons aucun acc&egrave;s &agrave; vos documents ni &agrave; vos coordonn&eacute;es.
+    </div>
+
+    <!-- Hero compact -->
+    <header class="bg-white border-b border-slate-200 pt-10 pb-12 px-4">
+        <div class="max-w-3xl mx-auto text-center">
+            <span class="inline-block bg-blue-50 border border-blue-200 text-blue-900 text-xs font-bold px-3 py-1 rounded-full mb-4">
+                Architecture Z&eacute;ro-Acc&egrave;s &bull; Sans Inscription &bull; Sans Collecte de Donn&eacute;es
+            </span>
+            <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
+                Scannez ou importez vos papiers, <span class="text-blue-900">l'IA v&eacute;rifie et filigrane tout en local.</span>
+            </h1>
+            <p class="text-sm sm:text-base text-slate-600 max-w-xl mx-auto">
+                S&eacute;lectionnez votre d&eacute;marche, ajoutez vos justificatifs (recto et verso/page 2 si besoin) depuis l'appareil photo ou votre galerie pour r&eacute;cup&eacute;rer votre dossier prot&eacute;g&eacute;.
+            </p>
+        </div>
+    </header>
+
+    <!-- Zone Principale Interactive -->
+    <main class="max-w-3xl mx-auto px-4 py-8">
+        
+        <!-- Etape 1 : Selection du type de dossier -->
+        <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 mb-6">
+            <label for="select-dossier" class="block text-sm font-extrabold text-slate-900 uppercase tracking-wide mb-2">
+                &Eacute;tape 1 : Quel dossier souhaitez-vous pr&eacute;parer ?
+            </label>
+            <select id="select-dossier" onchange="chargerChecklist()" class="w-full bg-slate-50 border-2 border-blue-900/20 focus:border-blue-900 text-slate-900 text-base rounded-xl p-3.5 font-semibold outline-none transition">
+                <option value="loc_indep">Dossier de Location &mdash; Ind&eacute;pendant / Micro-entrepreneur</option>
+                <option value="loc_salarie">Dossier de Location &mdash; Salari&eacute; (CDI / CDD)</option>
+                <option value="loc_etudiant">Dossier de Location &mdash; &Eacute;tudiant avec Garant</option>
+                <option value="aide_pub">Demande d'Aide Financi&egrave;re / Subvention</option>
+            </select>
+        </div>
+
+        <!-- Etape 2 : Liste dynamique des pieces a scanner -->
+        <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden mb-8">
+            <div class="bg-blue-950 text-white px-6 py-4 flex items-center justify-between">
+                <div>
+                    <h2 class="font-bold text-base sm:text-lg">&Eacute;tape 2 : Papiers &agrave; fournir &amp; V&eacute;rifier</h2>
+                    <p class="text-blue-200 text-xs">Appareil photo ou galerie &bull; Option Verso / Page 2 disponible sur chaque pi&egrave;ce</p>
+                </div>
+                <div class="text-right">
+                    <span id="progression-texte" class="text-sm font-extrabold text-emerald-400">0 / 4 valid&eacute;s</span>
+                </div>
+            </div>
+
+            <!-- Barre de progression -->
+            <div class="w-full bg-slate-200 h-2">
+                <div id="barre-progression" class="bg-emerald-500 h-2 transition-all duration-300" style="width: 0%"></div>
+            </div>
+
+            <!-- Liste des pieces (Generee dynamiquement) -->
+            <div id="checklist-container" class="divide-y divide-slate-200">
+                <!-- Rempli par JS -->
+            </div>
+        </div>
+
+        <!-- Etape 3 : Generation locale directe sans coordonnees -->
+        <div class="bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-xl">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
+                <div>
+                    <span class="inline-block bg-emerald-500/20 text-emerald-300 text-xs font-bold px-2.5 py-1 rounded mb-2">
+                        &Eacute;TAPE 3 &bull; G&Eacute;N&Eacute;RATION DIRECTE SUR VOTRE APPAREIL
+                    </span>
+                    <h3 class="text-xl font-bold mb-2">T&eacute;l&eacute;charger mon Dossier Blind&eacute; Filigran&eacute;</h3>
+                    <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+                        Aucune adresse e-mail ni num&eacute;ro demand&eacute;. Votre appareil assemble vos photos, applique le filigrane anti-usurpation et g&eacute;n&egrave;re le document final instantan&eacute;ment.
+                    </p>
+                </div>
+                <div class="shrink-0 w-full sm:w-auto">
+                    <button onclick="genererDossierLocal()" class="w-full sm:w-auto bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold px-6 py-4 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
+                        <i class="fa-solid fa-file-shield"></i>
+                        <span>G&eacute;n&eacute;rer mon PDF (9,90 &euro;)</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Apercu du dossier genere localement avec filigrane -->
+            <div id="apercu-dossier-final" class="hidden mt-8 pt-6 border-t border-slate-700">
+                <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
+                    <p class="text-sm font-bold text-emerald-400">
+                        <i class="fa-solid fa-circle-check mr-1.5"></i>Votre Dossier Blind&eacute; est pr&ecirc;t (g&eacute;n&eacute;r&eacute; 100 % en local) :
+                    </p>
+                    <button onclick="window.print()" class="bg-white hover:bg-slate-100 text-slate-950 font-extrabold text-xs px-4 py-2.5 rounded-lg transition shadow">
+                        <i class="fa-solid fa-download mr-1.5"></i>Enregistrer en PDF / Imprimer
+                    </button>
+                </div>
+
+                <!-- Document pret a etre enregistre en PDF -->
+                <div id="zone-impression-pdf" class="bg-white text-slate-900 rounded-xl p-6 sm:p-8 space-y-6">
+                    <div class="border-b-2 border-blue-900 pb-4 flex justify-between items-center">
+                        <div>
+                            <h4 class="text-xl font-extrabold text-blue-950">DOSSIER ADMINISTRATIF V&Eacute;RIFI&Eacute;</h4>
+                            <p id="titre-dossier-pdf" class="text-xs font-semibold text-slate-500 uppercase mt-1"></p>
+                        </div>
+                        <span class="bg-emerald-100 text-emerald-900 text-xs font-bold px-3 py-1 rounded-full border border-emerald-300">
+                            PI&Egrave;CES CONTR&Ocirc;L&Eacute;ES
+                        </span>
+                    </div>
+
+                    <div id="liste-pages-filigranees" class="space-y-6">
+                        <!-- Les photos filigranees s'affichent ici -->
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- Modale Coffre-Fort Prive (Uniquement sur l'appareil du client) -->
+    <div id="modal-coffre" class="hidden fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
+            <div class="bg-blue-950 text-white px-6 py-4 flex items-center justify-between">
+                <div>
+                    <h3 class="font-bold text-lg flex items-center gap-2">
+                        <i class="fa-solid fa-mobile-screen-button text-emerald-400"></i>
+                        Mon Coffre Priv&eacute; (Local)
+                    </h3>
+                    <p class="text-[11px] text-blue-200">Stock&eacute; uniquement sur cet appareil &mdash; Invisible pour l'&eacute;diteur du site</p>
+                </div>
+                <button onclick="fermerCoffreFort()" class="text-slate-300 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div id="contenu-coffre" class="p-6 overflow-y-auto space-y-4">
+                <!-- Apercu des photos sauvegardees -->
+            </div>
+            <div class="bg-slate-100 px-6 py-3 flex justify-between items-center border-t border-slate-200">
+                <button onclick="viderCoffre()" class="text-xs text-red-600 hover:underline font-semibold">
+                    <i class="fa-solid fa-trash mr-1"></i>Supprimer toutes mes photos de cet appareil
+                </button>
+                <button onclick="fermerCoffreFort()" class="bg-blue-900 text-white text-xs font-bold px-4 py-2 rounded-lg">
+                    Fermer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const REFERENTIEL_DOSSIERS = {
+            loc_indep: [
+                { id: "cni", titre: "Pi\u00e8ce d'identit\u00e9", info: "CNI, Passeport ou Titre de s\u00e9jour en cours de validit\u00e9" },
+                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture d'eau, d'\u00e9lectricit\u00e9, internet ou quittance de loyer" },
+                { id: "urssaf", titre: "Attestation de vigilance / Revenus URSSAF", info: "Relev\u00e9s de chiffre d'affaires des 3 derniers mois" },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Avis d'imp\u00f4t sur le revenu complet de l'ann\u00e9e N-1" }
+            ],
+            loc_salarie: [
+                { id: "cni", titre: "Pi\u00e8ce d'identit\u00e9", info: "CNI ou Passeport lisible et non expir\u00e9" },
+                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture \u00e9nergie, t\u00e9l\u00e9phone fixe ou attestation d'h\u00e9bergement" },
+                { id: "paie", titre: "3 derniers bulletins de salaire", info: "Les 3 mois cons\u00e9cutifs pr\u00e9c\u00e9dant la demande" },
+                { id: "contrat", titre: "Contrat de travail ou attestation employeur", info: "Sign\u00e9 et dat\u00e9 (pr\u00e9cisant CDI ou dur\u00e9e du CDD)" },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Avis d'imp\u00f4t sur le revenu complet" }
+            ],
+            loc_etudiant: [
+                { id: "cni", titre: "Pi\u00e8ce d'identit\u00e9 de l'\u00e9tudiant", info: "CNI ou Passeport en cours de validit\u00e9" },
+                { id: "etudiant", titre: "Carte \u00e9tudiante ou certificat de scolarit\u00e9", info: "Pour l'ann\u00e9e universitaire en cours" },
+                { id: "garant_cni", titre: "Pi\u00e8ce d'identit\u00e9 du Garant", info: "Obligatoire si vous n'utilisez pas la garantie Visale" },
+                { id: "garant_rev", titre: "Justificatifs de revenus du Garant", info: "3 derni\u00e8res fiches de paie + dernier avis d'imposition du garant" }
+            ],
+            aide_pub: [
+                { id: "cni", titre: "Pi\u00e8ce d'identit\u00e9 du demandeur", info: "Carte d'identit\u00e9, passeport ou titre de s\u00e9jour" },
+                { id: "rib", titre: "Relev\u00e9 d'Identit\u00e9 Bancaire (RIB)", info: "Avec IBAN et BIC lisibles au nom du demandeur" },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Permet de v\u00e9rifier le revenu fiscal de r\u00e9f\u00e9rence" },
+                { id: "justif_projet", titre: "Devis ou facture justificative", info: "Document dat\u00e9 d\u00e9taillant le besoin de l'aide" }
+            ]
+        };
+
+        let coffrePhotos = JSON.parse(localStorage.getItem('dossierBlinde_coffre_local') || '{}');
+        let versoOuverts = {};
+
+        function sauvegarderCoffre() {
+            try {
+                localStorage.setItem('dossierBlinde_coffre_local', JSON.stringify(coffrePhotos));
+                mettreAJourCompteurCoffre();
+            } catch (err) {
+                alert("M\u00e9moire locale pleine. Supprimez d'anciennes photos dans 'Mon Coffre Priv\u00e9'.");
+            }
+        }
+
+        function mettreAJourCompteurCoffre() {
+            const nb = Object.keys(coffrePhotos).length;
+            document.getElementById('compteur-coffre').textContent = nb;
+        }
+
+        function activerVerso(id) {
+            versoOuverts[id] = true;
+            chargerChecklist();
+        }
+
+        function supprimerVerso(id) {
+            delete coffrePhotos[`${id}_verso`];
+            delete versoOuverts[id];
+            sauvegarderCoffre();
+            chargerChecklist();
+        }
+
+        function chargerChecklist() {
+            const type = document.getElementById('select-dossier').value;
+            const liste = REFERENTIEL_DOSSIERS[type];
+            const container = document.getElementById('checklist-container');
+            
+            let valides = 0;
+
+            container.innerHTML = liste.map((item) => {
+                // Compatibilite avec d'eventuelles anciennes entrees sans suffixe _recto
+                const docRecto = coffrePhotos[`${item.id}_recto`] || coffrePhotos[item.id];
+                const docVerso = coffrePhotos[`${item.id}_verso`];
+                const rectoValide = docRecto && docRecto.statut === 'valide';
+                const versoPresent = Boolean(docVerso);
+                const versoValide = !versoPresent || (docVerso && docVerso.statut === 'valide');
+
+                const ligneValide = rectoValide && versoValide;
+                if (ligneValide) valides++;
+
+                let iconeStatut = '<i class="fa-regular fa-circle text-slate-300 text-xl"></i>';
+                if (ligneValide) {
+                    iconeStatut = '<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>';
+                } else if ((docRecto && !rectoValide) || (docVerso && !versoValide)) {
+                    iconeStatut = '<i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>';
+                }
+
+                const afficherBlocVerso = Boolean(docVerso) || Boolean(versoOuverts[item.id]);
+
+                return `
+                <div class="p-5 sm:p-6 flex flex-col gap-3.5 hover:bg-slate-50/70 transition" id="row-${item.id}">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="flex items-start space-x-3.5">
+                            <div class="mt-1">${iconeStatut}</div>
+                            <div>
+                                <h3 class="font-bold text-slate-900 text-sm sm:text-base">${item.titre}</h3>
+                                <p class="text-xs text-slate-500 mt-0.5">${item.info}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Zone Recto / Page 1 -->
+                    <div class="pl-0 sm:pl-8 space-y-2.5">
+                        ${renderBlocDocument(
+                            `${item.id}_recto`,
+                            `${item.titre} (Recto / Page 1)`,
+                            afficherBlocVerso ? 'Recto / Page 1' : 'Document principal',
+                            docRecto,
+                            rectoValide,
+                            false
+                        )}
+
+                        <!-- Zone Verso / Page 2 (Optionnelle) -->
+                        ${afficherBlocVerso ? renderBlocDocument(
+                            `${item.id}_verso`,
+                            `${item.titre} (Verso / Page 2)`,
+                            'Verso / Page 2 (Optionnel)',
+                            docVerso,
+                            docVerso && docVerso.statut === 'valide',
+                            true,
+                            item.id
+                        ) : `
+                        <div>
+                            <button type="button" onclick="activerVerso('${item.id}')" class="text-xs font-bold text-blue-900 hover:text-blue-700 bg-blue-50/80 hover:bg-blue-100 border border-blue-200/80 px-3 py-1.5 rounded-lg transition inline-flex items-center gap-1.5">
+                                <i class="fa-solid fa-plus"></i>
+                                <span>Ajouter Verso / Page 2 (Optionnel)</span>
+                            </button>
+                        </div>
+                        `}
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            const pct = Math.round((valides / liste.length) * 100);
+            document.getElementById('progression-texte').textContent = `${valides} / ${liste.length} valid\u00e9s`;
+            document.getElementById('barre-progression').style.width = `${pct}%`;
+        }
+
+        function renderBlocDocument(cleId, titreIA, etiquette, doc, estValide, estOptionnel, parentId) {
+            return `
+            <div class="border ${doc ? (estValide ? 'border-emerald-200 bg-emerald-50/30' : 'border-red-200 bg-red-50/30') : 'border-slate-200 bg-slate-50'} rounded-xl p-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                <div class="flex-1">
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold text-slate-700">${etiquette}</span>
+                        ${estOptionnel ? `
+                            <button type="button" onclick="supprimerVerso('${parentId}')" class="text-[11px] text-slate-400 hover:text-red-600 font-semibold" title="Retirer ce verso">
+                                <i class="fa-solid fa-xmark"></i> Retirer
+                            </button>
+                        ` : ''}
+                    </div>
+                    <div id="status-${cleId}" class="mt-1.5">
+                        ${doc ? renderBadgeIA(doc) : '<span class="text-[11px] text-slate-400">Aucune photo ajout\u00e9e</span>'}
+                    </div>
+                </div>
+
+                <div class="flex items-center space-x-2 shrink-0 self-end sm:self-center">
+                    ${doc ? `
+                        <img src="${doc.image}" alt="Apercu" class="w-11 h-11 object-cover rounded-lg border border-slate-300 shadow-sm cursor-pointer" onclick="ouvrirCoffreFort()">
+                    ` : ''}
+
+                    <label class="cursor-pointer ${doc && !estValide ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-900 hover:bg-blue-800'} text-white text-xs font-bold px-3.5 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm">
+                        <i class="fa-solid fa-camera"></i>
+                        <span>${doc ? 'Refaire' : 'Photo / Galerie'}</span>
+                        <input type="file" accept="image/*" class="hidden" onchange="capturerDocument('${cleId}', '${titreIA.replace(/'/g, "\\'")}', this)">
+                    </label>
+                </div>
+            </div>
+            `;
+        }
+
+        function renderBadgeIA(doc) {
+            if (doc.statut === 'valide') {
+                return `<span class="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold px-2.5 py-1 rounded-md">
+                    <i class="fa-solid fa-check-circle text-emerald-600 shrink-0"></i> <span>${doc.messageIA || 'Valid\u00e9 par l\'IA'}</span>
+                </span>`;
+            } else {
+                return `<span class="inline-flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-800 text-[11px] font-semibold px-2.5 py-1 rounded-md">
+                    <i class="fa-solid fa-triangle-exclamation text-red-600 shrink-0"></i> <span>${doc.messageIA || 'Refus\u00e9, reprenez la photo'}</span>
+                </span>`;
+            }
+        }
+
+        function compresserImage(file, callback) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const maxDim = 1200;
+                    let width = img.width;
+                    let height = img.height;
+
+                    if (width > height && width > maxDim) {
+                        height *= maxDim / width;
+                        width = maxDim;
+                    } else if (height > maxDim) {
+                        width *= maxDim / height;
+                        height = maxDim;
+                    }
+
+                    canvas.width = width;
+                    canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+
+                    const dataUrl = canvas.toDataURL('image/jpeg', 0.75);
+                    callback(dataUrl);
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function capturerDocument(id, titre, input) {
+            if (!input.files || !input.files[0]) return;
+            const file = input.files[0];
+            const statusEl = document.getElementById(`status-${id}`);
+
+            statusEl.innerHTML = `<span class="inline-flex items-center gap-1.5 text-blue-800 text-[11px] font-bold">
+                <i class="fa-solid fa-spinner fa-spin"></i> Analyse IA en cours...
+            </span>`;
+
+            compresserImage(file, async function(imageLegere) {
+                try {
+                    const reponse = await fetch('/api/verifier', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            imageBase64: imageLegere,
+                            documentAttendu: titre
+                        })
+                    });
+
+                    const resultat = await reponse.json();
+
+                    // Nettoyer l'eventuelle ancienne cle sans suffixe si on enregistre _recto
+                    if (id.endsWith('_recto')) {
+                        const baseId = id.replace('_recto', '');
+                        delete coffrePhotos[baseId];
+                    }
+
+                    coffrePhotos[id] = {
+                        id: id,
+                        titre: titre,
+                        image: imageLegere,
+                        dateAjout: new Date().toLocaleDateString('fr-FR'),
+                        statut: resultat.valide ? 'valide' : 'refuse',
+                        messageIA: resultat.message || (resultat.valide ? 'Document conforme' : 'Document non conforme')
+                    };
+                } catch (err) {
+                    coffrePhotos[id] = {
+                        id: id,
+                        titre: titre,
+                        image: imageLegere,
+                        dateAjout: new Date().toLocaleDateString('fr-FR'),
+                        statut: 'refuse',
+                        messageIA: "Erreur de connexion avec l'IA. V\u00e9rifiez votre r\u00e9seau et r\u00e9essayez."
+                    };
+                }
+
+                sauvegarderCoffre();
+                chargerChecklist();
+            });
+        }
+
+        function genererDossierLocal() {
+            const selectEl = document.getElementById('select-dossier');
+            const type = selectEl.value;
+            const nomDossier = selectEl.options[selectEl.selectedIndex].text;
+            const liste = REFERENTIEL_DOSSIERS[type];
+
+            const docsValides = [];
+            liste.forEach(item => {
+                const r = coffrePhotos[`${item.id}_recto`] || coffrePhotos[item.id];
+                const v = coffrePhotos[`${item.id}_verso`];
+                if (r && r.statut === 'valide') docsValides.push(r);
+                if (v && v.statut === 'valide') docsValides.push(v);
+            });
+
+            if (docsValides.length === 0) {
+                alert("Scannez et faites valider au moins un document par l'IA avant de g\u00e9n\u00e9rer votre dossier.");
+                return;
+            }
+
+            document.getElementById('titre-dossier-pdf').textContent = nomDossier + " \u2014 G\u00e9n\u00e9r\u00e9 le " + new Date().toLocaleDateString('fr-FR');
+            const containerPages = document.getElementById('liste-pages-filigranees');
+
+            containerPages.innerHTML = docsValides.map(doc => {
+                return `
+                <div class="border border-slate-300 rounded-xl p-4 relative overflow-hidden">
+                    <p class="text-xs font-extrabold uppercase text-blue-900 mb-2">${doc.titre}</p>
+                    <div class="relative flex justify-center bg-slate-100 rounded-lg overflow-hidden">
+                        <img src="${doc.image}" class="max-h-96 object-contain">
+                        <div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none">
+                            <span class="text-red-600/35 font-extrabold text-lg sm:text-2xl uppercase tracking-widest -rotate-12 border-2 border-red-600/35 px-4 py-2 text-center">
+                                DOCUMENT PROT&Eacute;G&Eacute; &bull; USAGE EXCLUSIF D&Eacute;MARCHE ADMINISTRATIVE &bull; ${doc.dateAjout}
+                            </span>
+                        </div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            document.getElementById('apercu-dossier-final').classList.remove('hidden');
+            document.getElementById('apercu-dossier-final').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function ouvrirCoffreFort() {
+            const modal = document.getElementById('modal-coffre');
+            const contenu = document.getElementById('contenu-coffre');
+            const docs = Object.values(coffrePhotos);
+
+            if (docs.length === 0) {
+                contenu.innerHTML = `<p class="text-sm text-slate-500 text-center py-8">Votre coffre local est vide. Vos photos restent uniquement sur votre t&eacute;l&eacute;phone.</p>`;
+            } else {
+                contenu.innerHTML = `<div class="grid sm:grid-cols-2 gap-4">` + docs.map(d => `
+                    <div class="border border-slate-200 rounded-xl p-3 bg-slate-50">
+                        <img src="${d.image}" class="w-full h-40 object-cover rounded-lg mb-2 border border-slate-200">
+                        <p class="font-bold text-xs text-slate-900">${d.titre}</p>
+                        <p class="text-[11px] ${d.statut === 'valide' ? 'text-emerald-700' : 'text-red-600'} font-semibold mt-0.5">
+                            <i class="fa-solid ${d.statut === 'valide' ? 'fa-check-circle' : 'fa-triangle-exclamation'} mr-1"></i>${d.messageIA || 'Stock\u00e9 uniquement sur votre appareil'}
+                        </p>
+                    </div>
+                `).join('') + `</div>`;
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function fermerCoffreFort() {
+            document.getElementById('modal-coffre').classList.add('hidden');
+        }
+
+        function viderCoffre() {
+            coffrePhotos = {};
+            versoOuverts = {};
+            sauvegarderCoffre();
+            chargerChecklist();
+            ouvrirCoffreFort();
+        }
+
+        mettreAJourCompteurCoffre();
+        chargerChecklist();
+    </script>
 </body>
 </html>
+
 
 
 
