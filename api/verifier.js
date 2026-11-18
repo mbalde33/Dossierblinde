@@ -10,6 +10,13 @@ export default async function handler(req, res) {
         const geminiKey = process.env.GEMINI_API_KEY;
         const groqKey = process.env.GROQ_API_KEY;
 
+        if (!geminiKey && !groqKey) {
+            return res.status(200).json({ 
+                valide: false, 
+                message: "Clé API IA manquante sur Vercel." 
+            });
+        }
+
         if (!imageBase64 || !imageBase64.includes(',')) {
             return res.status(200).json({ 
                 valide: false, 
@@ -19,35 +26,36 @@ export default async function handler(req, res) {
 
         const base64Data = imageBase64.split(',')[1];
 
-        // Vérification minimale que l'image n'est pas vide/noire (moins de 3 Ko)
         if (base64Data.length < 4000) {
             return res.status(200).json({
                 valide: false,
-                message: "Image trop petite ou illisible, reprenez la photo."
+                message: "Image trop petite ou floue, rescannez le document."
             });
         }
 
-        const prompt = `Tu es un contrôleur administratif français pragmatique.
-Date : 18 novembre 2026 (les documents datés de fin 2026 sont récents et valides).
+        const prompt = `Tu es un contrôleur administratif français strict mais juste.
+Date du jour : 18 novembre 2026 (les documents datés de fin 2026 sont récents et valides).
 Document attendu : "${documentAttendu}".
 
-Réponds UNIQUEMENT en JSON : {"valide": true, "message": "Verdict court en français (max 10 mots)"}
+Analyse attentivement l'image et réponds UNIQUEMENT par un objet JSON valide :
+{"valide": true, "message": "Explication courte en français (max 12 mots)"}
 
-Règles :
-1. Si le document correspond à "${documentAttendu}" et est lisible, mets "valide": true.
-2. Verso pièce d'identité : dès que la face arrière est visible et lisible, mets "valide": true.
-3. Justificatif de domicile, bulletin de salaire ou URSSAF : accepte tout document daté d'août, septembre, octobre ou novembre 2026.
-4. Mets "valide": false uniquement si mauvais document ou totalement illisible.`;
+Règles strictes :
+1. Vérifie d'abord la NATURE du document : s'il s'agit d'un objet, d'un selfie, d'un écran noir, ou d'un AUTRE document que "${documentAttendu}" (ex: une facture à la place d'une CNI, un recto à la place d'un verso, un RIB à la place d'un avis d'imposition), mets OBLIGATOIREMENT "valide": false et dis quel document tu vois réellement.
+2. Si c'est bien "${documentAttendu}" et que les informations clés sont lisibles, mets "valide": true.
+3. Pour un justificatif de domicile, bulletin de salaire ou relevé URSSAF : accepte tout document daté d'août, septembre, octobre ou novembre 2026.`;
 
-        // 1. Essai rapide sur Google Gemini (si clé présente)
+        let derniereErreur = "Serveurs IA occupés";
+
+        // 1. Google Gemini (modèles stables avec 18s de délai)
         if (geminiKey) {
-            const modeles = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+            const modeles = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
             for (const modele of modeles) {
                 try {
                     const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent?key=${geminiKey}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
-                        signal: AbortSignal.timeout(6000),
+                        signal: AbortSignal.timeout(18000),
                         body: JSON.stringify({
                             contents: [{
                                 parts: [
@@ -56,7 +64,7 @@ Règles :
                                 ]
                             }],
                             generationConfig: {
-                                maxOutputTokens: 100,
+                                maxOutputTokens: 120,
                                 temperature: 0.1
                             }
                         })
@@ -73,14 +81,16 @@ Règles :
                                 message: resultat.message || (resultat.valide ? "Document conforme." : "Document non conforme.")
                             });
                         }
+                    } else {
+                        derniereErreur = data?.error?.message || `Erreur HTTP ${response.status}`;
                     }
                 } catch (e) {
-                    // Passe au suivant silencieusement
+                    derniereErreur = e.name === 'TimeoutError' ? "Délai IA dépassé" : e.message;
                 }
             }
         }
 
-        // 2. Bascule sur Groq Vision si GROQ_API_KEY est configurée sur Vercel
+        // 2. Bascule sur Groq Vision si configuré
         if (groqKey) {
             try {
                 const groqResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
@@ -89,11 +99,11 @@ Règles :
                         'Authorization': `Bearer ${groqKey}`,
                         'Content-Type': 'application/json'
                     },
-                    signal: AbortSignal.timeout(8000),
+                    signal: AbortSignal.timeout(15000),
                     body: JSON.stringify({
                         model: 'llama-3.2-11b-vision-preview',
                         temperature: 0.1,
-                        max_tokens: 100,
+                        max_tokens: 120,
                         messages: [{
                             role: 'user',
                             content: [
@@ -115,23 +125,24 @@ Règles :
                     });
                 }
             } catch (e) {
-                // Passe au secours local
+                derniereErreur = e.message;
             }
         }
 
-        // 3. Secours anti-blocage : si les serveurs externes sont saturés, on valide le document lisible pour ne jamais bloquer le client
+        // Aucun secours aveugle : on refuse tant que l'IA n'a pas pu vérifier le document
         return res.status(200).json({
-            valide: true,
-            message: "Document lisible et enregistré dans votre dossier."
+            valide: false,
+            message: `Vérification IA impossible (${derniereErreur}). Appuyez sur Rescanner.`
         });
 
     } catch (error) {
         return res.status(200).json({ 
-            valide: true, 
-            message: "Document enregistré (contrôle rapide)." 
+            valide: false, 
+            message: `Erreur technique : ${error.message}` 
         });
     }
 }
+
 
 
 
