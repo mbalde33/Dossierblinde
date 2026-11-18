@@ -173,44 +173,54 @@
     </div>
 
     <script>
+        const TYPES_PIECE_IDENTITE = {
+            cni: { label: "Carte Nationale d'Identité (CNI)", rectoVerso: true },
+            passeport: { label: "Passeport", rectoVerso: false },
+            titre_sejour: { label: "Titre de séjour / Carte de résident", rectoVerso: true }
+        };
+
         const REFERENTIEL_DOSSIERS = {
             loc_indep: [
-                { id: "cni", titre: "Pièce d'identité (Recto / Verso)", info: "CNI, Passeport ou Titre de séjour en cours de validité", rectoVerso: true },
-                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture d'eau, d'électricité, internet ou quittance de loyer", rectoVerso: false },
-                { id: "urssaf", titre: "Attestation de vigilance / Revenus URSSAF", info: "Relevés de chiffre d'affaires des 3 derniers mois", rectoVerso: false },
-                { id: "impots", titre: "Dernier avis d'imposition", info: "Avis d'impôt sur le revenu complet de l'année N-1", rectoVerso: false }
+                { id: "cni", titre: "Pièce d'identité", info: "Choisissez votre document d'identité en cours de validité", estIdentite: true },
+                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture d'eau, d'électricité, internet ou quittance de loyer", estIdentite: false },
+                { id: "urssaf", titre: "Attestation de vigilance / Revenus URSSAF", info: "Relevés de chiffre d'affaires des 3 derniers mois", estIdentite: false },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Avis d'impôt sur le revenu complet de l'année N-1", estIdentite: false }
             ],
             loc_salarie: [
-                { id: "cni", titre: "Pièce d'identité (Recto / Verso)", info: "CNI ou Passeport lisible et non expiré", rectoVerso: true },
-                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture énergie, téléphone fixe ou attestation d'hébergement", rectoVerso: false },
-                { id: "paie", titre: "3 derniers bulletins de salaire", info: "Les 3 mois consécutifs précédant la demande", rectoVerso: false },
-                { id: "contrat", titre: "Contrat de travail ou attestation employeur", info: "Signé et daté (précisant CDI ou durée du CDD)", rectoVerso: false },
-                { id: "impots", titre: "Dernier avis d'imposition", info: "Avis d'impôt sur le revenu complet", rectoVerso: false }
+                { id: "cni", titre: "Pièce d'identité", info: "Choisissez votre document d'identité lisible et non expiré", estIdentite: true },
+                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture énergie, téléphone fixe ou attestation d'hébergement", estIdentite: false },
+                { id: "paie", titre: "3 derniers bulletins de salaire", info: "Les 3 mois consécutifs précédant la demande", estIdentite: false },
+                { id: "contrat", titre: "Contrat de travail ou attestation employeur", info: "Signé et daté (précisant CDI ou durée du CDD)", estIdentite: false },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Avis d'impôt sur le revenu complet", estIdentite: false }
             ],
             loc_etudiant: [
-                { id: "cni", titre: "Pièce d'identité de l'étudiant (Recto / Verso)", info: "CNI ou Passeport en cours de validité", rectoVerso: true },
-                { id: "etudiant", titre: "Carte étudiante ou certificat de scolarité", info: "Pour l'année universitaire en cours", rectoVerso: false },
-                { id: "garant_cni", titre: "Pièce d'identité du Garant (Recto / Verso)", info: "Obligatoire si vous n'utilisez pas la garantie Visale", rectoVerso: true },
-                { id: "garant_rev", titre: "Justificatifs de revenus du Garant", info: "3 dernières fiches de paie + dernier avis d'imposition du garant", rectoVerso: false }
+                { id: "cni", titre: "Pièce d'identité de l'étudiant", info: "Choisissez le document d'identité de l'étudiant", estIdentite: true },
+                { id: "etudiant", titre: "Carte étudiante ou certificat de scolarité", info: "Pour l'année universitaire en cours", estIdentite: false },
+                { id: "garant_cni", titre: "Pièce d'identité du Garant", info: "Obligatoire si vous n'utilisez pas la garantie Visale", estIdentite: true },
+                { id: "garant_rev", titre: "Justificatifs de revenus du Garant", info: "3 dernières fiches de paie + dernier avis d'imposition du garant", estIdentite: false }
             ],
             aide_pub: [
-                { id: "cni", titre: "Pièce d'identité du demandeur (Recto / Verso)", info: "Carte d'identité, passeport ou titre de séjour", rectoVerso: true },
-                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "Avec IBAN et BIC lisibles au nom du demandeur", rectoVerso: false },
-                { id: "impots", titre: "Dernier avis d'imposition", info: "Permet de vérifier le revenu fiscal de référence", rectoVerso: false },
-                { id: "justif_projet", titre: "Devis ou facture justificative", info: "Document daté détaillant le besoin de l'aide", rectoVerso: false }
+                { id: "cni", titre: "Pièce d'identité du demandeur", info: "Choisissez votre document d'identité en cours de validité", estIdentite: true },
+                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "Avec IBAN et BIC lisibles au nom du demandeur", estIdentite: false },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Permet de vérifier le revenu fiscal de référence", estIdentite: false },
+                { id: "justif_projet", titre: "Devis ou facture justificative", info: "Document daté détaillant le besoin de l'aide", estIdentite: false }
             ]
         };
 
         let coffrePhotos = {};
+        let choixIdentite = {};
         try {
             coffrePhotos = JSON.parse(localStorage.getItem('dossierBlinde_coffre_local') || '{}');
+            choixIdentite = JSON.parse(localStorage.getItem('dossierBlinde_choix_id') || '{}');
         } catch (e) {
             coffrePhotos = {};
+            choixIdentite = {};
         }
 
         function sauvegarderCoffre() {
             try {
                 localStorage.setItem('dossierBlinde_coffre_local', JSON.stringify(coffrePhotos));
+                localStorage.setItem('dossierBlinde_choix_id', JSON.stringify(choixIdentite));
                 mettreAJourCompteurCoffre();
             } catch (err) {
                 alert("Mémoire locale pleine. Supprimez d'anciennes photos dans 'Mon Coffre Privé'.");
@@ -223,6 +233,16 @@
             if (el) el.textContent = nb;
         }
 
+        function changerTypeIdentite(itemId, nouveauType) {
+            choixIdentite[itemId] = nouveauType;
+            // Si on passe sur passeport, on supprime un eventuel verso precedent
+            if (!TYPES_PIECE_IDENTITE[nouveauType].rectoVerso) {
+                delete coffrePhotos[itemId + '_verso'];
+            }
+            sauvegarderCoffre();
+            chargerChecklist();
+        }
+
         function chargerChecklist() {
             const type = document.getElementById('select-dossier').value;
             const liste = REFERENTIEL_DOSSIERS[type] || [];
@@ -231,34 +251,73 @@
             let valides = 0;
 
             container.innerHTML = liste.map(function(item) {
-                if (item.rectoVerso) {
-                    const docRecto = coffrePhotos[item.id + '_recto'];
-                    const docVerso = coffrePhotos[item.id + '_verso'];
-                    const rectoValide = docRecto && docRecto.statut === 'valide';
-                    const versoValide = docVerso && docVerso.statut === 'valide';
-                    const toutValide = rectoValide && versoValide;
-                    if (toutValide) valides++;
+                if (item.estIdentite) {
+                    const typeChoisi = choixIdentite[item.id] || 'cni';
+                    const configId = TYPES_PIECE_IDENTITE[typeChoisi] || TYPES_PIECE_IDENTITE.cni;
 
-                    let iconeStatut = '<i class="fa-regular fa-circle text-slate-300 text-xl"></i>';
-                    if (toutValide) {
-                        iconeStatut = '<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>';
-                    } else if ((docRecto && !rectoValide) || (docVerso && !versoValide)) {
-                        iconeStatut = '<i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>';
-                    }
-
-                    return '<div class="p-5 sm:p-6 flex flex-col gap-4 hover:bg-slate-50/70 transition" id="row-' + item.id + '">' +
-                        '<div class="flex items-start space-x-3.5">' +
-                            '<div class="mt-1">' + iconeStatut + '</div>' +
-                            '<div>' +
-                                '<h3 class="font-bold text-slate-900 text-sm sm:text-base">' + item.titre + '</h3>' +
-                                '<p class="text-xs text-slate-500 mt-0.5">' + item.info + '</p>' +
-                            '</div>' +
-                        '</div>' +
-                        '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-0 sm:pl-8">' +
-                            renderBlocFace(item.id + '_recto', item.titre + ' - FACE RECTO', 'Recto (Face avant)', docRecto, rectoValide) +
-                            renderBlocFace(item.id + '_verso', item.titre + ' - FACE VERSO', 'Verso (Face arrière)', docVerso, versoValide) +
-                        '</div>' +
+                    const selecteurHtml = '<div class="mt-2.5 max-w-xs">' +
+                        '<select onchange="changerTypeIdentite(\'' + item.id + '\', this.value)" class="w-full bg-slate-50 border border-slate-300 focus:border-blue-900 text-slate-900 text-xs font-bold rounded-lg px-3 py-2 outline-none transition">' +
+                            '<option value="cni"' + (typeChoisi === 'cni' ? ' selected' : '') + '>Carte Nationale d\'Identité (Recto / Verso)</option>' +
+                            '<option value="passeport"' + (typeChoisi === 'passeport' ? ' selected' : '') + '>Passeport (Page identité)</option>' +
+                            '<option value="titre_sejour"' + (typeChoisi === 'titre_sejour' ? ' selected' : '') + '>Titre de séjour (Recto / Verso)</option>' +
+                        '</select>' +
                     '</div>';
+
+                    if (configId.rectoVerso) {
+                        const docRecto = coffrePhotos[item.id + '_recto'];
+                        const docVerso = coffrePhotos[item.id + '_verso'];
+                        const rectoValide = docRecto && docRecto.statut === 'valide';
+                        const versoValide = docVerso && docVerso.statut === 'valide';
+                        const toutValide = rectoValide && versoValide;
+                        if (toutValide) valides++;
+
+                        let iconeStatut = '<i class="fa-regular fa-circle text-slate-300 text-xl"></i>';
+                        if (toutValide) {
+                            iconeStatut = '<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>';
+                        } else if ((docRecto && !rectoValide) || (docVerso && !versoValide)) {
+                            iconeStatut = '<i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>';
+                        }
+
+                        return '<div class="p-5 sm:p-6 flex flex-col gap-4 hover:bg-slate-50/70 transition" id="row-' + item.id + '">' +
+                            '<div class="flex items-start space-x-3.5">' +
+                                '<div class="mt-1">' + iconeStatut + '</div>' +
+                                '<div class="flex-1">' +
+                                    '<h3 class="font-bold text-slate-900 text-sm sm:text-base">' + item.titre + '</h3>' +
+                                    '<p class="text-xs text-slate-500 mt-0.5">' + item.info + '</p>' +
+                                    selecteurHtml +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-0 sm:pl-8">' +
+                                renderBlocFace(item.id + '_recto', configId.label + ' - FACE RECTO', 'Recto (Face avant)', docRecto, rectoValide) +
+                                renderBlocFace(item.id + '_verso', configId.label + ' - FACE VERSO', 'Verso (Face arrière)', docVerso, versoValide) +
+                            '</div>' +
+                        '</div>';
+                    } else {
+                        const docPasseport = coffrePhotos[item.id + '_recto'];
+                        const estValide = docPasseport && docPasseport.statut === 'valide';
+                        if (estValide) valides++;
+
+                        let iconeStatut = '<i class="fa-regular fa-circle text-slate-300 text-xl"></i>';
+                        if (docPasseport) {
+                            iconeStatut = estValide
+                                ? '<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>'
+                                : '<i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>';
+                        }
+
+                        return '<div class="p-5 sm:p-6 flex flex-col gap-4 hover:bg-slate-50/70 transition" id="row-' + item.id + '">' +
+                            '<div class="flex items-start space-x-3.5">' +
+                                '<div class="mt-1">' + iconeStatut + '</div>' +
+                                '<div class="flex-1">' +
+                                    '<h3 class="font-bold text-slate-900 text-sm sm:text-base">' + item.titre + '</h3>' +
+                                    '<p class="text-xs text-slate-500 mt-0.5">' + item.info + '</p>' +
+                                    selecteurHtml +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="pl-0 sm:pl-8">' +
+                                renderBlocFace(item.id + '_recto', configId.label + ' (Page principale avec photo)', 'Page identité du Passeport', docPasseport, estValide) +
+                            '</div>' +
+                        '</div>';
+                    }
                 } else {
                     const docSauvegarde = coffrePhotos[item.id];
                     const estValide = docSauvegarde && docSauvegarde.statut === 'valide';
@@ -429,11 +488,15 @@
 
             const docsValides = [];
             liste.forEach(function(item) {
-                if (item.rectoVerso) {
+                if (item.estIdentite) {
+                    const typeChoisi = choixIdentite[item.id] || 'cni';
+                    const configId = TYPES_PIECE_IDENTITE[typeChoisi] || TYPES_PIECE_IDENTITE.cni;
                     const r = coffrePhotos[item.id + '_recto'];
-                    const v = coffrePhotos[item.id + '_verso'];
                     if (r && r.statut === 'valide') docsValides.push(r);
-                    if (v && v.statut === 'valide') docsValides.push(v);
+                    if (configId.rectoVerso) {
+                        const v = coffrePhotos[item.id + '_verso'];
+                        if (v && v.statut === 'valide') docsValides.push(v);
+                    }
                 } else {
                     const d = coffrePhotos[item.id];
                     if (d && d.statut === 'valide') docsValides.push(d);
@@ -495,6 +558,7 @@
 
         function viderCoffre() {
             coffrePhotos = {};
+            choixIdentite = {};
             sauvegarderCoffre();
             chargerChecklist();
             ouvrirCoffreFort();
@@ -505,6 +569,8 @@
     </script>
 </body>
 </html>
+
+
 
 
 
