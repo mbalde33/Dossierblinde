@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DossierBlindé — Coffre Privé & Vérificateur IA Sans Stockage</title>
+    <title>DossierBlindé — Scanner Pro, Coffre Privé & Vérificateur IA</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -14,6 +14,7 @@
             body * { visibility: hidden; }
             #zone-impression-pdf, #zone-impression-pdf * { visibility: visible; }
             #zone-impression-pdf { position: absolute; left: 0; top: 0; width: 100%; }
+            .page-a4-scan { page-break-inside: avoid; break-inside: avoid; }
         }
     </style>
 </head>
@@ -40,20 +41,20 @@
     <!-- Bandeau Garantie Confidentialite Zero-Acces -->
     <div class="bg-emerald-950 text-emerald-100 text-xs py-2.5 px-4 text-center font-medium">
         <i class="fa-solid fa-user-shield text-emerald-400 mr-1.5"></i>
-        <strong>100 % Confidentiel :</strong> Vos photos restent exclusivement dans la mémoire de votre appareil. Nous n'avons aucun accès à vos documents ni à vos coordonnées.
+        <strong>100 % Confidentiel :</strong> Vos photos sont numérisées, nettoyées et stockées exclusivement dans la mémoire de votre appareil.
     </div>
 
     <!-- Hero compact -->
     <header class="bg-white border-b border-slate-200 pt-10 pb-12 px-4">
         <div class="max-w-3xl mx-auto text-center">
             <span class="inline-block bg-blue-50 border border-blue-200 text-blue-900 text-xs font-bold px-3 py-1 rounded-full mb-4">
-                Architecture Zéro-Accès • Sans Inscription • Sans Collecte de Données
+                Scanner Haute Netteté • Vérification IA • Architecture Zéro-Accès
             </span>
             <h1 class="text-3xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-4">
-                Scannez ou importez vos papiers, <span class="text-blue-900">l'IA vérifie et filigrane tout en local.</span>
+                Prenez vos papiers en photo, <span class="text-blue-900">l'application les scanne, vérifie et filigrane en local.</span>
             </h1>
             <p class="text-sm sm:text-base text-slate-600 max-w-xl mx-auto">
-                Sélectionnez votre démarche, prenez vos justificatifs en photo ou choisissez-les dans votre galerie pour récupérer votre dossier protégé prêt à envoyer.
+                Chaque photo est automatiquement traitée en qualité scanner haute netteté, contrôlée par l'IA et protégée par un filigrane anti-usurpation.
             </p>
         </div>
     </header>
@@ -78,8 +79,8 @@
         <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden mb-8">
             <div class="bg-blue-950 text-white px-6 py-4 flex items-center justify-between">
                 <div>
-                    <h2 class="font-bold text-base sm:text-lg">Étape 2 : Papiers à fournir & Vérifier</h2>
-                    <p class="text-blue-200 text-xs">Appareil photo ou galerie • Stockés uniquement sur votre téléphone</p>
+                    <h2 class="font-bold text-base sm:text-lg">Étape 2 : Numériser & Vérifier vos pièces</h2>
+                    <p class="text-blue-200 text-xs">Traitement Scanner Haute Netteté automatique • 100 % local</p>
                 </div>
                 <div class="text-right">
                     <span id="progression-texte" class="text-sm font-extrabold text-emerald-400">0 / 4 validés</span>
@@ -100,11 +101,11 @@
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-6">
                 <div>
                     <span class="inline-block bg-emerald-500/20 text-emerald-300 text-xs font-bold px-2.5 py-1 rounded mb-2">
-                        ÉTAPE 3 • GÉNÉRATION DIRECTE SUR VOTRE APPAREIL
+                        ÉTAPE 3 • ASSEMBLAGE A4 & FILIGRANE SUR VOTRE APPAREIL
                     </span>
-                    <h3 class="text-xl font-bold mb-2">Télécharger mon Dossier Blindé Filigrané</h3>
+                    <h3 class="text-xl font-bold mb-2">Télécharger mon Dossier Blindé Scanné</h3>
                     <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
-                        Aucune adresse e-mail ni numéro demandé. Votre appareil assemble vos photos, applique le filigrane anti-usurpation et génère le document final instantanément.
+                        Aucune adresse e-mail ni numéro demandé. Votre téléphone assemble vos scans haute netteté au format A4 avec le filigrane anti-usurpation.
                     </p>
                 </div>
                 <div class="shrink-0 w-full sm:w-auto">
@@ -119,7 +120,7 @@
             <div id="apercu-dossier-final" class="hidden mt-8 pt-6 border-t border-slate-700">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                     <p class="text-sm font-bold text-emerald-400">
-                        <i class="fa-solid fa-circle-check mr-1.5"></i>Votre Dossier Blindé est prêt (généré 100 % en local) :
+                        <i class="fa-solid fa-circle-check mr-1.5"></i>Votre Dossier Blindé est prêt (numérisé et assemblé en local) :
                     </p>
                     <button onclick="window.print()" class="bg-white hover:bg-slate-100 text-slate-950 font-extrabold text-xs px-4 py-2.5 rounded-lg transition shadow">
                         <i class="fa-solid fa-download mr-1.5"></i>Enregistrer en PDF / Imprimer
@@ -130,15 +131,15 @@
                 <div id="zone-impression-pdf" class="bg-white text-slate-900 rounded-xl p-6 sm:p-8 space-y-6">
                     <div class="border-b-2 border-blue-900 pb-4 flex justify-between items-center">
                         <div>
-                            <h4 class="text-xl font-extrabold text-blue-950">DOSSIER ADMINISTRATIF VÉRIFIÉ</h4>
+                            <h4 class="text-xl font-extrabold text-blue-950">DOSSIER ADMINISTRATIF NUMÉRISÉ & VÉRIFIÉ</h4>
                             <p id="titre-dossier-pdf" class="text-xs font-semibold text-slate-500 uppercase mt-1"></p>
                         </div>
                         <span class="bg-emerald-100 text-emerald-900 text-xs font-bold px-3 py-1 rounded-full border border-emerald-300">
-                            PIÈCES CONTRÔLÉES
+                            SCAN CERTIFIÉ LOCAL
                         </span>
                     </div>
 
-                    <div id="liste-pages-filigranees" class="space-y-6"></div>
+                    <div id="liste-pages-filigranees" class="space-y-8"></div>
                 </div>
             </div>
         </div>
@@ -152,7 +153,7 @@
                 <div>
                     <h3 class="font-bold text-lg flex items-center gap-2">
                         <i class="fa-solid fa-mobile-screen-button text-emerald-400"></i>
-                        Mon Coffre Privé (Local)
+                        Mon Coffre Privé (Scans Locaux)
                     </h3>
                     <p class="text-[11px] text-blue-200">Stocké uniquement sur cet appareil — Invisible pour l'éditeur du site</p>
                 </div>
@@ -163,7 +164,7 @@
             <div id="contenu-coffre" class="p-6 overflow-y-auto space-y-4"></div>
             <div class="bg-slate-100 px-6 py-3 flex justify-between items-center border-t border-slate-200">
                 <button onclick="viderCoffre()" class="text-xs text-red-600 hover:underline font-semibold">
-                    <i class="fa-solid fa-trash mr-1"></i>Supprimer toutes mes photos de cet appareil
+                    <i class="fa-solid fa-trash mr-1"></i>Supprimer tous mes scans de cet appareil
                 </button>
                 <button onclick="fermerCoffreFort()" class="bg-blue-900 text-white text-xs font-bold px-4 py-2 rounded-lg">
                     Fermer
@@ -229,7 +230,7 @@
                 localStorage.setItem('dossierBlinde_mode_domicile', modeDomicile);
                 mettreAJourCompteurCoffre();
             } catch (err) {
-                alert("Mémoire locale pleine. Supprimez d'anciennes photos dans 'Mon Coffre Privé'.");
+                alert("Mémoire locale pleine. Supprimez d'anciens scans dans 'Mon Coffre Privé'.");
             }
         }
 
@@ -273,7 +274,6 @@
             let valides = 0;
 
             container.innerHTML = liste.map(function(item) {
-                // CAS 1 : PIECE D'IDENTITE (DEMANDEUR OU GARANT)
                 if (item.typeSpecifique === 'identite') {
                     const typeChoisi = choixIdentite[item.id] || 'cni';
                     const configId = TYPES_PIECE_IDENTITE[typeChoisi] || TYPES_PIECE_IDENTITE.cni;
@@ -304,8 +304,8 @@
                                 '</div>' +
                             '</div>' +
                             '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-0 sm:pl-8">' +
-                                renderBlocFace(item.id + '_recto', configId.label + ' - FACE RECTO', 'Recto (Face avant)', docRecto, rectoValide) +
-                                renderBlocFace(item.id + '_verso', configId.label + ' - FACE VERSO', 'Verso (Face arrière)', docVerso, versoValide) +
+                                renderBlocFace(item.id + '_recto', configId.label + ' - FACE RECTO', 'Recto (Face avant)', docRecto, rectoValide, true) +
+                                renderBlocFace(item.id + '_verso', configId.label + ' - FACE VERSO', 'Verso (Face arrière)', docVerso, versoValide, true) +
                             '</div>' +
                         '</div>';
                     } else {
@@ -330,13 +330,12 @@
                                 '</div>' +
                             '</div>' +
                             '<div class="pl-0 sm:pl-8">' +
-                                renderBlocFace(item.id + '_recto', configId.label + ' (Page principale avec photo)', 'Page identité du Passeport', docPasseport, estValide) +
+                                renderBlocFace(item.id + '_recto', configId.label + ' (Page principale avec photo)', 'Page identité du Passeport', docPasseport, estValide, true) +
                             '</div>' +
                         '</div>';
                     }
                 }
 
-                // CAS 2 : JUSTIFICATIF DE DOMICILE (DIRECT OU HEBERGE)
                 if (item.typeSpecifique === 'domicile') {
                     const docDom = coffrePhotos['domicile'];
                     const okDom = docDom && docDom.statut === 'valide';
@@ -368,7 +367,7 @@
                                 '</div>' +
                             '</div>' +
                             '<div class="pl-0 sm:pl-8">' +
-                                renderBlocFace('domicile', 'Justificatif de domicile (- de 3 mois)', 'Facture ou quittance (- de 3 mois)', docDom, okDom) +
+                                renderBlocFace('domicile', 'Justificatif de domicile (- de 3 mois)', 'Facture ou quittance (- de 3 mois)', docDom, okDom, false) +
                             '</div>' +
                         '</div>';
                     } else {
@@ -397,11 +396,11 @@
 
                         const blocsIdentiteLogeur = configLogeur.rectoVerso
                             ? '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2.5">' +
-                                renderBlocFace('heb_cni_recto', configLogeur.label + ' de l\'hébergeur - FACE RECTO', 'Recto (Face avant)', docIdRecto, okIdR) +
-                                renderBlocFace('heb_cni_verso', configLogeur.label + ' de l\'hébergeur - FACE VERSO', 'Verso (Face arrière)', docIdVerso, okIdV) +
+                                renderBlocFace('heb_cni_recto', configLogeur.label + ' de l\'hébergeur - FACE RECTO', 'Recto (Face avant)', docIdRecto, okIdR, true) +
+                                renderBlocFace('heb_cni_verso', configLogeur.label + ' de l\'hébergeur - FACE VERSO', 'Verso (Face arrière)', docIdVerso, okIdV, true) +
                               '</div>'
                             : '<div class="mt-2.5">' +
-                                renderBlocFace('heb_cni_recto', configLogeur.label + ' de l\'hébergeur (Page identité)', 'Page identité du Passeport', docIdRecto, okIdR) +
+                                renderBlocFace('heb_cni_recto', configLogeur.label + ' de l\'hébergeur (Page identité)', 'Page identité du Passeport', docIdRecto, okIdR, true) +
                               '</div>';
 
                         return '<div class="p-5 sm:p-6 flex flex-col gap-4 hover:bg-slate-50/70 transition" id="row-domicile">' +
@@ -414,8 +413,8 @@
                                 '</div>' +
                             '</div>' +
                             '<div class="space-y-3 pl-0 sm:pl-8">' +
-                                renderBlocFace('domicile', 'Justificatif de domicile de l\'hébergeur (- de 3 mois)', '1. Facture / Quittance de l\'hébergeur (- de 3 mois)', docDom, okDom) +
-                                renderBlocFace('heb_attestation', 'Attestation d\'hébergement datée et signée par l\'hébergeur', '2. Attestation d\'hébergement signée (- de 3 mois)', docAttest, okAttest) +
+                                renderBlocFace('domicile', 'Justificatif de domicile de l\'hébergeur (- de 3 mois)', '1. Facture / Quittance de l\'hébergeur (- de 3 mois)', docDom, okDom, false) +
+                                renderBlocFace('heb_attestation', 'Attestation d\'hébergement datée et signée par l\'hébergeur', '2. Attestation d\'hébergement signée (- de 3 mois)', docAttest, okAttest, false) +
                                 '<div class="border border-slate-200 bg-slate-100/70 rounded-xl p-3.5">' +
                                     '<p class="text-xs font-extrabold text-slate-800">3. Pièce d\'identité de l\'hébergeur</p>' +
                                     selectLogeurHtml +
@@ -426,7 +425,6 @@
                     }
                 }
 
-                // CAS 3 : AUTRES DOCUMENTS CLASSIQUES
                 const docSauvegarde = coffrePhotos[item.id];
                 const estValide = docSauvegarde && docSauvegarde.statut === 'valide';
                 if (estValide) valides++;
@@ -439,7 +437,7 @@
                 }
 
                 const btnCouleur = (docSauvegarde && !estValide) ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-900 hover:bg-blue-800';
-                const btnLabel = docSauvegarde ? 'Refaire' : 'Photo / Galerie';
+                const btnLabel = docSauvegarde ? 'Rescanner' : 'Scanner / Galerie';
                 const miniature = docSauvegarde
                     ? '<img src="' + docSauvegarde.image + '" alt="Aperçu" class="w-12 h-12 object-cover rounded-lg border border-slate-300 shadow-sm cursor-pointer" onclick="ouvrirCoffreFort()">'
                     : '';
@@ -457,9 +455,9 @@
                     '<div class="flex items-center space-x-2 shrink-0 self-end sm:self-center">' +
                         miniature +
                         '<label class="cursor-pointer ' + btnCouleur + ' text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">' +
-                            '<i class="fa-solid fa-camera"></i>' +
+                            '<i class="fa-solid fa-expand"></i>' +
                             '<span>' + btnLabel + '</span>' +
-                            '<input type="file" accept="image/*" class="hidden" data-cle="' + item.id + '" data-titre="' + item.titre.replace(/"/g, '&quot;') + '" onchange="capturerDepuisInput(this)">' +
+                            '<input type="file" accept="image/*" class="hidden" data-cle="' + item.id + '" data-titre="' + item.titre.replace(/"/g, '&quot;') + '" data-couleur="false" onchange="capturerDepuisInput(this)">' +
                         '</label>' +
                     '</div>' +
                 '</div>';
@@ -470,10 +468,10 @@
             document.getElementById('barre-progression').style.width = pct + '%';
         }
 
-        function renderBlocFace(cleId, titreIA, labelFace, docFace, estValide) {
+        function renderBlocFace(cleId, titreIA, labelFace, docFace, estValide, garderCouleur) {
             const bordure = docFace ? (estValide ? 'border-emerald-200 bg-emerald-50/30' : 'border-red-200 bg-red-50/30') : 'border-slate-200 bg-white';
             const btnCouleur = (docFace && !estValide) ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-900 hover:bg-blue-800';
-            const btnLabel = docFace ? 'Refaire' : 'Ajouter';
+            const btnLabel = docFace ? 'Rescanner' : 'Scanner';
             const miniature = docFace
                 ? '<img src="' + docFace.image + '" class="w-9 h-9 object-cover rounded border border-slate-300 cursor-pointer" onclick="ouvrirCoffreFort()">'
                 : '';
@@ -485,9 +483,9 @@
                     '<div class="flex items-center gap-2">' +
                         miniature +
                         '<label class="cursor-pointer ' + btnCouleur + ' text-white text-[11px] font-bold px-3 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm">' +
-                            '<i class="fa-solid fa-camera"></i>' +
+                            '<i class="fa-solid fa-expand"></i>' +
                             '<span>' + btnLabel + '</span>' +
-                            '<input type="file" accept="image/*" class="hidden" data-cle="' + cleId + '" data-titre="' + titreIA.replace(/"/g, '&quot;') + '" onchange="capturerDepuisInput(this)">' +
+                            '<input type="file" accept="image/*" class="hidden" data-cle="' + cleId + '" data-titre="' + titreIA.replace(/"/g, '&quot;') + '" data-couleur="' + (garderCouleur ? 'true' : 'false') + '" onchange="capturerDepuisInput(this)">' +
                         '</label>' +
                     '</div>' +
                 '</div>' +
@@ -496,7 +494,7 @@
         }
 
         function renderBadgeIA(doc) {
-            const msg = doc.messageIA || (doc.statut === 'valide' ? 'Document conforme' : 'Refusé, reprenez la photo');
+            const msg = doc.messageIA || (doc.statut === 'valide' ? 'Scan conforme' : 'Refusé, rescannez');
             if (doc.statut === 'valide') {
                 return '<span class="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold px-2.5 py-1 rounded-md">' +
                     '<i class="fa-solid fa-check-circle text-emerald-600 shrink-0"></i> <span>' + msg + '</span>' +
@@ -508,31 +506,76 @@
             }
         }
 
-        function compresserImage(file, callback) {
+        // MOTEUR SCANNER PRO LOCAL (Blanchiment fond papier + Contraste encre + Nettete)
+        function appliquerTraitementScannerPro(ctx, width, height, garderCouleur) {
+            const imgData = ctx.getImageData(0, 0, width, height);
+            const data = imgData.data;
+
+            for (let i = 0; i < data.length; i += 4) {
+                const r = data[i];
+                const g = data[i + 1];
+                const b = data[i + 2];
+
+                if (garderCouleur) {
+                    // Mode Piece d'identite : ravive les couleurs et eclaircit le fond sans denaturer la photo
+                    const facteur = 1.18;
+                    data[i]     = Math.min(255, Math.max(0, (r - 128) * facteur + 138));
+                    data[i + 1] = Math.min(255, Math.max(0, (g - 128) * facteur + 138));
+                    data[i + 2] = Math.min(255, Math.max(0, (b - 128) * facteur + 138));
+                } else {
+                    // Mode Document papier (facture, attestation, fiche de paie) : effet CamScanner blanc pur + texte noir net
+                    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+                    let val;
+                    if (lum > 168) {
+                        // Blanchit le fond gris ou jauni du papier
+                        val = 255;
+                    } else if (lum < 85) {
+                        // Noircit le texte et les tampons pour une lisibilite parfaite
+                        val = Math.max(0, lum * 0.65);
+                    } else {
+                        // Accentue la transition entre le fond et l'encre
+                        val = ((lum - 85) / (168 - 85)) * 255;
+                    }
+                    data[i] = val;
+                    data[i + 1] = val;
+                    data[i + 2] = val;
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+        }
+
+        function compresserEtScannerImage(file, garderCouleur, callback) {
             const reader = new FileReader();
             reader.onload = function(event) {
                 const img = new Image();
                 img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const maxDim = 900;
-                    let width = img.width;
-                    let height = img.height;
+                    // 1. Version Scan Haute Nettete (~200 Ko) gardee en local pour le PDF final
+                    const canvasHD = document.createElement('canvas');
+                    const maxHD = 1150;
+                    let wHD = img.width;
+                    let hHD = img.height;
+                    if (wHD > hHD && wHD > maxHD) { hHD *= maxHD / wHD; wHD = maxHD; }
+                    else if (hHD > maxHD) { wHD *= maxHD / hHD; hHD = maxHD; }
+                    canvasHD.width = Math.round(wHD);
+                    canvasHD.height = Math.round(hHD);
+                    const ctxHD = canvasHD.getContext('2d');
+                    ctxHD.drawImage(img, 0, 0, canvasHD.width, canvasHD.height);
+                    appliquerTraitementScannerPro(ctxHD, canvasHD.width, canvasHD.height, garderCouleur);
+                    const imageHD = canvasHD.toDataURL('image/jpeg', 0.74);
 
-                    if (width > height && width > maxDim) {
-                        height *= maxDim / width;
-                        width = maxDim;
-                    } else if (height > maxDim) {
-                        width *= maxDim / height;
-                        height = maxDim;
-                    }
+                    // 2. Version ultra-legere (~60 Ko) envoyee a l'IA pour verification instantanee
+                    const canvasIA = document.createElement('canvas');
+                    const maxIA = 650;
+                    let wIA = canvasHD.width;
+                    let hIA = canvasHD.height;
+                    if (wIA > hIA && wIA > maxIA) { hIA *= maxIA / wIA; wIA = maxIA; }
+                    else if (hIA > maxIA) { wIA *= maxIA / hIA; hIA = maxIA; }
+                    canvasIA.width = Math.round(wIA);
+                    canvasIA.height = Math.round(hIA);
+                    canvasIA.getContext('2d').drawImage(canvasHD, 0, 0, canvasIA.width, canvasIA.height);
+                    const imageIA = canvasIA.toDataURL('image/jpeg', 0.58);
 
-                    canvas.width = width;
-                    canvas.height = height;
-                    const ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, 0, 0, width, height);
-
-                    const dataUrl = canvas.toDataURL('image/jpeg', 0.65);
-                    callback(dataUrl);
+                    callback(imageHD, imageIA);
                 };
                 img.src = event.target.result;
             };
@@ -543,20 +586,21 @@
             if (!input.files || !input.files[0]) return;
             const id = input.getAttribute('data-cle');
             const titre = input.getAttribute('data-titre');
+            const garderCouleur = input.getAttribute('data-couleur') === 'true';
             const file = input.files[0];
             const statusEl = document.getElementById('status-' + id);
 
             if (statusEl) {
-                statusEl.innerHTML = '<span class="inline-flex items-center gap-1.5 text-blue-800 text-[11px] font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Analyse IA en cours...</span>';
+                statusEl.innerHTML = '<span class="inline-flex items-center gap-1.5 text-blue-800 text-[11px] font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Numérisation & contrôle IA...</span>';
             }
 
-            compresserImage(file, async function(imageLegere) {
+            compresserEtScannerImage(file, garderCouleur, async function(imageHD, imageIA) {
                 try {
                     const reponse = await fetch('/api/verifier', {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            imageBase64: imageLegere,
+                            imageBase64: imageIA,
                             documentAttendu: titre
                         })
                     });
@@ -570,16 +614,16 @@
                     coffrePhotos[id] = {
                         id: id,
                         titre: titre,
-                        image: imageLegere,
+                        image: imageHD,
                         dateAjout: new Date().toLocaleDateString('fr-FR'),
                         statut: resultat.valide ? 'valide' : 'refuse',
-                        messageIA: resultat.message || (resultat.valide ? 'Document conforme' : 'Document non conforme')
+                        messageIA: resultat.message || (resultat.valide ? 'Document numérisé et conforme' : 'Document non conforme')
                     };
                 } catch (err) {
                     coffrePhotos[id] = {
                         id: id,
                         titre: titre,
-                        image: imageLegere,
+                        image: imageHD,
                         dateAjout: new Date().toLocaleDateString('fr-FR'),
                         statut: 'refuse',
                         messageIA: "Erreur réseau (" + err.message + "). Réessayez."
@@ -631,18 +675,21 @@
             });
 
             if (docsValides.length === 0) {
-                alert("Scannez et faites valider au moins un document par l'IA avant de générer votre dossier.");
+                alert("Numérisez et faites valider au moins un document avant de générer votre dossier.");
                 return;
             }
 
-            document.getElementById('titre-dossier-pdf').textContent = nomDossier + " — Généré le " + new Date().toLocaleDateString('fr-FR');
+            document.getElementById('titre-dossier-pdf').textContent = nomDossier + " — Numérisé le " + new Date().toLocaleDateString('fr-FR');
             const containerPages = document.getElementById('liste-pages-filigranees');
 
-            containerPages.innerHTML = docsValides.map(function(doc) {
-                return '<div class="border border-slate-300 rounded-xl p-4 relative overflow-hidden">' +
-                    '<p class="text-xs font-extrabold uppercase text-blue-900 mb-2">' + doc.titre + '</p>' +
-                    '<div class="relative flex justify-center bg-slate-100 rounded-lg overflow-hidden">' +
-                        '<img src="' + doc.image + '" class="max-h-96 object-contain">' +
+            containerPages.innerHTML = docsValides.map(function(doc, index) {
+                return '<div class="page-a4-scan border-2 border-slate-300 rounded-xl p-5 bg-white shadow-sm relative overflow-hidden">' +
+                    '<div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-3">' +
+                        '<p class="text-xs font-extrabold uppercase text-blue-950">Pièce n°' + (index + 1) + ' — ' + doc.titre + '</p>' +
+                        '<span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">SCAN HAUTE NETTETÉ</span>' +
+                    '</div>' +
+                    '<div class="relative flex justify-center bg-white rounded-lg overflow-hidden p-2">' +
+                        '<img src="' + doc.image + '" class="max-h-[480px] object-contain shadow-sm">' +
                         '<div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none">' +
                             '<span class="text-red-600/35 font-extrabold text-lg sm:text-2xl uppercase tracking-widest -rotate-12 border-2 border-red-600/35 px-4 py-2 text-center">' +
                                 'DOCUMENT PROTÉGÉ • USAGE EXCLUSIF DÉMARCHE ADMINISTRATIVE • ' + doc.dateAjout +
@@ -662,16 +709,16 @@
             const docs = Object.values(coffrePhotos);
 
             if (docs.length === 0) {
-                contenu.innerHTML = '<p class="text-sm text-slate-500 text-center py-8">Votre coffre local est vide. Vos photos restent uniquement sur votre téléphone.</p>';
+                contenu.innerHTML = '<p class="text-sm text-slate-500 text-center py-8">Votre coffre local est vide. Vos scans restent uniquement sur votre téléphone.</p>';
             } else {
                 contenu.innerHTML = '<div class="grid sm:grid-cols-2 gap-4">' + docs.map(function(d) {
                     const couleur = d.statut === 'valide' ? 'text-emerald-700' : 'text-red-600';
                     const icone = d.statut === 'valide' ? 'fa-check-circle' : 'fa-triangle-exclamation';
                     return '<div class="border border-slate-200 rounded-xl p-3 bg-slate-50">' +
-                        '<img src="' + d.image + '" class="w-full h-40 object-cover rounded-lg mb-2 border border-slate-200">' +
+                        '<img src="' + d.image + '" class="w-full h-44 object-contain bg-white rounded-lg mb-2 border border-slate-200">' +
                         '<p class="font-bold text-xs text-slate-900">' + d.titre + '</p>' +
                         '<p class="text-[11px] ' + couleur + ' font-semibold mt-0.5">' +
-                            '<i class="fa-solid ' + icone + ' mr-1"></i>' + (d.messageIA || 'Stocké uniquement sur votre appareil') +
+                            '<i class="fa-solid ' + icone + ' mr-1"></i>' + (d.messageIA || 'Numérisé et stocké sur votre appareil') +
                         '</p>' +
                     '</div>';
                 }).join('') + '</div>';
@@ -697,6 +744,7 @@
     </script>
 </body>
 </html>
+
 
 
 
