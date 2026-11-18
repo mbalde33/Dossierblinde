@@ -37,30 +37,42 @@ Règles :
 3. Justificatif de domicile, bulletin de salaire ou URSSAF : accepte tout document daté d'août, septembre, octobre ou novembre 2026.
 4. Mets "valide": false uniquement si mauvais document ou totalement illisible.`;
 
-        const modeles = ['gemini-3.5-flash-lite', 'gemini-3.8-flash'];
+        const modeles = [
+            'gemini-2.5-flash-lite',
+            'gemini-2.5-flash',
+            'gemini-3.5-flash-lite',
+            'gemini-2.0-flash',
+            'gemini-3.8-flash'
+        ];
+
         let texteBrut = "";
         let succes = false;
         let derniereErreur = "";
 
         for (const modele of modeles) {
             try {
+                const bodyPayload = {
+                    contents: [{
+                        parts: [
+                            { text: prompt },
+                            { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
+                        ]
+                    }],
+                    generationConfig: {
+                        maxOutputTokens: 100,
+                        temperature: 0.1
+                    }
+                };
+
+                if (!modele.startsWith('gemini-2.0')) {
+                    bodyPayload.generationConfig.thinkingConfig = { thinkingBudget: 0 };
+                }
+
                 const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    signal: AbortSignal.timeout(15000),
-                    body: JSON.stringify({
-                        contents: [{
-                            parts: [
-                                { text: prompt },
-                                { inline_data: { mime_type: 'image/jpeg', data: base64Data } }
-                            ]
-                        }],
-                        generationConfig: {
-                            maxOutputTokens: 100,
-                            temperature: 0.1,
-                            thinkingConfig: { thinkingBudget: 0 }
-                        }
-                    })
+                    signal: AbortSignal.timeout(8000),
+                    body: JSON.stringify(bodyPayload)
                 });
 
                 const data = await response.json();
@@ -70,7 +82,7 @@ Règles :
                     succes = true;
                     break;
                 }
-                derniereErreur = data?.error?.message || "Serveur IA occupé";
+                derniereErreur = data?.error?.message || "Serveur occupé";
             } catch (e) {
                 derniereErreur = e.name === 'TimeoutError' ? "Délai dépassé" : e.message;
             }
@@ -79,7 +91,7 @@ Règles :
         if (!succes) {
             return res.status(200).json({ 
                 valide: false, 
-                message: `IA saturée (${derniereErreur}). Appuyez sur Refaire.` 
+                message: `Tous les serveurs IA sont saturés (${derniereErreur}). Appuyez sur Refaire.` 
             });
         }
 
