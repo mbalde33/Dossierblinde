@@ -60,7 +60,7 @@
                 Zéro papier oublié, <span class="text-blue-900">zéro dossier bloqué par l'administration.</span>
             </h1>
             <p class="text-xs sm:text-base text-slate-600 max-w-xl mx-auto">
-                Testez gratuitement nos dossiers simples ou activez le Pass pour que l'IA génère la liste complète de n'importe quelle démarche (<em>location, permis Réf. 7, leasing, préfecture, succession...</em>) et recadre automatiquement vos justificatifs.
+                Choisissez un dossier courant ou tapez n'importe quelle démarche (<em>location, permis Réf. 7, leasing, préfecture, succession...</em>) : l'IA génère la liste complète et recadre automatiquement vos justificatifs.
             </p>
         </div>
     </header>
@@ -76,7 +76,7 @@
                 </label>
                 <button type="button" onclick="basculerAssistantIA()" class="text-xs font-bold text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 self-start sm:self-auto">
                     <i class="fa-solid fa-envelope-open-text text-emerald-600"></i>
-                    <span>Scanner un courrier de blocage (Pass)</span>
+                    <span>Scanner un courrier de blocage</span>
                 </button>
             </div>
 
@@ -95,26 +95,26 @@
                     <span class="font-extrabold block"><i class="fa-solid fa-wand-magic-sparkles text-emerald-600 mr-1"></i>Création automatique par l'IA</span>
                     <span>Générer la liste complète des pièces obligatoires pour : <strong id="label-recherche-tapee"></strong></span>
                 </div>
-                <button type="button" id="btn-creer-depuis-recherche" onclick="creerDossierDepuisRecherche()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs px-4 py-2.5 rounded-lg transition shrink-0 shadow-sm">
-                    🔒 Débloquer IA (Pass)
+                <button type="button" id="btn-creer-depuis-recherche" onclick="creerDossierDepuisRecherche()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-lg transition shrink-0 shadow-sm">
+                    Générer ce dossier
                 </button>
             </div>
 
-            <!-- Menu des dossiers (3 simples gratuits + dossiers complets Pass Pro) -->
+            <!-- Menu des dossiers (tous accessibles librement) -->
             <div>
-                <span class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Dossiers simples gratuits & dossiers complets Pass Pro :</span>
+                <span class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Ou choisissez parmi les dossiers les plus demandés en France :</span>
                 <select id="select-dossier" onchange="chargerChecklist()" class="w-full bg-slate-50 border border-slate-300 focus:border-blue-900 text-slate-900 text-sm sm:text-base rounded-xl p-3.5 font-semibold outline-none transition">
-                    <option value="compte_banque">1. Ouverture Compte Bancaire / Livret (Gratuit)</option>
-                    <option value="inscription_club">2. Inscription Salle de sport / Association (Gratuit)</option>
-                    <option value="carte_vitale">3. Attestation Sécu / Carte Vitale (Gratuit)</option>
-                    <option value="loc_salarie">4. Location — Salarié CDI / CDD (🔒 Pass Pro)</option>
-                    <option value="loc_indep">5. Location — Indépendant / Micro-entrepreneur (🔒 Pass Pro)</option>
-                    <option value="loc_etudiant">6. Location — Étudiant avec Garant (🔒 Pass Pro)</option>
-                    <option value="permis_repassage">7. Permis ANTS — Repassage Annulation / Suspension Réf. 7 & 44 (🔒 Pass Pro)</option>
-                    <option value="cni_passeport">8. Carte d'Identité / Passeport — Renouvellement ou Perte (🔒 Pass Pro)</option>
-                    <option value="caf_aides">9. Dossier CAF — APL / Prime d'activité / RSA (🔒 Pass Pro)</option>
-                    <option value="achat_immo">10. Achat Immobilier — Compromis Notaire & Banque (🔒 Pass Pro)</option>
-                    <option value="declaration_deces">11. Déclaration de Décès & Succession / Banques (🔒 Pass Pro)</option>
+                    <option value="loc_salarie">1. Location — Salarié (CDI / CDD)</option>
+                    <option value="loc_indep">2. Location — Indépendant / Micro-entrepreneur</option>
+                    <option value="loc_etudiant">3. Location — Étudiant / Alternant avec Garant</option>
+                    <option value="permis_repassage">4. Permis ANTS — Repassage après Annulation / Suspension (Réf. 7 & 44)</option>
+                    <option value="cni_passeport">5. Carte d'Identité / Passeport — Renouvellement ou Perte</option>
+                    <option value="caf_aides">6. Dossier CAF — APL / Prime d'activité / RSA</option>
+                    <option value="achat_immo">7. Achat Immobilier — Compromis Notaire & Financement Banque</option>
+                    <option value="declaration_deces">8. Déclaration de Décès & Démarches Succession / Banques</option>
+                    <option value="compte_banque">9. Ouverture Compte Bancaire / Livret</option>
+                    <option value="inscription_club">10. Inscription Salle de sport / Association / Bibliothèque</option>
+                    <option value="carte_vitale">11. Attestation Sécu / Carte Vitale</option>
                     <option value="dossier_recherche" class="hidden" id="option-dossier-recherche">Dossier personnalisé</option>
                 </select>
             </div>
@@ -205,7 +205,7 @@
             </div>
         </div>
 
-        <!-- BLOC 3 : FILIGRANE PERSONNALISE + GENERATION PDF + OFFRE STRIPE -->
+        <!-- BLOC 3 : FILIGRANE PERSONNALISE + GENERATION PDF -->
         <div class="bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
             <div>
                 <span class="inline-block bg-emerald-500/20 text-emerald-300 text-xs font-bold px-2.5 py-1 rounded mb-2">
@@ -225,50 +225,11 @@
                 <input type="text" id="input-destinataire" placeholder="Ex: BANQUE DE FRANCE, ANTS PERMIS, AGENCE FONCIA..." class="w-full bg-slate-950 border border-slate-600 focus:border-emerald-400 rounded-lg px-3.5 py-2.5 text-sm text-white font-semibold outline-none">
             </div>
 
-            <!-- Choix de la formule (Pass Unique vs Abonnement Serenite) -->
-            <div id="bloc-tarifs-stripe" class="grid sm:grid-cols-2 gap-4">
-                <!-- Option 1 : Pass Unique -->
-                <div class="bg-slate-800 border border-slate-700 rounded-xl p-4 flex flex-col justify-between">
-                    <div>
-                        <span class="text-[11px] font-bold uppercase text-slate-400">Besoin ponctuel</span>
-                        <h4 class="text-lg font-extrabold text-white mt-0.5">Pass Dossier Unique</h4>
-                        <p class="text-2xl font-extrabold text-white mt-2">9,90 € <span class="text-xs font-normal text-slate-400">paiement 1 fois</span></p>
-                        <ul class="text-xs text-slate-300 space-y-1.5 mt-3">
-                            <li><i class="fa-solid fa-check text-emerald-400 mr-1.5"></i>Assemblage PDF A4 haute netteté</li>
-                            <li><i class="fa-solid fa-check text-emerald-400 mr-1.5"></i>Filigrane anti-usurpation personnalisé</li>
-                        </ul>
-                    </div>
-                    <button type="button" onclick="debloquerOuPayer('unique')" class="mt-4 w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 rounded-xl text-xs transition">
-                        Exporter ce dossier (9,90 €)
-                    </button>
-                </div>
-
-                <!-- Option 2 : Abonnement Serenite -->
-                <div class="bg-gradient-to-br from-blue-950 to-slate-800 border-2 border-emerald-500 rounded-xl p-4 flex flex-col justify-between relative">
-                    <span class="absolute -top-2.5 right-3 bg-emerald-500 text-slate-950 text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase">
-                        Recommandé • Sans engagement
-                    </span>
-                    <div>
-                        <span class="text-[11px] font-bold uppercase text-emerald-300">Protection continue</span>
-                        <h4 class="text-lg font-extrabold text-white mt-0.5">Pass Sérénité Illimité</h4>
-                        <p class="text-2xl font-extrabold text-emerald-400 mt-2">10,00 € <span class="text-xs font-normal text-slate-300">le 1er mois, puis 14,99 €/mois</span></p>
-                        <ul class="text-xs text-slate-200 space-y-1.5 mt-3">
-                            <li><i class="fa-solid fa-check text-emerald-400 mr-1.5"></i>Dossiers & exports PDF illimités</li>
-                            <li><i class="fa-solid fa-check text-emerald-400 mr-1.5"></i>Coffre privé réutilisable toute l'année</li>
-                            <li><i class="fa-solid fa-check text-emerald-400 mr-1.5"></i>Recherche IA illimitée & Lecteur de courriers</li>
-                        </ul>
-                    </div>
-                    <button type="button" onclick="debloquerOuPayer('abo')" class="mt-4 w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold py-3 rounded-xl text-xs transition shadow-lg">
-                        Activer le Pass Illimité (10 € le 1er mois)
-                    </button>
-                </div>
-            </div>
-
-            <!-- Bouton direct si deja membre -->
-            <div id="bloc-deja-membre" class="hidden">
+            <!-- Bouton direct d'assemblage PDF -->
+            <div>
                 <button type="button" onclick="genererDossierLocal()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold py-4 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
                     <i class="fa-solid fa-file-shield"></i>
-                    <span>Générer mon PDF Blindé maintenant (Pass Actif)</span>
+                    <span>Générer mon PDF Blindé maintenant</span>
                 </button>
             </div>
 
@@ -418,12 +379,6 @@
     </div>
 
     <script>
-        // --- CONFIGURATION STRIPE (Collez vos 2 URLs Stripe ici des qu'elles sont pretes) ---
-        const STRIPE_LINK_UNIQUE = ""; // Ex: "https://buy.stripe.com/..." (9,90 EUR)
-        const STRIPE_LINK_ABO = "";    // Ex: "https://buy.stripe.com/..." (10 EUR 1er mois puis 14,99 EUR/mois)
-
-        const DOSSIERS_GRATUITS = ['compte_banque', 'inscription_club', 'carte_vitale'];
-
         const TYPES_PIECE_IDENTITE = {
             cni: { label: "Carte Nationale d'Identité (Nouvelle ou Ancienne CNI)", rectoVerso: true, gabarit: "carte" },
             passeport: { label: "Passeport", rectoVerso: false, gabarit: "passeport" },
@@ -439,18 +394,6 @@
         };
 
         const REFERENTIEL_DOSSIERS = {
-            compte_banque: [
-                { id: "cni", titre: "Pièce d'identité", info: "CNI, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
-                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture eau, électricité ou téléphone à votre nom", typeSpecifique: "domicile" }
-            ],
-            inscription_club: [
-                { id: "cni", titre: "Pièce d'identité", info: "CNI ou Passeport en cours de validité", typeSpecifique: "identite" },
-                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "RIB nominatif simple", gabarit: "a4" }
-            ],
-            carte_vitale: [
-                { id: "cni", titre: "Pièce d'identité", info: "CNI, Passeport ou Titre de séjour", typeSpecifique: "identite" },
-                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "Pour les remboursements de soins", gabarit: "a4" }
-            ],
             loc_salarie: [
                 { id: "cni", titre: "Pièce d'identité", info: "Nouvelle CNI (format carte), Passeport ou Titre de séjour", typeSpecifique: "identite" },
                 { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture à votre nom ou dossier d'hébergement", typeSpecifique: "domicile" },
@@ -501,6 +444,18 @@
                 { id: "livret_defunt", titre: "Livret de famille + Pièce d'identité du défunt", info: "Indispensable pour la mairie, les banques et les caisses de retraite", gabarit: "a4" },
                 { id: "rib_succession", titre: "RIB du compte à créditer / Notaire", info: "Pour le déblocage des frais d'obsèques et clôtures de comptes", gabarit: "a4" }
             ],
+            compte_banque: [
+                { id: "cni", titre: "Pièce d'identité", info: "CNI, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
+                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture eau, électricité ou téléphone à votre nom", typeSpecifique: "domicile" }
+            ],
+            inscription_club: [
+                { id: "cni", titre: "Pièce d'identité", info: "CNI ou Passeport en cours de validité", typeSpecifique: "identite" },
+                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "RIB nominatif simple", gabarit: "a4" }
+            ],
+            carte_vitale: [
+                { id: "cni", titre: "Pièce d'identité", info: "CNI, Passeport ou Titre de séjour", typeSpecifique: "identite" },
+                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "Pour les remboursements de soins", gabarit: "a4" }
+            ],
             dossier_recherche: []
         };
 
@@ -509,7 +464,6 @@
         let modeDomicile = 'direct';
         let piecesSupplementaires = {};
         let photoCourrierBase64 = null;
-        let passActif = false;
 
         let scanEnCours = {
             imgSource: null,
@@ -525,41 +479,11 @@
             choixIdentite = JSON.parse(localStorage.getItem('dossierBlinde_choix_id') || '{}');
             modeDomicile = localStorage.getItem('dossierBlinde_mode_domicile') || 'direct';
             piecesSupplementaires = JSON.parse(localStorage.getItem('dossierBlinde_pieces_supp') || '{}');
-            passActif = localStorage.getItem('dossierBlinde_pass_actif') === 'true';
         } catch (e) {
             coffrePhotos = {};
             choixIdentite = {};
             modeDomicile = 'direct';
             piecesSupplementaires = {};
-        }
-
-        const urlParams = new URLSearchParams(window.location.search);
-        if (urlParams.get('paiement') === 'ok') {
-            passActif = true;
-            localStorage.setItem('dossierBlinde_pass_actif', 'true');
-            window.history.replaceState({}, document.title, window.location.pathname);
-        }
-
-        function actualiserStatutMembre() {
-            const select = document.getElementById('select-dossier');
-            if (passActif) {
-                document.getElementById('badge-membre').classList.remove('hidden');
-                document.getElementById('bloc-tarifs-stripe').classList.add('hidden');
-                document.getElementById('bloc-deja-membre').classList.remove('hidden');
-                for (let i = 0; i < select.options.length; i++) {
-                    select.options[i].text = select.options[i].text.replace(/\s*\((Gratuit|🔒 Pass Pro)\)$/, '');
-                }
-            }
-        }
-
-        function inviterADebloquerPass(motif) {
-            const blocPaiement = document.getElementById('bloc-tarifs-stripe');
-            alert("🔒 Réservé aux membres Pass DossierBlindé :\n\n" + motif + "\n\nLes 3 dossiers simples (Banque, Club/Asso, Carte Vitale) sont gratuits. Activez un Pass ci-dessous pour débloquer l'IA et tous les dossiers complets.");
-            if (blocPaiement) {
-                blocPaiement.scrollIntoView({ behavior: 'smooth' });
-                blocPaiement.classList.add('ring-4', 'ring-emerald-400', 'rounded-2xl');
-                setTimeout(() => blocPaiement.classList.remove('ring-4', 'ring-emerald-400', 'rounded-2xl'), 3000);
-            }
         }
 
         function sauvegarderCoffre() {
@@ -580,14 +504,13 @@
             if (el) el.textContent = nb;
         }
 
-        // --- BARRE DE RECHERCHE IA (100 % RESERVEE AUX MEMBRES PASS) ---
+        // --- BARRE DE RECHERCHE INTELLIGENTE ---
 
         function filtrerOuProposerDemarche() {
             const input = document.getElementById('recherche-demarche');
             const texte = input.value.trim();
             const btnEffacer = document.getElementById('btn-effacer-recherche');
             const zoneProp = document.getElementById('zone-proposition-recherche');
-            const btnCreer = document.getElementById('btn-creer-depuis-recherche');
             const select = document.getElementById('select-dossier');
 
             if (!texte) {
@@ -601,7 +524,7 @@
 
             for (let i = 0; i < select.options.length; i++) {
                 const opt = select.options[i];
-                if (!passActif && !DOSSIERS_GRATUITS.includes(opt.value)) continue;
+                if (opt.value === 'dossier_recherche') continue;
                 const labelNorm = opt.text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
                 if (labelNorm.includes(q)) {
                     select.value = opt.value;
@@ -611,15 +534,6 @@
             }
 
             document.getElementById('label-recherche-tapee').textContent = '« ' + texte + ' »';
-
-            if (passActif) {
-                btnCreer.textContent = 'Générer ce dossier';
-                btnCreer.className = 'bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-lg transition shrink-0 shadow-sm';
-            } else {
-                btnCreer.textContent = '🔒 Débloquer IA (Pass)';
-                btnCreer.className = 'bg-amber-500 hover:bg-amber-600 text-slate-950 font-extrabold text-xs px-4 py-2.5 rounded-lg transition shrink-0 shadow-sm';
-            }
-
             zoneProp.classList.remove('hidden');
         }
 
@@ -632,11 +546,6 @@
         async function creerDossierDepuisRecherche() {
             const texte = document.getElementById('recherche-demarche').value.trim();
             if (!texte) return;
-
-            if (!passActif) {
-                inviterADebloquerPass("La génération automatique par IA de la liste des pièces pour « " + texte + " » est réservée aux titulaires du Pass.");
-                return;
-            }
 
             const btn = document.getElementById('btn-creer-depuis-recherche');
             btn.disabled = true;
@@ -691,10 +600,6 @@
         // --- ASSISTANT COURRIER & DIAGNOSTIC ---
 
         function basculerAssistantIA() {
-            if (!passActif) {
-                inviterADebloquerPass("Le lecteur de courriers de blocage et le générateur de réponses officielles sont réservés aux membres Pass.");
-                return;
-            }
             const bloc = document.getElementById('bloc-assistant-ia');
             bloc.classList.toggle('hidden');
         }
@@ -722,11 +627,6 @@
         }
 
         async function lancerDiagnosticIA() {
-            if (!passActif) {
-                inviterADebloquerPass("L'analyse IA des courriers de blocage est réservée aux membres Pass.");
-                return;
-            }
-
             const situation = document.getElementById('input-situation-ia').value.trim();
             if (!situation && !photoCourrierBase64) {
                 alert("Décrivez votre blocage administratif ou joignez la photo du courrier reçu.");
@@ -868,14 +768,6 @@
         function chargerChecklist() {
             const selectEl = document.getElementById('select-dossier');
             const type = selectEl.value;
-
-            if (!passActif && type !== 'dossier_recherche' && !DOSSIERS_GRATUITS.includes(type)) {
-                inviterADebloquerPass("Ce dossier complet avec contrôle des pièces pièges est inclus dans le Pass DossierBlindé.");
-                selectEl.value = 'compte_banque';
-                chargerChecklist();
-                return;
-            }
-
             const liste = obtenirListeCompleteDossier(type);
             const container = document.getElementById('checklist-container');
             
@@ -1415,23 +1307,7 @@
             chargerChecklist();
         }
 
-        // --- PAIEMENT STRIPE OU DEBLOCAGE LOCAL ---
-
-        function debloquerOuPayer(formule) {
-            if (passActif) {
-                genererDossierLocal();
-                return;
-            }
-            if (formule === 'unique' && STRIPE_LINK_UNIQUE) {
-                window.location.href = STRIPE_LINK_UNIQUE;
-                return;
-            }
-            if (formule === 'abo' && STRIPE_LINK_ABO) {
-                window.location.href = STRIPE_LINK_ABO;
-                return;
-            }
-            genererDossierLocal();
-        }
+        // --- GENERATION DU PDF BLINDE LOCAL ---
 
         function genererDossierLocal() {
             const selectEl = document.getElementById('select-dossier');
@@ -1542,7 +1418,6 @@
             ouvrirCoffreFort();
         }
 
-        actualiserStatutMembre();
         mettreAJourCompteurCoffre();
         chargerChecklist();
     </script>
