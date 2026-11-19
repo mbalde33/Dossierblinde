@@ -16,7 +16,7 @@ export default async function handler(req, res) {
         return res.status(500).json({
             valide: false,
             ok: false,
-            message: "ERREUR CONFIGURATION : Clé GEMINI_API_KEY manquante sur Vercel. Impossible de vérifier le document."
+            message: "ERREUR CONFIGURATION : Clé GEMINI_API_KEY manquante sur Vercel."
         });
     }
 
@@ -26,6 +26,7 @@ export default async function handler(req, res) {
         // MODE 1 : LECTEUR DE COURRIER RECU & RECHERCHE DE DEMARCHE
         if (mode === 'diagnostic') {
             const promptDiagnostic = `Tu es un expert administratif français intraitable.
+Date du jour : 19 novembre 2026.
 Situation ou demande de l'utilisateur : "${descriptionSituation || 'Analyse du courrier joint'}".
 
 Analyse attentivement le texte et l'image (si fournie) et réponds STRICTEMENT au format JSON suivant sans aucun texte autour :
@@ -55,7 +56,7 @@ Analyse attentivement le texte et l'image (si fournie) et réponds STRICTEMENT a
             return res.status(200).json(reponseGemini);
         }
 
-        // MODE 2 : CONTROLE STRICT ZÉRO TOLÉRANCE D'UN DOCUMENT SCANNÉ
+        // MODE 2 : CONTROLE STRICT ZÉRO TOLÉRANCE DES INFORMATIONS DU DOCUMENT
         if (!imageBase64 || !imageBase64.includes(',')) {
             return res.status(400).json({
                 valide: false,
@@ -66,22 +67,41 @@ Analyse attentivement le texte et l'image (si fournie) et réponds STRICTEMENT a
         const [meta, base64Data] = imageBase64.split(',');
         const mimeType = meta.match(/:(.*?);/)?.[1] || 'image/jpeg';
 
-        const promptVerification = `Tu es un agent administratif français EXTRÊMEMENT STRICT chargé de rejeter tout dossier qui risquerait d'être refusé par une préfecture, une banque, la CAF ou un bailleur.
-
+        const promptVerification = `Tu es un contrôleur administratif français ZÉRO TOLÉRANCE (préfecture, banque, notaire, CAF).
+Date du jour : 19 novembre 2026.
 Document attendu : "${documentAttendu}"
 Dossier concerné : "${contexteDossier || 'Dossier administratif'}"
 
-RÈGLES DE REJET OBLIGATOIRES (valide = false dès la MOINDRE anomalie) :
-1. CADRAGE ET BORDS COUPÉS : Si un seul coin, bord, ligne de texte, bande MRZ ou photo d'identité est coupé ou sort du cadre -> REFUSER IMMEDIATEMENT.
-2. NETTETÉ ET LUMINOSITÉ : Si la photo est floue, sombre, surexposée, avec un reflet de flash sur les écritures ou un doigt qui cache une zone -> REFUSER IMMEDIATEMENT.
-3. IDENTITÉ DU DOCUMENT : Si l'image ne correspond pas EXACTEMENT au document demandé ("${documentAttendu}") ou si c'est le verso au lieu du recto (ou inversement) -> REFUSER IMMEDIATEMENT.
-4. LISIBILITÉ DES INFORMATIONS CLÉS : Tous les noms, prénoms, dates de naissance, dates d'émission, numéros et adresses doivent être 100 % lisibles sans effort. Si un seul chiffre ou mot est illisible -> REFUSER IMMEDIATEMENT.
-5. VALIDITÉ ET DATE : Pour un justificatif de domicile, vérifier la date (moins de 3 mois). Pour une pièce d'identité, vérifier qu'elle n'est pas visiblement périmée.
+INSPECTE LE DOCUMENT POINT PAR POINT. DÈS QU'UN SEUL ÉLÉMENT MANQUE OU EST COUPÉ, METS "valide": false :
 
-Réponds STRICTEMENT en JSON valide (aucun markdown, aucun texte autour) :
+1. CONFORMITÉ DU DOCUMENT ET DE LA FACE :
+   - Vérifie que le document correspond EXACTEMENT à "${documentAttendu}".
+   - Si c'est un autre document, un écran, un objet, ou le verso au lieu du recto (ou inversement) -> REFUSER en précisant ce que tu vois réellement.
+
+2. CONTRÔLE EXHAUSTIF DES CHAMPS OBLIGATOIRES (NE RIEN LAISSER PASSER) :
+   - Pièce d'identité (CNI, Passeport, Permis, Titre de séjour) :
+     * Recto : les 4 coins de la carte, la photo d'identité entière, le nom, tous les prénoms, le sexe, la nationalité, la date et le lieu de naissance, le numéro du document et la date d'expiration doivent être 100 % visibles et non coupés.
+     * Verso : les 4 coins, l'adresse complète, l'autorité de délivrance, la date de délivrance et les 3 lignes complètes de la bande MRZ (chevrons <<<) doivent être entièrement visibles et lisibles.
+     * Validité : si la date d'expiration est dépassée par rapport au 19/11/2026 -> REFUSER (document expiré).
+   - Justificatif de domicile :
+     * L'en-tête/logo de l'organisme émetteur (EDF, Engie, eau, opérateur télécom, bailleur), le nom et prénom du titulaire, l'adresse postale complète et la DATE D'ÉMISSION doivent être visibles.
+     * Si la date manque, est coupée, ou date de plus de 3 mois (avant le 19 août 2026) -> REFUSER en précisant la date constatée ou manquante.
+   - Attestation d'hébergement :
+     * Identité complète de l'hébergeur, identité complète de l'hébergé, adresse du logement, date de rédaction et SIGNATURE manuscrite doivent être présentes. Sans date ou sans signature -> REFUSER.
+   - RIB (Relevé d'Identité Bancaire) :
+     * Nom de la banque, nom et prénom du titulaire, code IBAN complet (27 caractères en France) et code BIC doivent être entièrement visibles et lisibles.
+   - Bulletin de salaire / Avis d'imposition / Cerfa / Contrat :
+     * Identité du titulaire, période/année concernée, en-tête officiel, montants principaux et signatures (si contrat/Cerfa) doivent être complets et non tronqués.
+
+3. NETTETÉ ET OBSTACLES :
+   - Si un doigt, un objet, un reflet de flash ou du flou masque même un seul chiffre, une lettre ou un bord -> REFUSER en indiquant exactement quelle information est masquée ou floue.
+
+IMPORTANT : Formule un message court, direct et précis qui nomme EXACTEMENT l'information manquante, coupée, expirée ou illisible.
+
+Réponds STRICTEMENT en JSON valide :
 {
   "valide": true ou false,
-  "message": "Si valide=true : confirmation courte et précise (ex: 'CNI recto parfaitement nette et complète'). Si valide=false : explication directe et précise de l'erreur constatée et comment corriger (ex: 'Refusé : le haut de la carte est coupé et le texte est flou. Reculez le téléphone à la lumière.').",
+  "message": "Si valide=true : confirmation précise (ex: 'CNI recto complète : 4 bords, photo et toutes les mentions parfaitement lisibles'). Si valide=false : motif exact du rejet et action corrective (ex: 'Refusé : la bande MRZ du bas et le coin inférieur droit sont coupés. Reculez le téléphone pour cadrer toute la carte.').",
   "pieces_manquantes": []
 }`;
 
@@ -92,7 +112,7 @@ Réponds STRICTEMENT en JSON valide (aucun markdown, aucun texte autour) :
 
         return res.status(200).json({
             valide: Boolean(resultat.valide),
-            message: resultat.message || (resultat.valide ? "Document conforme et net." : "Document refusé : qualité ou cadrage insuffisant."),
+            message: resultat.message || (resultat.valide ? "Document conforme et complet." : "Document refusé : informations incomplètes ou coupées."),
             pieces_manquantes: Array.isArray(resultat.pieces_manquantes) ? resultat.pieces_manquantes : []
         });
 
@@ -114,7 +134,7 @@ async function appelerGemini(apiKey, parts) {
         body: JSON.stringify({
             contents: [{ role: 'user', parts }],
             generationConfig: {
-                temperature: 0.1,
+                temperature: 0.05,
                 responseMimeType: "application/json"
             }
         })
