@@ -1,301 +1,133 @@
-export const maxDuration = 60;
-
-function nettoyerEtParserJSON(texteBrut) {
-    if (!texteBrut) return null;
-    const sansMarkdown = texteBrut.replace(/```json/gi, '').replace(/```/g, '').trim();
-    const matchJson = sansMarkdown.match(/\{[\s\S]*\}/);
-    if (!matchJson) return null;
-    try {
-        return JSON.parse(matchJson[0]);
-    } catch (e) {
-        const nettoye = matchJson[0].replace(/,\s*([}\]])/g, '$1');
-        try {
-            return JSON.parse(nettoye);
-        } catch (e2) {
-            return null;
+export const config = {
+    api: {
+        bodyParser: {
+            sizeLimit: '10mb'
         }
     }
-}
-
-function genererChecklistSecoursIntelligente(demande) {
-    const q = (demande || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-
-    const socleIdentite = { id: "cni", titre: "Pièce d'identité en cours de validité", info: "CNI (Recto/Verso), Passeport ou Titre de séjour valide", format: "carte", couleur: true };
-    const socleDomicile = { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture eau, électricité, internet ou dossier d'hébergement", format: "a4", couleur: false };
-    const socleRevenus = { id: "paie", titre: "3 derniers justificatifs de revenus", info: "3 derniers bulletins de salaire ou déclarations URSSAF", format: "a4", couleur: false };
-    const socleImpots = { id: "impots", titre: "Dernier avis d'imposition complet", info: "Toutes les pages de l'avis d'impôt sur le revenu", format: "a4", couleur: false };
-    const socleRib = { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "RIB nominatif avec IBAN et BIC lisibles", format: "a4", couleur: false };
-
-    if (q.includes('leasing') || q.includes('loa') || q.includes('lld') || q.includes('voiture') || q.includes('vehicule') || q.includes('auto')) {
-        return {
-            resume: "Pour un dossier de leasing (LOA / LLD), l'organisme exige votre pièce d'identité, permis, domicile récent, revenus, avis d'imposition et RIB.",
-            reponse_type: "",
-            pieces: [
-                socleIdentite,
-                { id: "permis_conduire", titre: "Permis de conduire valide (Recto / Verso)", info: "Obligatoire pour la mise en circulation et l'assurance du véhicule", format: "carte", couleur: true },
-                socleDomicile,
-                socleRevenus,
-                socleImpots,
-                socleRib
-            ]
-        };
-    }
-
-    if (q.includes('surendettement') || q.includes('banque de france')) {
-        return {
-            resume: "Le dossier de surendettement se dépose gratuitement auprès de la Banque de France avec le formulaire Cerfa signé et l'état exhaustif de vos dettes et charges.",
-            reponse_type: "",
-            pieces: [
-                socleIdentite,
-                { id: "cerfa_surendettement", titre: "Formulaire Cerfa n°13594*01 signé", info: "Déclaration de surendettement disponible sur banque-france.fr", format: "a4", couleur: false },
-                socleDomicile,
-                socleRevenus,
-                { id: "etat_dettes", titre: "Justificatifs de toutes les dettes et crédits en cours", info: "Tableaux d'amortissement, lettres de relance, factures impayées", format: "a4", couleur: false },
-                { id: "charges_courantes", titre: "Justificatifs des charges fixes (Loyer, énergie, impôts)", info: "Quittance de loyer et derniers avis d'imposition", format: "a4", couleur: false }
-            ]
-        };
-    }
-
-    if (q.includes('naturalisation') || q.includes('titre de sejour') || q.includes('prefecture') || q.includes('visa')) {
-        return {
-            resume: "Les dossiers en préfecture exigent des actes d'état civil récents (traduits par un traducteur assermenté s'ils sont étrangers) et le timbre fiscal.",
-            reponse_type: "",
-            pieces: [
-                socleIdentite,
-                { id: "acte_naissance", titre: "Acte de naissance intégral (- de 3 mois)", info: "Avec filiation complète (traduction assermentée si acte étranger)", format: "a4", couleur: false },
-                socleDomicile,
-                socleRevenus,
-                socleImpots,
-                { id: "timbre_fiscal", titre: "Justificatif de timbre fiscal dématérialisé", info: "Acheté sur timbres.impots.gouv.fr selon le tarif de la demande", format: "a4", couleur: false }
-            ]
-        };
-    }
-
-    if (q.includes('entreprise') || q.includes('micro') || q.includes('societe') || q.includes('kbis') || q.includes('inpi')) {
-        return {
-            resume: "L'immatriculation s'effectue sur le Guichet Unique de l'INPI avec une déclaration de non-condamnation signée et un justificatif de domicile.",
-            reponse_type: "",
-            pieces: [
-                socleIdentite,
-                socleDomicile,
-                { id: "non_condamnation", titre: "Déclaration sur l'honneur de non-condamnation et filiation", info: "Datée et signée en original (obligatoire pour le greffe)", format: "a4", couleur: false },
-                { id: "qualif_pro", titre: "Diplôme ou justificatif d'expérience (si activité réglementée)", info: "Artisanat, transport, bâtiment, esthétique, etc.", format: "a4", couleur: false }
-            ]
-        };
-    }
-
-    return {
-        resume: `Checklist complète générée pour votre démarche « ${demande} » avec l'ensemble des justificatifs exigés en France.`,
-        reponse_type: "",
-        pieces: [
-            socleIdentite,
-            socleDomicile,
-            socleRevenus,
-            socleImpots,
-            socleRib
-        ]
-    };
-}
-
-async function appelerCascadeIA(prompt, imageBase64, geminiKey, groqKey) {
-    let derniereErreur = "Serveurs IA occupés";
-
-    if (geminiKey && geminiKey.trim().length > 10) {
-        const modeles = [
-            'gemini-3.5-flash-lite',
-            'gemini-2.5-flash',
-            'gemini-3.5-flash',
-            'gemini-2.0-flash'
-        ];
-
-        for (let i = 0; i < modeles.length; i++) {
-            const modele = modeles[i];
-            try {
-                if (i > 0) await new Promise(r => setTimeout(r, 400));
-
-                const parts = [{ text: prompt }];
-                if (imageBase64 && imageBase64.includes(',')) {
-                    parts.push({
-                        inline_data: {
-                            mime_type: 'image/jpeg',
-                            data: imageBase64.split(',')[1]
-                        }
-                    });
-                }
-
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent?key=${geminiKey.trim()}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    signal: AbortSignal.timeout(12000),
-                    body: JSON.stringify({
-                        contents: [{ parts }],
-                        generationConfig: {
-                            responseMimeType: "application/json",
-                            maxOutputTokens: 2500,
-                            temperature: 0.1
-                        }
-                    })
-                });
-
-                const data = await response.json();
-                if (response.ok && data.candidates?.[0]?.content?.parts?.[0]?.text) {
-                    const parsed = nettoyerEtParserJSON(data.candidates[0].content.parts[0].text);
-                    if (parsed) {
-                        return { ok: true, data: parsed };
-                    }
-                } else {
-                    derniereErreur = data?.error?.message || `HTTP ${response.status}`;
-                }
-            } catch (e) {
-                derniereErreur = e.name === 'TimeoutError' ? "Délai dépassé" : e.message;
-            }
-        }
-    }
-
-    if (groqKey && groqKey.trim().length > 10) {
-        try {
-            const isVision = Boolean(imageBase64 && imageBase64.includes(','));
-            const content = isVision
-                ? [{ type: 'text', text: prompt }, { type: 'image_url', image_url: { url: imageBase64 } }]
-                : prompt;
-
-            const groqResp = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${groqKey.trim()}`,
-                    'Content-Type': 'application/json'
-                },
-                signal: AbortSignal.timeout(12000),
-                body: JSON.stringify({
-                    model: isVision ? 'llama-3.2-11b-vision-preview' : 'llama-3.3-70b-versatile',
-                    temperature: 0.1,
-                    max_tokens: 2000,
-                    messages: [{ role: 'user', content }]
-                })
-            });
-
-            const groqData = await groqResp.json();
-            if (groqResp.ok && groqData.choices?.[0]?.message?.content) {
-                const parsedGroq = nettoyerEtParserJSON(groqData.choices[0].message.content);
-                if (parsedGroq) {
-                    return { ok: true, data: parsedGroq };
-                }
-            } else {
-                derniereErreur = groqData?.error?.message || `Groq HTTP ${groqResp.status}`;
-            }
-        } catch (e) {
-            derniereErreur = e.message;
-        }
-    }
-
-    return { ok: false, erreur: derniereErreur };
-}
+};
 
 export default async function handler(req, res) {
-    res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
-    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
-
-    if (req.method === 'OPTIONS') {
-        return res.status(200).end();
+    if (req.method !== 'POST') {
+        return res.status(405).json({ ok: false, message: 'Méthode non autorisée' });
     }
 
-    if (req.method !== 'POST') {
-        return res.status(405).json({ valide: false, message: 'Méthode non autorisée' });
+    const apiKey = process.env.GEMINI_API_KEY;
+    if (!apiKey) {
+        return res.status(500).json({
+            valide: false,
+            ok: false,
+            message: "ERREUR CONFIGURATION : Clé GEMINI_API_KEY manquante sur Vercel. Impossible de vérifier le document."
+        });
     }
 
     try {
-        const { mode = 'document', imageBase64, documentAttendu, contexteDossier, descriptionSituation } = req.body || {};
-        const geminiKey = process.env.GEMINI_API_KEY;
-        const groqKey = process.env.GROQ_API_KEY;
+        const { mode, imageBase64, documentAttendu, contexteDossier, descriptionSituation } = req.body || {};
 
+        // MODE 1 : LECTEUR DE COURRIER RECU & RECHERCHE DE DEMARCHE
         if (mode === 'diagnostic') {
-            const promptDiag = `Tu es un conseiller administratif français expert anti-rejet.
-Date du jour : 19 novembre 2026.
-Demande ou courrier de l'utilisateur : "${descriptionSituation || 'Vérification dossier'}".
+            const promptDiagnostic = `Tu es un expert administratif français intraitable.
+Situation ou demande de l'utilisateur : "${descriptionSituation || 'Analyse du courrier joint'}".
 
-Réponds UNIQUEMENT par un objet JSON valide et complet :
+Analyse attentivement le texte et l'image (si fournie) et réponds STRICTEMENT au format JSON suivant sans aucun texte autour :
 {
-  "resume": "Explication claire en 1 ou 2 phrases max.",
-  "reponse_type": "Court message officiel si blocage (sinon chaîne vide)",
+  "ok": true,
+  "resume": "Explication claire en 2 phrases maximum des documents exacts demandés par l'organisme.",
   "pieces": [
     {
-      "id": "id_court",
-      "titre": "Nom officiel du document",
-      "info": "Consigne courte (max 15 mots)",
-      "format": "carte",
+      "id": "identifiant_court",
+      "titre": "Nom exact du document à fournir",
+      "info": "Condition précise (date, format, signature, organisme émetteur)",
+      "format": "a4",
       "couleur": false
     }
-  ]
-}
-Règles strictes :
-- Liste TOUTES les pièces obligatoires sans en oublier une seule (entre 5 et 8 pièces max) : pièce d'identité, justificatif de domicile (- de 3 mois), revenus/imposition, RIB, permis ou Cerfa spécifiques selon la démarche.
-- "format" doit être "carte" pour CNI/Permis/Titre de séjour, "passeport" pour un passeport, ou "a4" pour tout autre document (facture, RIB, avis d'imposition, Cerfa).
-- Mets "couleur": true uniquement pour les pièces d'identité et le permis.`;
+  ],
+  "reponse_type": "Courrier officiel court et poli prêt à envoyer pour accompagner les pièces (ou chaîne vide si simple recherche de dossier)."
+}`;
 
-            const resIA = await appelerCascadeIA(promptDiag, imageBase64, geminiKey, groqKey);
-            if (resIA.ok && Array.isArray(resIA.data?.pieces) && resIA.data.pieces.length > 0) {
-                return res.status(200).json({ ok: true, ...resIA.data });
+            const parts = [{ text: promptDiagnostic }];
+            if (imageBase64 && imageBase64.includes(',')) {
+                const [meta, base64Data] = imageBase64.split(',');
+                const mimeType = meta.match(/:(.*?);/)?.[1] || 'image/jpeg';
+                parts.push({ inlineData: { mimeType, data: base64Data } });
             }
 
-            const secours = genererChecklistSecoursIntelligente(descriptionSituation);
-            return res.status(200).json({ ok: true, ...secours });
+            const reponseGemini = await appelerGemini(apiKey, parts);
+            return res.status(200).json(reponseGemini);
         }
 
+        // MODE 2 : CONTROLE STRICT ZÉRO TOLÉRANCE D'UN DOCUMENT SCANNÉ
         if (!imageBase64 || !imageBase64.includes(',')) {
-            return res.status(200).json({ valide: false, message: "Fichier image invalide." });
-        }
-
-        const base64Pur = imageBase64.split(',')[1];
-        if (base64Pur.length < 3500) {
-            return res.status(200).json({ valide: false, message: "Image trop petite ou floue, rescannez." });
-        }
-
-        const promptDoc = `Tu es un contrôleur administratif français strict et bienveillant.
-Date du jour : 19 novembre 2026.
-Contexte du dossier : "${contexteDossier || 'Démarche administrative'}".
-Document attendu : "${documentAttendu}".
-
-Analyse l'image et réponds UNIQUEMENT par un objet JSON valide :
-{
-  "valide": true,
-  "message": "Explication courte en français (max 14 mots)",
-  "pieces_manquantes": [
-    {
-      "id": "ref_detectee",
-      "titre": "Nom exact de la pièce complémentaire obligatoire détectée",
-      "info": "Pourquoi l'administration bloque sans ce papier (max 15 mots)",
-      "couleur": false
-    }
-  ]
-}
-
-Règles :
-1. Vérifie la NATURE exacte du document : si c'est un objet, un selfie, un écran noir ou un AUTRE document que "${documentAttendu}", mets OBLIGATOIREMENT "valide": false et indique quel document tu vois.
-2. Si c'est bien "${documentAttendu}" et que les infos clés sont lisibles, mets "valide": true.
-3. Si en lisant ce document tu repères une mention imposant une pièce piège supplémentaire (ex: Réf. 44 / 48SI -> ajouter "Relevé d'Information Restreint (Réf. 7)"), ajoute-la dans "pieces_manquantes". Sinon laisse [].`;
-
-        const resDoc = await appelerCascadeIA(promptDoc, imageBase64, geminiKey, groqKey);
-        if (!resDoc.ok) {
-            return res.status(200).json({
-                valide: true,
-                message: "Scan enregistré (vérification de lisibilité effectuée).",
-                pieces_manquantes: []
+            return res.status(400).json({
+                valide: false,
+                message: "Aucune image reçue. Veuillez reprendre la photo."
             });
         }
 
+        const [meta, base64Data] = imageBase64.split(',');
+        const mimeType = meta.match(/:(.*?);/)?.[1] || 'image/jpeg';
+
+        const promptVerification = `Tu es un agent administratif français EXTRÊMEMENT STRICT chargé de rejeter tout dossier qui risquerait d'être refusé par une préfecture, une banque, la CAF ou un bailleur.
+
+Document attendu : "${documentAttendu}"
+Dossier concerné : "${contexteDossier || 'Dossier administratif'}"
+
+RÈGLES DE REJET OBLIGATOIRES (valide = false dès la MOINDRE anomalie) :
+1. CADRAGE ET BORDS COUPÉS : Si un seul coin, bord, ligne de texte, bande MRZ ou photo d'identité est coupé ou sort du cadre -> REFUSER IMMEDIATEMENT.
+2. NETTETÉ ET LUMINOSITÉ : Si la photo est floue, sombre, surexposée, avec un reflet de flash sur les écritures ou un doigt qui cache une zone -> REFUSER IMMEDIATEMENT.
+3. IDENTITÉ DU DOCUMENT : Si l'image ne correspond pas EXACTEMENT au document demandé ("${documentAttendu}") ou si c'est le verso au lieu du recto (ou inversement) -> REFUSER IMMEDIATEMENT.
+4. LISIBILITÉ DES INFORMATIONS CLÉS : Tous les noms, prénoms, dates de naissance, dates d'émission, numéros et adresses doivent être 100 % lisibles sans effort. Si un seul chiffre ou mot est illisible -> REFUSER IMMEDIATEMENT.
+5. VALIDITÉ ET DATE : Pour un justificatif de domicile, vérifier la date (moins de 3 mois). Pour une pièce d'identité, vérifier qu'elle n'est pas visiblement périmée.
+
+Réponds STRICTEMENT en JSON valide (aucun markdown, aucun texte autour) :
+{
+  "valide": true ou false,
+  "message": "Si valide=true : confirmation courte et précise (ex: 'CNI recto parfaitement nette et complète'). Si valide=false : explication directe et précise de l'erreur constatée et comment corriger (ex: 'Refusé : le haut de la carte est coupé et le texte est flou. Reculez le téléphone à la lumière.').",
+  "pieces_manquantes": []
+}`;
+
+        const resultat = await appelerGemini(apiKey, [
+            { text: promptVerification },
+            { inlineData: { mimeType, data: base64Data } }
+        ]);
+
         return res.status(200).json({
-            valide: Boolean(resDoc.data.valide),
-            message: resDoc.data.message || (resDoc.data.valide ? "Document conforme." : "Document non conforme."),
-            pieces_manquantes: Array.isArray(resDoc.data.pieces_manquantes) ? resDoc.data.pieces_manquantes : []
+            valide: Boolean(resultat.valide),
+            message: resultat.message || (resultat.valide ? "Document conforme et net." : "Document refusé : qualité ou cadrage insuffisant."),
+            pieces_manquantes: Array.isArray(resultat.pieces_manquantes) ? resultat.pieces_manquantes : []
         });
 
-    } catch (error) {
-        return res.status(200).json({
+    } catch (erreur) {
+        return res.status(500).json({
             valide: false,
-            message: `Erreur serveur : ${error.message}`
+            ok: false,
+            message: "Échec du contrôle IA (" + erreur.message + "). Veuillez réessayer."
         });
     }
+}
+
+async function appelerGemini(apiKey, parts) {
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+
+    const response = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            contents: [{ role: 'user', parts }],
+            generationConfig: {
+                temperature: 0.1,
+                responseMimeType: "application/json"
+            }
+        })
+    });
+
+    const data = await response.json();
+    if (!response.ok) {
+        throw new Error(data.error?.message || `Erreur API Gemini ${response.status}`);
+    }
+
+    const texteBrut = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
+    const jsonNettoye = texteBrut.replace(/```json|```/g, '').trim();
+    return JSON.parse(jsonNettoye);
 }
 
 
