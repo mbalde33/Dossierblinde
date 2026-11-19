@@ -17,7 +17,6 @@ function nettoyerEtParserJSON(texteBrut) {
     }
 }
 
-// Base intelligente de secours : garantit que TOUTE recherche aboutit meme si Google est sature
 function genererChecklistSecoursIntelligente(demande) {
     const q = (demande || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
 
@@ -29,7 +28,7 @@ function genererChecklistSecoursIntelligente(demande) {
 
     if (q.includes('leasing') || q.includes('loa') || q.includes('lld') || q.includes('voiture') || q.includes('vehicule') || q.includes('auto')) {
         return {
-            resume: "Pour un dossier de leasing (LOA / LLD), l'organisme vérifie votre solvabilité, votre permis et votre domiciliation bancaire.",
+            resume: "Pour un dossier de leasing (LOA / LLD), l'organisme exige votre pièce d'identité, permis, domicile récent, revenus, avis d'imposition et RIB.",
             reponse_type: "",
             pieces: [
                 socleIdentite,
@@ -59,7 +58,7 @@ function genererChecklistSecoursIntelligente(demande) {
 
     if (q.includes('naturalisation') || q.includes('titre de sejour') || q.includes('prefecture') || q.includes('visa')) {
         return {
-            resume: "Les dossiers en préfecture exigent des actes d'état civil récents (et traduits par un traducteur assermenté s'ils sont étrangers) ainsi que le timbre fiscal.",
+            resume: "Les dossiers en préfecture exigent des actes d'état civil récents (traduits par un traducteur assermenté s'ils sont étrangers) et le timbre fiscal.",
             reponse_type: "",
             pieces: [
                 socleIdentite,
@@ -72,7 +71,7 @@ function genererChecklistSecoursIntelligente(demande) {
         };
     }
 
-    if (q.includes('entreprise') || q.includes('micro') || q.includes('auto') || q.includes('societe') || q.includes('kbis') || q.includes('inpi')) {
+    if (q.includes('entreprise') || q.includes('micro') || q.includes('societe') || q.includes('kbis') || q.includes('inpi')) {
         return {
             resume: "L'immatriculation s'effectue sur le Guichet Unique de l'INPI avec une déclaration de non-condamnation signée et un justificatif de domicile.",
             reponse_type: "",
@@ -85,50 +84,8 @@ function genererChecklistSecoursIntelligente(demande) {
         };
     }
 
-    if (q.includes('assurance') || q.includes('sinistre') || q.includes('degat') || q.includes('accident') || q.includes('vol')) {
-        return {
-            resume: "Déclarez le sinistre sous 5 jours ouvrés (2 jours en cas de vol) en joignant preuves de propriété et constat ou récépissé de plainte.",
-            reponse_type: "",
-            pieces: [
-                socleIdentite,
-                { id: "constat_plainte", titre: "Constat amiable signé ou Récépissé de dépôt de plainte", info: "Obligatoire pour déclencher l'indemnisation auprès de l'assureur", format: "a4", couleur: false },
-                { id: "photos_degats", titre: "Photos des dommages et devis de réparation", info: "Vues d'ensemble et gros plans des biens endommagés", format: "a4", couleur: false },
-                { id: "factures_biens", titre: "Factures d'achat ou certificats de garantie des biens", info: "Pour prouver la valeur et l'existence des objets sinistrés", format: "a4", couleur: false },
-                socleRib
-            ]
-        };
-    }
-
-    if (q.includes('ecole') || q.includes('creche') || q.includes('cantine') || q.includes('enfant') || q.includes('scolaire')) {
-        return {
-            resume: "Les inscriptions scolaires et périscolaires en mairie demandent le livret de famille, le carnet de vaccination à jour et le quotient familial CAF.",
-            reponse_type: "",
-            pieces: [
-                { id: "livret_famille", titre: "Livret de famille (pages parents et enfant)", info: "Ou acte de naissance de l'enfant de moins de 3 mois", format: "a4", couleur: false },
-                socleDomicile,
-                { id: "vaccins", titre: "Carnet de santé (pages vaccinations obligatoires)", info: "Justificatif des vaccins DT-Polio / ROR à jour", format: "a4", couleur: false },
-                { id: "quotient_caf", titre: "Attestation de quotient familial CAF (- de 3 mois)", info: "Pour le calcul du tarif de la cantine ou de la crèche", format: "a4", couleur: false }
-            ]
-        };
-    }
-
-    if (q.includes('retraite') || q.includes('carsat') || q.includes('reversion') || q.includes('pension')) {
-        return {
-            resume: "Préparez votre dossier retraite 5 mois avant la date de départ avec votre relevé de carrière vérifié, votre livret de famille et votre RIB.",
-            reponse_type: "",
-            pieces: [
-                socleIdentite,
-                { id: "livret_famille", titre: "Livret de famille complet", info: "Permet de valider les majorations pour enfants", format: "a4", couleur: false },
-                { id: "releve_carriere", titre: "Relevé de carrière / Derniers bulletins de salaire", info: "Téléchargeable sur info-retraite.fr", format: "a4", couleur: false },
-                socleImpots,
-                socleRib
-            ]
-        };
-    }
-
-    // Socle universel complet pour toute autre demarche administrative en France
     return {
-        resume: `Checklist complète générée pour votre démarche « ${demande} » avec les justificatifs standards exigés par l'administration française.`,
+        resume: `Checklist complète générée pour votre démarche « ${demande} » avec l'ensemble des justificatifs exigés en France.`,
         reponse_type: "",
         pieces: [
             socleIdentite,
@@ -252,13 +209,12 @@ export default async function handler(req, res) {
         const geminiKey = process.env.GEMINI_API_KEY;
         const groqKey = process.env.GROQ_API_KEY;
 
-        // MODE 1 : RECHERCHE DE DOSSIER OU LECTURE DE COURRIER ADMINISTRATIF (100% DISPONIBLE)
         if (mode === 'diagnostic') {
             const promptDiag = `Tu es un conseiller administratif français expert anti-rejet.
 Date du jour : 19 novembre 2026.
 Demande ou courrier de l'utilisateur : "${descriptionSituation || 'Vérification dossier'}".
 
-Réponds UNIQUEMENT par un objet JSON valide et concis :
+Réponds UNIQUEMENT par un objet JSON valide et complet :
 {
   "resume": "Explication claire en 1 ou 2 phrases max.",
   "reponse_type": "Court message officiel si blocage (sinon chaîne vide)",
@@ -272,22 +228,20 @@ Réponds UNIQUEMENT par un objet JSON valide et concis :
     }
   ]
 }
-Règles :
-- Liste uniquement les pièces principales obligatoires (maximum 6 pièces, descriptions courtes).
-- "format" doit être "carte" pour CNI/Permis/Titre de séjour, "passeport" pour un passeport, ou "a4" pour tout autre document.
-- Mets "couleur": true uniquement pour les pièces d'identité.`;
+Règles strictes :
+- Liste TOUTES les pièces obligatoires sans en oublier une seule (entre 5 et 8 pièces max) : pièce d'identité, justificatif de domicile (- de 3 mois), revenus/imposition, RIB, permis ou Cerfa spécifiques selon la démarche.
+- "format" doit être "carte" pour CNI/Permis/Titre de séjour, "passeport" pour un passeport, ou "a4" pour tout autre document (facture, RIB, avis d'imposition, Cerfa).
+- Mets "couleur": true uniquement pour les pièces d'identité et le permis.`;
 
             const resIA = await appelerCascadeIA(promptDiag, imageBase64, geminiKey, groqKey);
             if (resIA.ok && Array.isArray(resIA.data?.pieces) && resIA.data.pieces.length > 0) {
                 return res.status(200).json({ ok: true, ...resIA.data });
             }
 
-            // Bascule transparente sur le moteur de secours si Google subit un pic de trafic
             const secours = genererChecklistSecoursIntelligente(descriptionSituation);
             return res.status(200).json({ ok: true, ...secours });
         }
 
-        // MODE 2 : VÉRIFICATION D'UN DOCUMENT SCANNÉ
         if (!imageBase64 || !imageBase64.includes(',')) {
             return res.status(200).json({ valide: false, message: "Fichier image invalide." });
         }
@@ -343,7 +297,6 @@ Règles :
         });
     }
 }
-
 
 
 
