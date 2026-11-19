@@ -1,27 +1,28 @@
-export const config = {
-    api: {
-        bodyParser: {
-            sizeLimit: '10mb'
-        }
-    }
-};
-
 export default async function handler(req, res) {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+    if (req.method === 'OPTIONS') {
+        return res.status(200).end();
+    }
+
     if (req.method !== 'POST') {
-        return res.status(405).json({ ok: false, message: 'Méthode non autorisée' });
+        return res.status(200).json({ valide: false, ok: false, message: 'Méthode non autorisée' });
     }
 
     const apiKey = process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-        return res.status(500).json({
+    if (!apiKey || apiKey.trim().length < 10) {
+        return res.status(200).json({
             valide: false,
             ok: false,
-            message: "ERREUR CONFIGURATION : Clé GEMINI_API_KEY manquante sur Vercel."
+            message: "Clé GEMINI_API_KEY absente ou vide sur Vercel."
         });
     }
 
     try {
-        const { mode, imageBase64, documentAttendu, contexteDossier, descriptionSituation } = req.body || {};
+        const body = typeof req.body === 'string' ? JSON.parse(req.body) : (req.body || {});
+        const { mode, imageBase64, documentAttendu, contexteDossier, descriptionSituation } = body;
 
         // MODE 1 : LECTEUR DE COURRIER RECU & RECHERCHE DE DEMARCHE
         if (mode === 'diagnostic') {
@@ -29,7 +30,7 @@ export default async function handler(req, res) {
 Date du jour : 19 novembre 2026.
 Situation ou demande de l'utilisateur : "${descriptionSituation || 'Analyse du courrier joint'}".
 
-Analyse attentivement le texte et l'image (si fournie) et réponds STRICTEMENT au format JSON suivant sans aucun texte autour :
+Analyse attentivement le texte et l'image (si fournie) et réponds STRICTEMENT en JSON valide :
 {
   "ok": true,
   "resume": "Explication claire en 2 phrases maximum des documents exacts demandés par l'organisme.",
@@ -49,16 +50,16 @@ Analyse attentivement le texte et l'image (si fournie) et réponds STRICTEMENT a
             if (imageBase64 && imageBase64.includes(',')) {
                 const [meta, base64Data] = imageBase64.split(',');
                 const mimeType = meta.match(/:(.*?);/)?.[1] || 'image/jpeg';
-                parts.push({ inlineData: { mimeType, data: base64Data } });
+                parts.push({ inline_data: { mime_type: mimeType, data: base64Data } });
             }
 
-            const reponseGemini = await appelerGemini(apiKey, parts);
+            const reponseGemini = await appelerGeminiCascade(apiKey.trim(), parts);
             return res.status(200).json(reponseGemini);
         }
 
         // MODE 2 : CONTROLE STRICT ZÉRO TOLÉRANCE DES INFORMATIONS DU DOCUMENT
         if (!imageBase64 || !imageBase64.includes(',')) {
-            return res.status(400).json({
+            return res.status(200).json({
                 valide: false,
                 message: "Aucune image reçue. Veuillez reprendre la photo."
             });
@@ -101,53 +102,69 @@ IMPORTANT : Formule un message court, direct et précis qui nomme EXACTEMENT l'i
 Réponds STRICTEMENT en JSON valide :
 {
   "valide": true ou false,
-  "message": "Si valide=true : confirmation précise (ex: 'CNI recto complète : 4 bords, photo et toutes les mentions parfaitement lisibles'). Si valide=false : motif exact du rejet et action corrective (ex: 'Refusé : la bande MRZ du bas et le coin inférieur droit sont coupés. Reculez le téléphone pour cadrer toute la carte.').",
+  "message": "Si valide=true : confirmation précise. Si valide=false : motif exact du rejet et action corrective.",
   "pieces_manquantes": []
 }`;
 
-        const resultat = await appelerGemini(apiKey, [
+        const resultat = await appelerGeminiCascade(apiKey.trim(), [
             { text: promptVerification },
-            { inlineData: { mimeType, data: base64Data } }
+            { inline_data: { mime_type: mimeType, data: base64Data } }
         ]);
 
         return res.status(200).json({
             valide: Boolean(resultat.valide),
-            message: resultat.message || (resultat.valide ? "Document conforme et complet." : "Document refusé : informations incomplètes ou coupées."),
+            message: resultat.message || (resultat.valide ? "Document conforme et net." : "Document refusé : informations incomplètes ou coupées."),
             pieces_manquantes: Array.isArray(resultat.pieces_manquantes) ? resultat.pieces_manquantes : []
         });
 
     } catch (erreur) {
-        return res.status(500).json({
+        return res.status(200).json({
             valide: false,
             ok: false,
-            message: "Échec du contrôle IA (" + erreur.message + "). Veuillez réessayer."
+            message: "Refus technique IA : " + (erreur.message || "Erreur inconnue")
         });
     }
 }
 
-async function appelerGemini(apiKey, parts) {
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+async function appelerGeminiCascade(apiKey, parts) {
+    const modeles = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+    let derniereErreur = "Aucune réponse de Gemini";
 
-    const response = await fetch(url, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-            contents: [{ role: 'user', parts }],
-            generationConfig: {
-                temperature: 0.05,
-                responseMimeType: "application/json"
+    for (const modele of modeles) {
+        try {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/${modele}:generateContent?key=${apiKey}`;
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ role: 'user', parts }],
+                    generationConfig: {
+                        temperature: 0.05,
+                        responseMimeType: "application/json"
+                    }
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok) {
+                derniereErreur = data.error?.message || `HTTP ${response.status} sur ${modele}`;
+                continue;
             }
-        })
-    });
 
-    const data = await response.json();
-    if (!response.ok) {
-        throw new Error(data.error?.message || `Erreur API Gemini ${response.status}`);
+            const texteBrut = data.candidates?.[0]?.content?.parts?.[0]?.text || '';
+            if (!texteBrut) {
+                derniereErreur = `Réponse vide de ${modele}`;
+                continue;
+            }
+
+            const jsonNettoye = texteBrut.replace(/```json|```/g, '').trim();
+            return JSON.parse(jsonNettoye);
+        } catch (err) {
+            derniereErreur = err.message;
+        }
     }
 
-    const texteBrut = data.candidates?.[0]?.content?.parts?.[0]?.text || '{}';
-    const jsonNettoye = texteBrut.replace(/```json|```/g, '').trim();
-    return JSON.parse(jsonNettoye);
+    throw new Error(derniereErreur);
 }
 
 
