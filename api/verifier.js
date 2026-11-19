@@ -3,7 +3,7 @@ export const maxDuration = 60;
 async function appelerCascadeIA(prompt, imageBase64, geminiKey, groqKey) {
     let derniereErreur = "Aucune réponse des serveurs IA";
 
-    // 1. Google Gemini (modèles 3.5 actifs)
+    // 1. Google Gemini (modèles 3.5 actifs avec limite étendue pour éviter les coupures JSON)
     if (geminiKey && geminiKey.trim().length > 10) {
         const modeles = ['gemini-3.5-flash', 'gemini-3.5-flash-lite'];
         for (const modele of modeles) {
@@ -26,7 +26,7 @@ async function appelerCascadeIA(prompt, imageBase64, geminiKey, groqKey) {
                         contents: [{ parts }],
                         generationConfig: {
                             responseMimeType: "application/json",
-                            maxOutputTokens: 700,
+                            maxOutputTokens: 2500,
                             temperature: 0.1
                         }
                     })
@@ -66,7 +66,7 @@ async function appelerCascadeIA(prompt, imageBase64, geminiKey, groqKey) {
                 body: JSON.stringify({
                     model: isVision ? 'llama-3.2-11b-vision-preview' : 'llama-3.3-70b-versatile',
                     temperature: 0.1,
-                    max_tokens: 700,
+                    max_tokens: 2000,
                     messages: [{ role: 'user', content }]
                 })
             });
@@ -121,23 +121,23 @@ export default async function handler(req, res) {
 Date du jour : 19 novembre 2026.
 Demande ou courrier de l'utilisateur : "${descriptionSituation || 'Vérification dossier'}".
 
-Réponds UNIQUEMENT par un objet JSON valide au format exact suivant :
+Réponds UNIQUEMENT par un objet JSON valide et concis au format exact suivant :
 {
-  "resume": "Explication claire en 2 phrases simples de ce qu'il faut faire et du piège principal à éviter",
-  "reponse_type": "Court message officiel prêt à copier-coller si un organisme bloque le dossier (sinon chaîne vide)",
+  "resume": "Explication courte en 1 à 2 phrases max.",
+  "reponse_type": "Court message officiel si blocage (sinon chaîne vide)",
   "pieces": [
     {
-      "id": "identifiant_unique_sans_espace",
-      "titre": "Nom exact du document officiel",
-      "info": "Où l'obtenir gratuitement et vigilance exacte (ex: Réf. 7 sur mespoints.permis.gouv.fr, moins de 3 mois...)",
+      "id": "id_court",
+      "titre": "Nom officiel du document",
+      "info": "Consigne courte (max 15 mots)",
       "format": "carte",
       "couleur": false
     }
   ]
 }
 Règles :
-- Liste les pièces obligatoires (entre 2 et 7 pièces max).
-- "format" doit être "carte" pour CNI/Permis/Titre de séjour, "passeport" pour un passeport, ou "a4" pour tout document papier/facture/attestation.
+- Liste uniquement les pièces principales obligatoires (maximum 6 pièces, descriptions courtes).
+- "format" doit être "carte" pour CNI/Permis/Titre de séjour, "passeport" pour un passeport, ou "a4" pour tout autre document.
 - Mets "couleur": true uniquement pour les pièces d'identité.`;
 
             const resIA = await appelerCascadeIA(promptDiag, imageBase64, geminiKey, groqKey);
@@ -165,7 +165,7 @@ Analyse attentivement l'image et réponds UNIQUEMENT par un objet JSON valide :
     {
       "id": "ref_detectee",
       "titre": "Nom exact de la pièce complémentaire obligatoire détectée",
-      "info": "Pourquoi l'administration bloque sans ce papier et où le télécharger",
+      "info": "Pourquoi l'administration bloque sans ce papier (max 15 mots)",
       "couleur": false
     }
   ]
