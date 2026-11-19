@@ -60,7 +60,7 @@
                 Zéro papier oublié, <span class="text-blue-900">zéro dossier bloqué par l'administration.</span>
             </h1>
             <p class="text-xs sm:text-base text-slate-600 max-w-xl mx-auto">
-                Choisissez un dossier courant ou tapez n'importe quelle démarche (ex : <em>surendettement, permis Réf. 7, succession...</em>) : l'IA génère la liste exacte et recadre automatiquement vos justificatifs.
+                Choisissez un dossier courant ou tapez n'importe quelle démarche (ex : <em>leasing, surendettement, permis Réf. 7, succession...</em>) : l'IA génère la liste complète et recadre automatiquement vos justificatifs.
             </p>
         </div>
     </header>
@@ -83,7 +83,7 @@
             <!-- BARRE DE RECHERCHE UNIVERSELLE -->
             <div class="relative">
                 <i class="fa-solid fa-magnifying-glass text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 text-sm"></i>
-                <input type="text" id="recherche-demarche" oninput="filtrerOuProposerDemarche()" placeholder="Rechercher n'importe quel dossier (ex: surendettement, permis, CAF, naturalisation...)" class="w-full bg-slate-50 border-2 border-blue-900/25 focus:border-blue-900 text-slate-900 text-sm rounded-xl pl-10 pr-10 py-3 font-medium outline-none transition">
+                <input type="text" id="recherche-demarche" oninput="filtrerOuProposerDemarche()" placeholder="Rechercher n'importe quel dossier (ex: leasing, surendettement, permis, CAF, naturalisation...)" class="w-full bg-slate-50 border-2 border-blue-900/25 focus:border-blue-900 text-slate-900 text-sm rounded-xl pl-10 pr-10 py-3 font-medium outline-none transition">
                 <button type="button" id="btn-effacer-recherche" onclick="effacerRecherche()" class="hidden text-slate-400 hover:text-slate-700 absolute right-3.5 top-1/2 -translate-y-1/2 text-sm">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
@@ -319,7 +319,7 @@
             <div class="bg-slate-900 flex-1 overflow-auto flex flex-col items-center justify-center p-3 min-h-[250px] relative">
                 <div class="relative inline-block">
                     <canvas id="canvas-apercu-scan" class="max-w-full max-h-[42vh] rounded shadow-lg border-2 border-emerald-400"></canvas>
-                    <!-- Repere visuel pour Nouvelle CNI (puce + bande MRZ) -->
+                    <!-- Repere visuel pour Nouvelle CNI -->
                     <div id="repere-nouvelle-cni" class="hidden absolute inset-0 pointer-events-none border-2 border-dashed border-emerald-400/70 rounded flex items-end justify-between p-2">
                         <span class="bg-slate-950/75 text-emerald-300 text-[9px] font-bold px-2 py-0.5 rounded">Format Nouvelle CNI / Carte (85,6 × 54 mm)</span>
                     </div>
@@ -603,7 +603,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         mode: 'diagnostic',
-                        descriptionSituation: "Je dois constituer un dossier administratif complet pour : " + texte + ". Liste toutes les pièces obligatoires et les pièces pièges qui bloquent souvent ce dossier en France."
+                        descriptionSituation: "Liste EXHAUSTIVEMENT TOUTES les pièces obligatoires et pièces pièges sans exception pour un dossier de : " + texte + " en France (ne pas oublier justificatif de domicile, identité, revenus, avis d'imposition, RIB ou permis selon le cas)."
                     })
                 });
                 const res = await reponse.json();
@@ -834,14 +834,17 @@
             container.innerHTML = liste.map(function(item) {
                 const titreLow = item.titre.toLowerCase();
                 let cleCoffreCorrespondante = item.id;
-                if (titreLow.includes('identité') || titreLow.includes('cni') || titreLow.includes('passeport')) {
+                const estUnRib = titreLow.includes('rib') || titreLow.includes('bancaire') || titreLow.includes('iban');
+
+                if (!estUnRib && (titreLow.includes('pièce d\'identité') || titreLow.includes('piece d\'identite') || titreLow.includes('carte nationale') || titreLow.includes('cni') || titreLow.includes('passeport'))) {
                     item.typeSpecifique = item.typeSpecifique || 'identite';
                     if (item.id.startsWith('ia_')) cleCoffreCorrespondante = 'cni';
                 } else if (titreLow.includes('domicile') || titreLow.includes('résidence')) {
                     item.typeSpecifique = item.typeSpecifique || 'domicile';
                 } else if (titreLow.includes('imposition') || titreLow.includes('impôt')) {
                     if (coffrePhotos['impots']) cleCoffreCorrespondante = 'impots';
-                } else if (titreLow.includes('rib') || titreLow.includes('bancaire')) {
+                } else if (estUnRib) {
+                    item.gabarit = 'a4';
                     if (coffrePhotos['rib']) cleCoffreCorrespondante = 'rib';
                 }
 
@@ -1172,7 +1175,6 @@
             const zoomPct = parseInt(document.getElementById('slider-zoom-cadre').value, 10) / 100;
             document.getElementById('val-zoom-cadre').textContent = Math.round(zoomPct * 100) + '%';
 
-            // 1. Rotation de l'image source
             const rotCanvas = document.createElement('canvas');
             const rot = scanEnCours.rotation;
             if (rot === 90 || rot === 270) {
@@ -1189,7 +1191,6 @@
             rCtx.drawImage(img, -img.width / 2, -img.height / 2);
             rCtx.restore();
 
-            // 2. Calcul automatique du rectangle de cadrage selon le gabarit (Nouvelle CNI, Passeport, A4 ou Entier)
             const gab = GABARITS_SCAN[scanEnCours.gabarit] || GABARITS_SCAN.complet;
             let sw = rotCanvas.width;
             let sh = rotCanvas.height;
@@ -1197,17 +1198,14 @@
             if (gab.ratio) {
                 const imgRatio = rotCanvas.width / rotCanvas.height;
                 if (imgRatio > gab.ratio) {
-                    // Image plus large que le gabarit : on adapte sur la hauteur
                     sh = rotCanvas.height * gab.margeBase;
                     sw = sh * gab.ratio;
                 } else {
-                    // Image plus haute que le gabarit (cas classique photo verticale d'une CNI horizontale)
                     sw = rotCanvas.width * gab.margeBase;
                     sh = sw / gab.ratio;
                 }
             }
 
-            // Application du curseur d'ajustement du cadre
             sw = Math.min(rotCanvas.width, Math.max(80, sw / zoomPct));
             sh = Math.min(rotCanvas.height, Math.max(80, sh / zoomPct));
 
