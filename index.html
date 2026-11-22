@@ -22,6 +22,13 @@
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 antialiased">
+    
+    <a href="#" onclick="revenirAccueil(event)" class="flex items-center space-x-2 cursor-pointer hover:opacity-90 transition" title="Retour à l'accueil">
+                <div class="bg-blue-900 text-white p-2 rounded-lg">
+                    <i class="fa-solid fa-shield-halved text-lg"></i>
+                </div>
+                <span class="font-extrabold text-xl tracking-tight text-blue-950">Dossier<span class="text-emerald-600">Blindé</span></span>
+    </a>
 
     <!-- Navigation -->
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-40">
@@ -1542,6 +1549,20 @@
             sauvegarderCoffre();
             chargerChecklist();
             ouvrirCoffreFort();
+        }
+        function revenirAccueil(e) {
+            if (e) e.preventDefault();
+            fermerModalePaiement();
+            fermerCoffreFort();
+            fermerStudioScan();
+            effacerRecherche();
+            document.getElementById('bloc-assistant-ia').classList.add('hidden');
+            document.getElementById('banniere-alerte-ia').classList.add('hidden');
+            document.getElementById('apercu-dossier-final').classList.add('hidden');
+            const select = document.getElementById('select-dossier');
+            select.value = 'loc_salarie';
+            chargerChecklist();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         mettreAJourStatutAbonnement();
