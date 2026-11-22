@@ -54,20 +54,29 @@ Réponds UNIQUEMENT au format JSON strict (sans balises markdown) :
             }
         }
 
-        const response = await fetch(
+        const optionsRequete = {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                contents: [{ parts }],
+                generationConfig: {
+                    responseMimeType: 'application/json',
+                    temperature: 0.2
+                }
+            })
+        };
+
+        let response = await fetch(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.8-flash:generateContent?key=${encodeURIComponent(apiKey)}`,
-            {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts }],
-                    generationConfig: {
-                        responseMimeType: 'application/json',
-                        temperature: 0.2
-                    }
-                })
-            }
+            optionsRequete
         );
+
+        if (response.status === 503 || response.status === 429) {
+            response = await fetch(
+                `https://generativelanguage.googleapis.com/v1beta/models/gemini-3.5-flash-lite:generateContent?key=${encodeURIComponent(apiKey)}`,
+                optionsRequete
+            );
+        }
 
         const data = await response.json();
 
