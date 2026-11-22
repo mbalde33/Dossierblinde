@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#172554">
-    <title>DossierBlindé — Coffre Privé, Scanner Pro & Assistant IA</title>
+    <title>DossierBlindé — Préparez vos papiers facilement sans erreur</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -37,30 +37,30 @@
                     <i class="fa-solid fa-crown text-amber-500 mr-1"></i>PASS ACTIF
                 </span>
                 <button onclick="ouvrirCoffreFort()" class="text-xs sm:text-sm font-semibold text-blue-900 bg-blue-50 hover:bg-blue-100 px-3.5 py-2 rounded-lg border border-blue-200 transition flex items-center gap-2">
-                    <i class="fa-solid fa-vault"></i>
-                    <span>Mon Coffre (<span id="compteur-coffre">0</span>)</span>
+                    <i class="fa-solid fa-folder-open"></i>
+                    <span>Mes papiers (<span id="compteur-coffre">0</span>)</span>
                 </button>
             </div>
         </div>
     </nav>
 
-    <!-- Bandeau Garantie Confidentialite Zero-Acces -->
+    <!-- Bandeau Garantie Confidentialite -->
     <div class="bg-emerald-950 text-emerald-100 text-xs py-2.5 px-4 text-center font-medium">
-        <i class="fa-solid fa-user-shield text-emerald-400 mr-1.5"></i>
-        <strong>100 % Privé & Réutilisable :</strong> Scannez ou importez vos documents une seule fois. Ils restent dans votre téléphone et se remplissent tout seuls dans vos futurs dossiers.
+        <i class="fa-solid fa-lock text-emerald-400 mr-1.5"></i>
+        <strong>100 % Privé & Pratique :</strong> Prenez vos papiers en photo une seule fois. Ils restent uniquement dans votre téléphone et se réutilisent tout seuls pour vos prochains dossiers.
     </div>
 
-    <!-- Hero compact -->
+    <!-- Hero simple -->
     <header class="bg-white border-b border-slate-200 pt-8 pb-10 px-4">
         <div class="max-w-3xl mx-auto text-center">
             <span class="inline-block bg-blue-50 border border-blue-200 text-blue-900 text-xs font-bold px-3 py-1 rounded-full mb-3">
-                Toutes Démarches • Cadres Auto CNI & A4 • Coffre Privé Local
+                Simple • Rapide • Vérifié avant envoi
             </span>
             <h1 class="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-3">
-                Zéro papier oublié, <span class="text-blue-900">zéro dossier refusé par l'administration.</span>
+                Fini la galère des papiers : <span class="text-blue-900">préparez votre dossier sans vous faire recaler.</span>
             </h1>
             <p class="text-xs sm:text-base text-slate-600 max-w-xl mx-auto">
-                Choisissez un dossier courant ou tapez n'importe quelle démarche (<em>location, permis Réf. 7, leasing, préfecture, succession...</em>) : l'IA génère la liste complète et recadre automatiquement vos justificatifs.
+                Choisissez votre démarche (ou prenez en photo le courrier reçu), scannez vos papiers à la lumière et téléchargez votre dossier complet et protégé en un clic.
             </p>
         </div>
     </header>
@@ -68,22 +68,22 @@
     <!-- Zone Principale Interactive -->
     <main class="max-w-3xl mx-auto px-4 py-8 space-y-6">
 
-        <!-- BLOC 1 : RECHERCHE INTELLIGENTE + DOSSIERS + PHOTO COURRIER -->
+        <!-- BLOC 1 : CHOIX DE LA DEMARCHE OU PHOTO DU COURRIER -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <label for="recherche-demarche" class="block text-sm font-extrabold text-slate-900 uppercase tracking-wide">
-                    Étape 1 : Trouvez ou sélectionnez votre dossier
+                    1. Quelle démarche voulez-vous faire ?
                 </label>
                 <button type="button" onclick="basculerAssistantIA()" class="text-xs font-bold text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 self-start sm:self-auto">
                     <i class="fa-solid fa-camera text-emerald-600"></i>
-                    <span>Prendre en photo un courrier reçu</span>
+                    <span>Lire un courrier reçu</span>
                 </button>
             </div>
 
-            <!-- BARRE DE RECHERCHE UNIVERSELLE -->
+            <!-- BARRE DE RECHERCHE SIMPLE -->
             <div class="relative">
                 <i class="fa-solid fa-magnifying-glass text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 text-sm"></i>
-                <input type="text" id="recherche-demarche" oninput="filtrerOuProposerDemarche()" placeholder="Rechercher n'importe quel dossier (ex: leasing, location, permis, CAF, naturalisation...)" class="w-full bg-slate-50 border-2 border-blue-900/25 focus:border-blue-900 text-slate-900 text-sm rounded-xl pl-10 pr-10 py-3 font-medium outline-none transition">
+                <input type="text" id="recherche-demarche" oninput="filtrerOuProposerDemarche()" placeholder="Tapez ce que vous voulez faire (ex: louer un appartement, permis, CAF, banque...)" class="w-full bg-slate-50 border-2 border-blue-900/25 focus:border-blue-900 text-slate-900 text-sm rounded-xl pl-10 pr-10 py-3 font-medium outline-none transition">
                 <button type="button" id="btn-effacer-recherche" onclick="effacerRecherche()" class="hidden text-slate-400 hover:text-slate-700 absolute right-3.5 top-1/2 -translate-y-1/2 text-sm">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
@@ -92,43 +92,43 @@
             <!-- Proposition dynamique IA -->
             <div id="zone-proposition-recherche" class="hidden bg-emerald-50 border border-emerald-300 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="text-xs text-emerald-950">
-                    <span class="font-extrabold block"><i class="fa-solid fa-wand-magic-sparkles text-emerald-600 mr-1"></i>Création automatique par l'IA</span>
-                    <span>Générer la liste complète des pièces obligatoires pour : <strong id="label-recherche-tapee"></strong></span>
+                    <span class="font-extrabold block"><i class="fa-solid fa-wand-magic-sparkles text-emerald-600 mr-1"></i>Liste sur-mesure</span>
+                    <span>Afficher exactement les papiers demandés pour : <strong id="label-recherche-tapee"></strong></span>
                 </div>
                 <button type="button" id="btn-creer-depuis-recherche" onclick="creerDossierDepuisRecherche()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-lg transition shrink-0 shadow-sm">
-                    Générer ce dossier
+                    Voir la liste
                 </button>
             </div>
 
             <!-- Menu des dossiers -->
             <div>
-                <span class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Ou choisissez parmi les dossiers les plus demandés en France :</span>
+                <span class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Ou choisissez directement dans la liste :</span>
                 <select id="select-dossier" onchange="chargerChecklist()" class="w-full bg-slate-50 border border-slate-300 focus:border-blue-900 text-slate-900 text-sm sm:text-base rounded-xl p-3.5 font-semibold outline-none transition">
-                    <option value="loc_salarie">1. Location — Salarié (CDI / CDD)</option>
-                    <option value="loc_indep">2. Location — Indépendant / Micro-entrepreneur</option>
-                    <option value="loc_etudiant">3. Location — Étudiant / Alternant avec Garant</option>
-                    <option value="permis_repassage">4. Permis ANTS — Repassage après Annulation / Suspension (Réf. 7 & 44)</option>
-                    <option value="cni_passeport">5. Carte d'Identité / Passeport — Renouvellement ou Perte</option>
-                    <option value="caf_aides">6. Dossier CAF — APL / Prime d'activité / RSA</option>
-                    <option value="achat_immo">7. Achat Immobilier — Compromis Notaire & Financement Banque</option>
-                    <option value="declaration_deces">8. Déclaration de Décès & Démarches Succession / Banques</option>
-                    <option value="compte_banque">9. Ouverture Compte Bancaire / Livret</option>
-                    <option value="inscription_club">10. Inscription Salle de sport / Association / Bibliothèque</option>
-                    <option value="carte_vitale">11. Attestation Sécu / Carte Vitale</option>
-                    <option value="dossier_recherche" class="hidden" id="option-dossier-recherche">Dossier personnalisé</option>
+                    <option value="loc_salarie">1. Louer un logement — Salarié (CDI / CDD)</option>
+                    <option value="loc_indep">2. Louer un logement — Indépendant / Auto-entrepreneur</option>
+                    <option value="loc_etudiant">3. Louer un logement — Étudiant / Alternant avec Garant</option>
+                    <option value="permis_repassage">4. Permis de conduire — Repasser le permis (annulation / suspension)</option>
+                    <option value="cni_passeport">5. Carte d'identité ou Passeport — Refaire ou renouveler</option>
+                    <option value="caf_aides">6. Dossier CAF — APL, Prime d'activité ou RSA</option>
+                    <option value="achat_immo">7. Achat immobilier — Notaire et prêt banque</option>
+                    <option value="declaration_deces">8. Déclaration de décès & démarches banques / succession</option>
+                    <option value="compte_banque">9. Ouvrir un compte bancaire</option>
+                    <option value="inscription_club">10. Inscription salle de sport, club ou association</option>
+                    <option value="carte_vitale">11. Carte Vitale / Attestation Sécurité sociale</option>
+                    <option value="dossier_recherche" class="hidden" id="option-dossier-recherche">Mon dossier sur-mesure</option>
                 </select>
             </div>
 
-            <!-- Encart Lecteur IA de Courrier Reçu -->
+            <!-- Encart Lecteur de Courrier Recu -->
             <div id="bloc-assistant-ia" class="hidden mt-2 bg-blue-950 text-white rounded-xl p-4 sm:p-5 space-y-3">
                 <div class="flex items-start justify-between gap-2">
                     <div>
                         <h3 class="text-sm font-extrabold text-emerald-400 flex items-center gap-1.5">
-                            <i class="fa-solid fa-robot"></i>
-                            Lecteur IA de Courrier Reçu & Détection des Pièces
+                            <i class="fa-solid fa-envelope-open-text"></i>
+                            Comprendre un courrier reçu
                         </h3>
                         <p class="text-xs text-blue-200 mt-0.5">
-                            Prenez en photo la lettre reçue (ANTS, CAF, Banque, bailleur...) dans un endroit bien éclairé : l'IA lit le courrier, vous indique les documents exacts à envoyer et prépare la réponse.
+                            Vous ne savez pas ce qu'on vous demande ? Prenez la lettre en photo à la lumière : l'application vous explique en mots simples quels papiers envoyer et prépare même la réponse.
                         </p>
                     </div>
                     <button type="button" onclick="basculerAssistantIA()" class="text-blue-300 hover:text-white text-sm">
@@ -136,26 +136,26 @@
                     </button>
                 </div>
 
-                <textarea id="input-situation-ia" rows="2" placeholder="Optionnel : précisez votre demande ou laissez vide si vous joignez la photo du courrier..." class="w-full bg-slate-900 border border-blue-800 rounded-lg p-3 text-xs sm:text-sm text-white placeholder-slate-400 outline-none focus:border-emerald-400"></textarea>
+                <textarea id="input-situation-ia" rows="2" placeholder="Facultatif : expliquez votre question en quelques mots, ou joignez juste la photo du courrier..." class="w-full bg-slate-900 border border-blue-800 rounded-lg p-3 text-xs sm:text-sm text-white placeholder-slate-400 outline-none focus:border-emerald-400"></textarea>
 
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
                     <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-blue-100 border border-blue-700 text-xs font-semibold px-3.5 py-2.5 rounded-lg flex items-center justify-center gap-2 transition">
                         <i class="fa-solid fa-camera text-emerald-400"></i>
-                        <span id="label-courrier-joint">Prendre en photo le courrier reçu</span>
+                        <span id="label-courrier-joint">Prendre le courrier en photo</span>
                         <input type="file" accept="image/*" id="input-photo-courrier" class="hidden" onchange="preparerPhotoCourrier(this)">
                     </label>
                     <button type="button" onclick="lancerDiagnosticIA()" id="btn-lancer-diag" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-xs px-4 py-2.5 rounded-lg transition flex items-center justify-center gap-2 shadow">
-                        <i class="fa-solid fa-magnifying-glass-plus"></i>
-                        <span>Analyser & Détecter les pièces</span>
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>Lire le courrier</span>
                     </button>
                 </div>
 
-                <!-- Resultat du diagnostic IA -->
+                <!-- Resultat de la lecture du courrier -->
                 <div id="resultat-diagnostic-ia" class="hidden bg-slate-900/90 border border-emerald-500/40 rounded-lg p-3.5 text-xs space-y-2">
                     <p id="texte-resume-diag" class="text-emerald-200 font-medium leading-relaxed"></p>
                     <div id="zone-reponse-type" class="hidden bg-slate-950 p-2.5 rounded border border-slate-700">
                         <div class="flex justify-between items-center mb-1">
-                            <span class="text-[10px] font-bold uppercase text-slate-400">Réponse officielle prête à envoyer :</span>
+                            <span class="text-[10px] font-bold uppercase text-slate-400">Message prêt à copier pour répondre :</span>
                             <button type="button" onclick="copierReponseType()" class="text-[11px] text-emerald-400 hover:underline font-bold">
                                 <i class="fa-regular fa-copy mr-1"></i>Copier
                             </button>
@@ -166,15 +166,15 @@
             </div>
         </div>
 
-        <!-- BLOC 2 : LISTE DYNAMIQUE DES PIECES + CONSIGNE LUMINOSITE + REUTILISATION COFFRE -->
+        <!-- BLOC 2 : LISTE DES PAPIERS A SCANNER -->
         <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
             <div class="bg-blue-950 text-white px-6 py-4 flex items-center justify-between">
                 <div>
-                    <h2 id="titre-checklist-active" class="font-bold text-base sm:text-lg">Étape 2 : Vos pièces obligatoires</h2>
-                    <p class="text-blue-200 text-xs">Les pièces déjà dans votre Coffre se cochent automatiquement</p>
+                    <h2 id="titre-checklist-active" class="font-bold text-base sm:text-lg">2. Vos papiers à préparer</h2>
+                    <p class="text-blue-200 text-xs">Les papiers déjà scannés se remplissent tout seuls</p>
                 </div>
                 <div class="text-right">
-                    <span id="progression-texte" class="text-sm font-extrabold text-emerald-400">0 / 0 validés</span>
+                    <span id="progression-texte" class="text-sm font-extrabold text-emerald-400">0 / 0 prêts</span>
                 </div>
             </div>
 
@@ -183,22 +183,22 @@
                 <div id="barre-progression" class="bg-emerald-500 h-2 transition-all duration-300" style="width: 0%"></div>
             </div>
 
-            <!-- CONSIGNE QUALITE PHOTO AVANT CAPTURE -->
+            <!-- CONSIGNE SIMPLE AVANT PHOTO -->
             <div class="bg-blue-50 border-b border-blue-200 px-5 py-3 text-xs text-blue-950 flex items-start gap-2.5">
                 <i class="fa-solid fa-sun text-amber-500 text-base mt-0.5 shrink-0"></i>
                 <div>
-                    <p class="font-extrabold">Conseil avant de scanner vos documents :</p>
+                    <p class="font-extrabold">Conseil pour une photo réussie du premier coup :</p>
                     <p class="text-blue-900 mt-0.5">
-                        Placez-vous dans un <strong>endroit très bien éclairé</strong> (près d'une fenêtre ou sous une lumière vive), posez le document à plat sans ombre ni reflet, et vérifiez que <strong>toutes les écritures et dates sont parfaitement nettes</strong>.
+                        Mettez-vous <strong>à la lumière</strong> (près d'une fenêtre ou sous une lampe), posez le papier à plat en entier et vérifiez que <strong>tout est bien lisible et aucun bord n'est coupé</strong>.
                     </p>
                 </div>
             </div>
 
-            <!-- Banniere d'alerte si l'IA a detecte automatiquement des pieces manquantes -->
+            <!-- Banniere si des papiers ont ete ajoutes suite a la lecture d'un courrier -->
             <div id="banniere-alerte-ia" class="hidden bg-amber-50 border-b border-amber-200 px-5 py-3 text-xs text-amber-950 flex items-start gap-2.5">
                 <i class="fa-solid fa-bell text-amber-600 mt-0.5 text-sm"></i>
                 <div>
-                    <p class="font-extrabold">Pièces détectées par l'IA :</p>
+                    <p class="font-extrabold">Papiers ajoutés à votre liste :</p>
                     <p id="detail-alerte-ia" class="text-amber-800 mt-0.5"></p>
                 </div>
             </div>
@@ -206,52 +206,52 @@
             <!-- Liste des pieces -->
             <div id="checklist-container" class="divide-y divide-slate-200"></div>
 
-            <!-- Barre d'ajout rapide d'une piece supplementaire -->
+            <!-- Barre d'ajout rapide d'un papier supplementaire -->
             <div class="bg-slate-50 px-5 py-4 border-t border-slate-200 flex flex-col sm:flex-row gap-2">
-                <input type="text" id="input-nouvelle-piece" placeholder="Ajouter une pièce demandée en plus (ex: Réf. 44, Cerfa 13594...)" class="flex-1 bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-medium outline-none focus:border-blue-900">
+                <input type="text" id="input-nouvelle-piece" placeholder="On vous demande un autre papier ? Écrivez son nom ici..." class="flex-1 bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-medium outline-none focus:border-blue-900">
                 <button type="button" onclick="ajouterPieceManuelle()" class="bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shrink-0">
                     <i class="fa-solid fa-plus"></i>
-                    <span>Ajouter cette pièce</span>
+                    <span>Ajouter</span>
                 </button>
             </div>
         </div>
 
-        <!-- BLOC 3 : FILIGRANE PERSONNALISE + GENERATION PDF -->
+        <!-- BLOC 3 : PROTECTION ET TELECHARGEMENT DU DOSSIER -->
         <div class="bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
             <div>
                 <span class="inline-block bg-emerald-500/20 text-emerald-300 text-xs font-bold px-2.5 py-1 rounded mb-2">
-                    ÉTAPE 3 • PROTECTION ANTI-USURPATION & EXPORT PDF A4
+                    3. VOTRE DOSSIER PRÊT À ENVOYER
                 </span>
-                <h3 class="text-xl font-bold mb-1">Générer mon Dossier Blindé prêt à envoyer</h3>
+                <h3 class="text-xl font-bold mb-1">Protéger et télécharger mon dossier</h3>
                 <p class="text-xs sm:text-sm text-slate-300">
-                    Personnalisez le destinataire sur le filigrane pour savoir exactement à qui le dossier a été remis.
+                    Nous écrivons automatiquement une mention en travers de vos papiers pour éviter que quelqu'un d'autre les utilise à votre place.
                 </p>
             </div>
 
-            <!-- Champ destinataire du filigrane -->
+            <!-- Champ destinataire -->
             <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-4">
                 <label for="input-destinataire" class="block text-xs font-bold text-emerald-300 uppercase tracking-wide mb-1.5">
-                    Destinataire inscrit sur le filigrane (anti-fuite) :
+                    À qui envoyez-vous ce dossier ? (écrit sur les pages pour vous protéger) :
                 </label>
-                <input type="text" id="input-destinataire" placeholder="Ex: BANQUE DE FRANCE, ANTS PERMIS, AGENCE FONCIA..." class="w-full bg-slate-950 border border-slate-600 focus:border-emerald-400 rounded-lg px-3.5 py-2.5 text-sm text-white font-semibold outline-none">
+                <input type="text" id="input-destinataire" placeholder="Ex: CAF, AGENCE IMMOBILIÈRE, BANQUE, PRÉFECTURE..." class="w-full bg-slate-950 border border-slate-600 focus:border-emerald-400 rounded-lg px-3.5 py-2.5 text-sm text-white font-semibold outline-none">
             </div>
 
             <!-- Bouton direct d'assemblage PDF -->
             <div>
                 <button type="button" onclick="genererDossierLocal()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold py-4 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
                     <i class="fa-solid fa-file-shield"></i>
-                    <span>Générer mon PDF Blindé maintenant</span>
+                    <span>Créer mon dossier prêt à envoyer</span>
                 </button>
             </div>
 
-            <!-- Apercu du dossier genere localement avec filigrane -->
+            <!-- Apercu du dossier genere localement -->
             <div id="apercu-dossier-final" class="hidden pt-6 border-t border-slate-700">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                     <p class="text-sm font-bold text-emerald-400">
-                        <i class="fa-solid fa-circle-check mr-1.5"></i>Votre Dossier Blindé est prêt :
+                        <i class="fa-solid fa-circle-check mr-1.5"></i>Votre dossier est prêt :
                     </p>
                     <button onclick="window.print()" class="bg-white hover:bg-slate-100 text-slate-950 font-extrabold text-xs px-4 py-2.5 rounded-lg transition shadow">
-                        <i class="fa-solid fa-download mr-1.5"></i>Enregistrer en PDF / Imprimer
+                        <i class="fa-solid fa-download mr-1.5"></i>Télécharger en PDF / Imprimer
                     </button>
                 </div>
 
@@ -259,11 +259,11 @@
                 <div id="zone-impression-pdf" class="bg-white text-slate-900 rounded-xl p-6 sm:p-8 space-y-6">
                     <div class="border-b-2 border-blue-900 pb-4 flex justify-between items-center">
                         <div>
-                            <h4 class="text-xl font-extrabold text-blue-950">DOSSIER ADMINISTRATIF NUMÉRISÉ & VÉRIFIÉ</h4>
+                            <h4 class="text-xl font-extrabold text-blue-950">DOSSIER ADMINISTRATIF COMPLET</h4>
                             <p id="titre-dossier-pdf" class="text-xs font-semibold text-slate-500 uppercase mt-1"></p>
                         </div>
                         <span class="bg-emerald-100 text-emerald-900 text-xs font-bold px-3 py-1 rounded-full border border-emerald-300">
-                            SCAN CERTIFIÉ LOCAL
+                            PAPIERS VÉRIFIÉS
                         </span>
                     </div>
 
@@ -274,16 +274,16 @@
 
     </main>
 
-    <!-- Modale Studio Scanner Haute Nettete + Controle Luminosite -->
+    <!-- Modale Scanner Simple (Sans cadre impose) -->
     <div id="modal-scanner" class="hidden fixed inset-0 bg-slate-950/90 z-50 flex items-center justify-center p-2 sm:p-4">
         <div class="bg-white rounded-2xl max-w-xl w-full max-h-[95vh] flex flex-col overflow-hidden shadow-2xl">
             <div class="bg-blue-950 text-white px-4 py-3 flex items-center justify-between">
                 <div>
                     <h3 class="font-bold text-sm sm:text-base flex items-center gap-2">
-                        <i class="fa-solid fa-id-card text-emerald-400"></i>
-                        <span id="titre-studio-scan">Scanner / Document</span>
+                        <i class="fa-solid fa-camera text-emerald-400"></i>
+                        <span id="titre-studio-scan">Scanner mon papier</span>
                     </h3>
-                    <p id="sous-titre-gabarit" class="text-[11px] text-emerald-300 font-semibold">Cadre automatique appliqué</p>
+                    <p class="text-[11px] text-emerald-300 font-semibold">Vérifiez que tout le papier est bien visible et net</p>
                 </div>
                 <button onclick="fermerStudioScan()" class="text-slate-300 hover:text-white text-xl px-2">
                     <i class="fa-solid fa-xmark"></i>
@@ -295,8 +295,8 @@
                 <div class="flex items-start gap-2">
                     <i class="fa-solid fa-lightbulb text-amber-300 text-sm mt-0.5 shrink-0"></i>
                     <div>
-                        <p class="font-extrabold">Photo trop sombre détectée !</p>
-                        <p class="text-[11px] text-red-100">Les textes risquent d'être illisibles. Mettez-vous à la lumière et reprenez la photo, ou augmentez la luminosité ci-dessous.</p>
+                        <p class="font-extrabold">Photo un peu sombre !</p>
+                        <p class="text-[11px] text-red-100">Mettez-vous à la lumière et reprenez la photo, ou augmentez la luminosité ci-dessous.</p>
                     </div>
                 </div>
                 <label class="cursor-pointer bg-white text-red-700 font-extrabold text-[11px] px-2.5 py-1.5 rounded-lg shrink-0 shadow">
@@ -305,70 +305,37 @@
                 </label>
             </div>
 
-            <!-- Apercu avec cadre de visee -->
-            <div class="bg-slate-900 flex-1 overflow-auto flex flex-col items-center justify-center p-3 min-h-[230px] relative">
-                <div class="relative inline-block">
-                    <canvas id="canvas-apercu-scan" class="max-w-full max-h-[38vh] rounded shadow-lg border-2 border-emerald-400"></canvas>
-                    <div id="repere-nouvelle-cni" class="hidden absolute inset-0 pointer-events-none border-2 border-dashed border-emerald-400/70 rounded flex items-end justify-between p-2">
-                        <span class="bg-slate-950/75 text-emerald-300 text-[9px] font-bold px-2 py-0.5 rounded">Format Nouvelle CNI / Carte (85,6 × 54 mm)</span>
-                    </div>
-                </div>
+            <!-- Apercu entier du document -->
+            <div class="bg-slate-900 flex-1 overflow-auto flex flex-col items-center justify-center p-3 min-h-[240px]">
+                <canvas id="canvas-apercu-scan" class="max-w-full max-h-[42vh] rounded shadow-lg border-2 border-emerald-400"></canvas>
             </div>
 
             <div class="p-3.5 sm:p-4 bg-slate-50 border-t border-slate-200 space-y-2.5 text-xs">
-                <!-- Choix rapide du Gabarit (Cadre automatique) -->
-                <div class="flex flex-wrap items-center justify-between gap-1.5">
-                    <span class="text-[11px] font-bold text-slate-600">Cadre auto :</span>
-                    <div class="flex flex-wrap items-center gap-1.5">
-                        <button type="button" onclick="changerGabaritScan('carte')" id="btn-gab-carte" class="px-2.5 py-1 rounded-lg font-bold border transition">
-                            <i class="fa-regular fa-id-card mr-1"></i>Nouvelle CNI / Carte
-                        </button>
-                        <button type="button" onclick="changerGabaritScan('passeport')" id="btn-gab-passeport" class="px-2.5 py-1 rounded-lg font-bold border transition">
-                            <i class="fa-solid fa-passport mr-1"></i>Passeport
-                        </button>
-                        <button type="button" onclick="changerGabaritScan('a4')" id="btn-gab-a4" class="px-2.5 py-1 rounded-lg font-bold border transition">
-                            <i class="fa-regular fa-file-lines mr-1"></i>Page A4
-                        </button>
-                        <button type="button" onclick="changerGabaritScan('complet')" id="btn-gab-complet" class="px-2.5 py-1 rounded-lg font-bold border transition">
-                            Entier
-                        </button>
-                    </div>
-                </div>
-
-                <!-- Reglages Cadrage + Luminosite + Filtre Pro -->
-                <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-2">
-                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                            <div class="flex justify-between font-semibold text-slate-700 mb-0.5">
-                                <span><i class="fa-solid fa-crop-simple text-blue-900 mr-1"></i>Zoom cadre</span>
-                                <span id="val-zoom-cadre" class="font-extrabold text-blue-900">100%</span>
-                            </div>
-                            <input type="range" id="slider-zoom-cadre" min="65" max="135" value="100" oninput="actualiserApercuScan()" class="w-full accent-blue-900">
+                <!-- Reglages Luminosite + Style Scan -->
+                <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-2.5">
+                    <div>
+                        <div class="flex justify-between font-semibold text-slate-700 mb-0.5">
+                            <span><i class="fa-solid fa-sun text-amber-500 mr-1"></i>Luminosité</span>
+                            <span id="val-lum-scan" class="font-extrabold text-blue-900">Auto</span>
                         </div>
-                        <div>
-                            <div class="flex justify-between font-semibold text-slate-700 mb-0.5">
-                                <span><i class="fa-solid fa-sun text-amber-500 mr-1"></i>Éclairage / Netteté</span>
-                                <span id="val-lum-scan" class="font-extrabold text-blue-900">Auto</span>
-                            </div>
-                            <input type="range" id="slider-lum-scan" min="-20" max="60" value="0" oninput="actualiserApercuScan()" class="w-full accent-amber-500">
-                        </div>
+                        <input type="range" id="slider-lum-scan" min="-20" max="60" value="0" oninput="actualiserApercuScan()" class="w-full accent-amber-500">
                     </div>
 
-                    <div class="flex flex-wrap items-center justify-between gap-2 pt-1.5 border-t border-slate-100">
-                        <div class="flex items-center gap-1.5">
+                    <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
+                        <div class="flex flex-wrap items-center gap-1.5">
                             <button type="button" onclick="changerFiltreScan('nb')" id="btn-filtre-nb" class="px-2.5 py-1 rounded-lg font-bold border transition">
-                                Scan N&B Haute Netteté
+                                Scan Noir & Blanc
                             </button>
                             <button type="button" onclick="changerFiltreScan('couleur')" id="btn-filtre-couleur" class="px-2.5 py-1 rounded-lg font-bold border transition">
-                                Scan Couleur Pro
+                                Scan Couleur
                             </button>
                             <button type="button" onclick="changerFiltreScan('original')" id="btn-filtre-original" class="px-2.5 py-1 rounded-lg font-bold border transition">
-                                Original
+                                Photo normale
                             </button>
                         </div>
                         <button type="button" onclick="pivoterScan90()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
                             <i class="fa-solid fa-rotate-right"></i>
-                            <span>Pivoter 90°</span>
+                            <span>Tourner</span>
                         </button>
                     </div>
                 </div>
@@ -379,23 +346,23 @@
                     </button>
                     <button type="button" id="btn-valider-scan" onclick="validerEtEnvoyerScan()" class="w-2/3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold py-2.5 rounded-xl shadow flex items-center justify-center gap-2">
                         <i class="fa-solid fa-check"></i>
-                        <span>Valider & Vérifier par IA</span>
+                        <span>Valider ce papier</span>
                     </button>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Modale Coffre-Fort Prive -->
+    <!-- Modale Mes Papiers Enregistres -->
     <div id="modal-coffre" class="hidden fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
             <div class="bg-blue-950 text-white px-6 py-4 flex items-center justify-between">
                 <div>
                     <h3 class="font-bold text-lg flex items-center gap-2">
-                        <i class="fa-solid fa-vault text-emerald-400"></i>
-                        Mon Coffre Privé (Scans Réutilisables)
+                        <i class="fa-solid fa-folder-open text-emerald-400"></i>
+                        Mes papiers enregistrés sur ce téléphone
                     </h3>
-                    <p class="text-[11px] text-blue-200">Stocké uniquement sur cet appareil — Réutilisé automatiquement dans tous vos dossiers</p>
+                    <p class="text-[11px] text-blue-200">Rien n'est envoyé ailleurs — vos papiers se réutilisent automatiquement</p>
                 </div>
                 <button onclick="fermerCoffreFort()" class="text-slate-300 hover:text-white text-xl">
                     <i class="fa-solid fa-xmark"></i>
@@ -404,7 +371,7 @@
             <div id="contenu-coffre" class="p-6 overflow-y-auto space-y-4"></div>
             <div class="bg-slate-100 px-6 py-3 flex justify-between items-center border-t border-slate-200">
                 <button onclick="viderCoffre()" class="text-xs text-red-600 hover:underline font-semibold">
-                    <i class="fa-solid fa-trash mr-1"></i>Vider tout le coffre de cet appareil
+                    <i class="fa-solid fa-trash mr-1"></i>Tout effacer de cet appareil
                 </button>
                 <button onclick="fermerCoffreFort()" class="bg-blue-900 text-white text-xs font-bold px-4 py-2 rounded-lg">
                     Fermer
@@ -415,81 +382,74 @@
 
     <script>
         const TYPES_PIECE_IDENTITE = {
-            cni: { label: "Carte Nationale d'Identité (Nouvelle ou Ancienne CNI)", rectoVerso: true, gabarit: "carte" },
-            passeport: { label: "Passeport", rectoVerso: false, gabarit: "passeport" },
-            permis: { label: "Permis de conduire", rectoVerso: true, gabarit: "carte" },
-            titre_sejour: { label: "Titre de séjour / Carte de résident", rectoVerso: true, gabarit: "carte" }
-        };
-
-        const GABARITS_SCAN = {
-            carte: { ratio: 1.586, margeBase: 0.88, label: "Cadre Nouvelle CNI / Carte format bancaire (85,6 × 54 mm)" },
-            passeport: { ratio: 1.42, margeBase: 0.90, label: "Cadre Passeport (page identité)" },
-            a4: { ratio: 0.707, margeBase: 0.92, label: "Cadre Page A4 (Facture, Attestation, Courrier)" },
-            complet: { ratio: null, margeBase: 1.0, label: "Document entier sans recadrage" }
+            cni: { label: "Carte Nationale d'Identité", rectoVerso: true },
+            passeport: { label: "Passeport", rectoVerso: false },
+            permis: { label: "Permis de conduire", rectoVerso: true },
+            titre_sejour: { label: "Titre de séjour / Carte de résident", rectoVerso: true }
         };
 
         const REFERENTIEL_DOSSIERS = {
             loc_salarie: [
-                { id: "cni", titre: "Pièce d'identité", info: "Nouvelle CNI (format carte), Passeport ou Titre de séjour", typeSpecifique: "identite" },
-                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture à votre nom ou dossier d'hébergement", typeSpecifique: "domicile" },
-                { id: "paie", titre: "3 derniers bulletins de salaire", info: "Les 3 mois consécutifs précédant la demande", gabarit: "a4" },
-                { id: "contrat", titre: "Contrat de travail ou attestation employeur", info: "Signé et daté (CDI ou durée du CDD)", gabarit: "a4" },
-                { id: "impots", titre: "Dernier avis d'imposition", info: "Avis d'impôt sur le revenu complet", gabarit: "a4" }
+                { id: "cni", titre: "Pièce d'identité", info: "Carte d'identité, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
+                { id: "domicile", titre: "Justificatif de domicile (moins de 3 mois)", info: "Facture récente à votre nom ou papiers d'hébergement", typeSpecifique: "domicile" },
+                { id: "paie", titre: "3 dernières fiches de paie", info: "Les 3 derniers mois" },
+                { id: "contrat", titre: "Contrat de travail ou attestation de l'employeur", info: "Daté et signé" },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Toutes les pages du document" }
             ],
             loc_indep: [
-                { id: "cni", titre: "Pièce d'identité", info: "Nouvelle CNI, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
-                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture à votre nom ou dossier d'hébergement", typeSpecifique: "domicile" },
-                { id: "urssaf", titre: "Attestation de vigilance / Revenus URSSAF", info: "Relevés de chiffre d'affaires des 3 derniers mois", gabarit: "a4" },
-                { id: "impots", titre: "Dernier avis d'imposition", info: "Avis d'impôt sur le revenu complet", gabarit: "a4" }
+                { id: "cni", titre: "Pièce d'identité", info: "Carte d'identité, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
+                { id: "domicile", titre: "Justificatif de domicile (moins de 3 mois)", info: "Facture récente à votre nom ou papiers d'hébergement", typeSpecifique: "domicile" },
+                { id: "urssaf", titre: "Attestation URSSAF / Revenus récents", info: "Déclarations des 3 derniers mois" },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Toutes les pages du document" }
             ],
             loc_etudiant: [
-                { id: "cni", titre: "Pièce d'identité de l'étudiant", info: "Document d'identité de l'étudiant", typeSpecifique: "identite" },
-                { id: "etudiant", titre: "Carte étudiante ou certificat de scolarité", info: "Pour l'année universitaire en cours", gabarit: "carte" },
-                { id: "garant_cni", titre: "Pièce d'identité du Garant", info: "Obligatoire hors garantie Visale", typeSpecifique: "identite" },
-                { id: "garant_rev", titre: "Justificatifs de revenus du Garant", info: "3 fiches de paie + dernier avis d'imposition du garant", gabarit: "a4" }
+                { id: "cni", titre: "Pièce d'identité de l'étudiant", info: "Carte d'identité, Passeport ou Titre de séjour", typeSpecifique: "identite" },
+                { id: "etudiant", titre: "Carte étudiante ou certificat de scolarité", info: "Pour l'année en cours" },
+                { id: "garant_cni", titre: "Pièce d'identité du Garant", info: "La personne qui se porte garante pour vous", typeSpecifique: "identite" },
+                { id: "garant_rev", titre: "Papiers de revenus du Garant", info: "3 dernières fiches de paie + dernier avis d'imposition du garant" }
             ],
             permis_repassage: [
-                { id: "cni", titre: "Pièce d'identité", info: "Nouvelle CNI, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
-                { id: "domicile", titre: "Justificatif de domicile (- de 6 mois pour l'ANTS)", info: "Facture récente ou dossier d'hébergement complet", typeSpecifique: "domicile" },
-                { id: "permis_ref44", titre: "Décision d'annulation / invalidation (Réf. 44 ou 48SI)", info: "PIÈCE CRITIQUE : document remis par la préfecture ou le tribunal", gabarit: "a4" },
-                { id: "permis_ref7", titre: "Relevé d'Information Restreint (Réf. 7)", info: "PIÈCE CRITIQUE : à télécharger sur mespoints.permis.gouv.fr (sinon blocage ANTS)", gabarit: "a4" },
-                { id: "avis_medical", titre: "Avis médical favorable (Cerfa n°14880*02)", info: "Délivré par un médecin agréé préfecture + tests psychotechniques", gabarit: "a4" }
+                { id: "cni", titre: "Pièce d'identité", info: "Carte d'identité, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
+                { id: "domicile", titre: "Justificatif de domicile (moins de 6 mois)", info: "Facture récente ou papiers d'hébergement", typeSpecifique: "domicile" },
+                { id: "permis_ref44", titre: "Courrier d'annulation ou suspension du permis (Réf. 44 ou 48SI)", info: "Document remis par la préfecture ou le tribunal" },
+                { id: "permis_ref7", titre: "Relevé d'information restreint (Réf. 7)", info: "À télécharger gratuitement sur mespoints.permis.gouv.fr" },
+                { id: "avis_medical", titre: "Avis médical favorable", info: "Délivré par un médecin agréé préfecture" }
             ],
             cni_passeport: [
-                { id: "predemande_ants", titre: "Numéro ou récapitulatif de pré-demande ANTS", info: "À faire gratuitement sur ants.gouv.fr avant le rendez-vous en mairie", gabarit: "a4" },
-                { id: "domicile", titre: "Justificatif de domicile (- de 1 an)", info: "Facture récente ou dossier d'hébergement", typeSpecifique: "domicile" },
-                { id: "cni", titre: "Ancienne pièce d'identité (ou déclaration de perte/vol)", info: "En cas de perte/vol : timbre fiscal de 25 € (CNI) ou 86 € (Passeport)", typeSpecifique: "identite" }
+                { id: "predemande_ants", titre: "Récapitulatif de pré-demande (ants.gouv.fr)", info: "À faire gratuitement en ligne avant le rendez-vous en mairie" },
+                { id: "domicile", titre: "Justificatif de domicile (moins de 1 an)", info: "Facture récente ou papiers d'hébergement", typeSpecifique: "domicile" },
+                { id: "cni", titre: "Ancienne pièce d'identité (ou déclaration de perte/vol)", info: "Carte d'identité ou Passeport actuel", typeSpecifique: "identite" }
             ],
             caf_aides: [
-                { id: "cni", titre: "Pièce d'identité", info: "Nouvelle CNI, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
-                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "À votre nom et prénom", gabarit: "a4" },
-                { id: "impots", titre: "Dernier avis d'imposition", info: "Avis d'impôt sur le revenu complet", gabarit: "a4" },
-                { id: "paie", titre: "3 derniers justificatifs de revenus", info: "Bulletins de salaire ou déclarations URSSAF", gabarit: "a4" }
+                { id: "cni", titre: "Pièce d'identité", info: "Carte d'identité, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
+                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "Avec votre nom et votre IBAN bien visibles" },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Toutes les pages du document" },
+                { id: "paie", titre: "3 derniers justificatifs de revenus", info: "Fiches de paie ou déclarations URSSAF" }
             ],
             achat_immo: [
-                { id: "cni", titre: "Pièce d'identité (CNI ou Passeport)", info: "Attention : le permis est souvent refusé chez le notaire", typeSpecifique: "identite" },
-                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture récente ou attestation d'hébergement", typeSpecifique: "domicile" },
-                { id: "situation_fam", titre: "Livret de famille / Acte de mariage ou PACS", info: "Obligatoire chez le notaire pour vérifier le régime matrimonial", gabarit: "a4" },
-                { id: "apport_tracfin", titre: "Justificatif d'apport & origine des fonds (Tracfin)", info: "Relevé d'épargne ou attestation de donation (anti-blanchiment)", gabarit: "a4" },
-                { id: "impots", titre: "2 derniers avis d'imposition", info: "Complets avec toutes les pages", gabarit: "a4" }
+                { id: "cni", titre: "Pièce d'identité (Carte d'identité ou Passeport)", info: "En cours de validité", typeSpecifique: "identite" },
+                { id: "domicile", titre: "Justificatif de domicile (moins de 3 mois)", info: "Facture récente ou attestation d'hébergement", typeSpecifique: "domicile" },
+                { id: "situation_fam", titre: "Livret de famille / Acte de mariage ou PACS", info: "Demandé par le notaire" },
+                { id: "apport_tracfin", titre: "Justificatif de votre apport (relevé bancaire)", info: "Prouvant d'où vient l'argent de l'apport" },
+                { id: "impots", titre: "2 derniers avis d'imposition", info: "Complets avec toutes les pages" }
             ],
             declaration_deces: [
-                { id: "certif_deces", titre: "Certificat médical de décès + Acte de décès", info: "Délivré par le médecin puis la mairie du lieu de décès", gabarit: "a4" },
-                { id: "cni", titre: "Pièce d'identité du déclarant", info: "Votre pièce d'identité en cours de validité", typeSpecifique: "identite" },
-                { id: "livret_defunt", titre: "Livret de famille + Pièce d'identité du défunt", info: "Indispensable pour la mairie, les banques et les caisses de retraite", gabarit: "a4" },
-                { id: "rib_succession", titre: "RIB du compte à créditer / Notaire", info: "Pour le déblocage des frais d'obsèques et clôtures de comptes", gabarit: "a4" }
+                { id: "certif_deces", titre: "Certificat de décès + Acte de décès de la mairie", info: "Délivré par le médecin puis la mairie" },
+                { id: "cni", titre: "Votre pièce d'identité", info: "En cours de validité", typeSpecifique: "identite" },
+                { id: "livret_defunt", titre: "Livret de famille + Pièce d'identité du défunt", info: "Pour la mairie, les banques et la retraite" },
+                { id: "rib_succession", titre: "RIB du compte concerné / Notaire", info: "Pour les démarches bancaires" }
             ],
             compte_banque: [
-                { id: "cni", titre: "Pièce d'identité", info: "CNI, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
-                { id: "domicile", titre: "Justificatif de domicile (- de 3 mois)", info: "Facture eau, électricité ou téléphone à votre nom", typeSpecifique: "domicile" }
+                { id: "cni", titre: "Pièce d'identité", info: "Carte d'identité, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
+                { id: "domicile", titre: "Justificatif de domicile (moins de 3 mois)", info: "Facture eau, électricité, internet ou loyer", typeSpecifique: "domicile" }
             ],
             inscription_club: [
-                { id: "cni", titre: "Pièce d'identité", info: "CNI ou Passeport en cours de validité", typeSpecifique: "identite" },
-                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "RIB nominatif simple", gabarit: "a4" }
+                { id: "cni", titre: "Pièce d'identité", info: "Carte d'identité ou Passeport valide", typeSpecifique: "identite" },
+                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "À votre nom" }
             ],
             carte_vitale: [
-                { id: "cni", titre: "Pièce d'identité", info: "CNI, Passeport ou Titre de séjour", typeSpecifique: "identite" },
-                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "Pour les remboursements de soins", gabarit: "a4" }
+                { id: "cni", titre: "Pièce d'identité", info: "Carte d'identité, Passeport ou Titre de séjour", typeSpecifique: "identite" },
+                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "Pour les remboursements" }
             ],
             dossier_recherche: []
         };
@@ -506,7 +466,6 @@
             titreDoc: '',
             rotation: 0,
             filtre: 'nb',
-            gabarit: 'a4',
             luminositeMoyenne: 150
         };
 
@@ -530,7 +489,7 @@
                 localStorage.setItem('dossierBlinde_pieces_supp', JSON.stringify(piecesSupplementaires));
                 mettreAJourCompteurCoffre();
             } catch (err) {
-                alert("Mémoire locale pleine. Supprimez d'anciens scans dans 'Mon Coffre'.");
+                alert("Mémoire pleine sur le téléphone. Supprimez d'anciens papiers dans 'Mes papiers'.");
             }
         }
 
@@ -540,7 +499,7 @@
             if (el) el.textContent = nb;
         }
 
-        // --- BARRE DE RECHERCHE INTELLIGENTE ---
+        // --- BARRE DE RECHERCHE ---
 
         function filtrerOuProposerDemarche() {
             const input = document.getElementById('recherche-demarche');
@@ -585,7 +544,7 @@
 
             const btn = document.getElementById('btn-creer-depuis-recherche');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Création IA...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Recherche...';
 
             try {
                 const reponse = await fetch('/api/verifier', {
@@ -600,7 +559,7 @@
 
                 if (res.ok && Array.isArray(res.pieces) && res.pieces.length > 0) {
                     const optCustom = document.getElementById('option-dossier-recherche');
-                    optCustom.textContent = "Dossier sur-mesure : " + texte;
+                    optCustom.textContent = "Mon dossier : " + texte;
                     optCustom.classList.remove('hidden');
 
                     const select = document.getElementById('select-dossier');
@@ -611,25 +570,24 @@
                             id: 'ia_' + p.id.replace(/[^a-zA-Z0-9_]/g, '_'),
                             titre: p.titre,
                             info: p.info,
-                            gabarit: p.format || 'a4',
                             couleur: Boolean(p.couleur)
                         };
                     });
 
-                    document.getElementById('detail-alerte-ia').textContent = res.resume || ("Checklist complète générée pour : " + texte);
+                    document.getElementById('detail-alerte-ia').textContent = res.resume || ("Liste des papiers pour : " + texte);
                     document.getElementById('banniere-alerte-ia').classList.remove('hidden');
                     document.getElementById('zone-proposition-recherche').classList.add('hidden');
 
                     sauvegarderCoffre();
                     chargerChecklist();
                 } else {
-                    alert(res.message || "Impossible de générer ce dossier pour le moment.");
+                    alert(res.message || "Impossible de créer cette liste pour le moment.");
                 }
             } catch (err) {
                 alert("Erreur réseau : " + err.message);
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Générer ce dossier';
+                btn.textContent = 'Voir la liste';
             }
         }
 
@@ -665,13 +623,13 @@
         async function lancerDiagnosticIA() {
             const situation = document.getElementById('input-situation-ia').value.trim();
             if (!situation && !photoCourrierBase64) {
-                alert("Prenez en photo le courrier reçu ou précisez votre situation.");
+                alert("Prenez en photo le courrier reçu ou expliquez votre question.");
                 return;
             }
 
             const btn = document.getElementById('btn-lancer-diag');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Lecture du courrier...</span>';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Lecture en cours...</span>';
 
             try {
                 const reponse = await fetch('/api/verifier', {
@@ -679,7 +637,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         mode: 'diagnostic',
-                        descriptionSituation: situation || "Lis attentivement ce courrier reçu et indique exactement quels documents fournir pour y répondre.",
+                        descriptionSituation: situation || "Lis attentivement ce courrier reçu et indique en mots très simples quels documents fournir pour y répondre.",
                         imageBase64: photoCourrierBase64
                     })
                 });
@@ -698,7 +656,6 @@
                                 id: idPropre,
                                 titre: p.titre,
                                 info: p.info,
-                                gabarit: p.format || 'a4',
                                 couleur: Boolean(p.couleur)
                             });
                             nomsAjoutes.push(p.titre);
@@ -723,20 +680,20 @@
                     sauvegarderCoffre();
                     chargerChecklist();
                 } else {
-                    alert(res.message || "Impossible d'analyser ce courrier pour le moment.");
+                    alert(res.message || "Impossible de lire ce courrier pour le moment.");
                 }
             } catch (err) {
                 alert("Erreur réseau : " + err.message);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-magnifying-glass-plus"></i><span>Analyser & Détecter les pièces</span>';
+                btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i><span>Lire le courrier</span>';
             }
         }
 
         function copierReponseType() {
             const texte = document.getElementById('texte-reponse-type').textContent;
             navigator.clipboard.writeText(texte);
-            alert("Réponse officielle copiée !");
+            alert("Réponse copiée !");
         }
 
         function ajouterPieceManuelle() {
@@ -750,8 +707,7 @@
             piecesSupplementaires[typeActuel].push({
                 id: 'custom_' + Date.now(),
                 titre: titre,
-                info: "Pièce complémentaire ajoutée à votre dossier",
-                gabarit: 'a4',
+                info: "Papier ajouté à votre liste",
                 couleur: false
             });
 
@@ -787,10 +743,10 @@
         function genererSelecteurIdentite(cleChoix, typeChoisi) {
             return '<div class="mt-2 max-w-xs">' +
                 '<select onchange="changerTypeIdentite(\'' + cleChoix + '\', this.value)" class="w-full bg-white border border-slate-300 focus:border-blue-900 text-slate-900 text-xs font-bold rounded-lg px-3 py-2 outline-none transition">' +
-                    '<option value="cni"' + (typeChoisi === 'cni' ? ' selected' : '') + '>Nouvelle ou Ancienne CNI (Cadre Carte Recto / Verso)</option>' +
-                    '<option value="passeport"' + (typeChoisi === 'passeport' ? ' selected' : '') + '>Passeport (Cadre Page identité)</option>' +
-                    '<option value="permis"' + (typeChoisi === 'permis' ? ' selected' : '') + '>Permis de conduire (Cadre Carte Recto / Verso)</option>' +
-                    '<option value="titre_sejour"' + (typeChoisi === 'titre_sejour' ? ' selected' : '') + '>Titre de séjour (Cadre Carte Recto / Verso)</option>' +
+                    '<option value="cni"' + (typeChoisi === 'cni' ? ' selected' : '') + '>Carte d\'identité (Avant + Arrière)</option>' +
+                    '<option value="passeport"' + (typeChoisi === 'passeport' ? ' selected' : '') + '>Passeport (Page avec photo)</option>' +
+                    '<option value="permis"' + (typeChoisi === 'permis' ? ' selected' : '') + '>Permis de conduire (Avant + Arrière)</option>' +
+                    '<option value="titre_sejour"' + (typeChoisi === 'titre_sejour' ? ' selected' : '') + '>Titre de séjour (Avant + Arrière)</option>' +
                 '</select>' +
             '</div>';
         }
@@ -807,14 +763,14 @@
             const liste = obtenirListeCompleteDossier(type);
             const container = document.getElementById('checklist-container');
             
-            document.getElementById('titre-checklist-active').textContent = "Étape 2 : Pièces pour « " + selectEl.options[selectEl.selectedIndex].text.replace(/^\d+\.\s*/, '') + " »";
+            document.getElementById('titre-checklist-active').textContent = "2. Papiers pour : " + selectEl.options[selectEl.selectedIndex].text.replace(/^\d+\.\s*/, '');
 
             if (liste.length === 0) {
                 container.innerHTML = '<div class="p-8 text-center space-y-2">' +
-                    '<p class="text-sm font-bold text-slate-800">Aucune pièce listée pour le moment.</p>' +
-                    '<p class="text-xs text-slate-500">Utilisez la barre de recherche ci-dessus ou ajoutez vos pièces ci-dessous.</p>' +
+                    '<p class="text-sm font-bold text-slate-800">Aucun papier affiché pour le moment.</p>' +
+                    '<p class="text-xs text-slate-500">Utilisez la barre de recherche ci-dessus ou ajoutez un papier juste en dessous.</p>' +
                 '</div>';
-                document.getElementById('progression-texte').textContent = '0 / 0 validés';
+                document.getElementById('progression-texte').textContent = '0 / 0 prêts';
                 document.getElementById('barre-progression').style.width = '0%';
                 return;
             }
@@ -834,7 +790,6 @@
                 } else if (titreLow.includes('imposition') || titreLow.includes('impôt')) {
                     if (coffrePhotos['impots']) cleCoffreCorrespondante = 'impots';
                 } else if (estUnRib) {
-                    item.gabarit = 'a4';
                     if (coffrePhotos['rib']) cleCoffreCorrespondante = 'rib';
                 }
 
@@ -866,8 +821,8 @@
                                 '</div>' +
                             '</div>' +
                             '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-0 sm:pl-8">' +
-                                renderBlocFace(idBase + '_recto', configId.label + ' - FACE RECTO', 'Recto (Face avant)', docRecto, rectoValide, true, configId.gabarit) +
-                                renderBlocFace(idBase + '_verso', configId.label + ' - FACE VERSO', 'Verso (Face arrière)', docVerso, versoValide, true, configId.gabarit) +
+                                renderBlocFace(idBase + '_recto', configId.label + ' - FACE RECTO', 'Face avant (Recto)', docRecto, rectoValide, true) +
+                                renderBlocFace(idBase + '_verso', configId.label + ' - FACE VERSO', 'Face arrière (Verso)', docVerso, versoValide, true) +
                             '</div>' +
                         '</div>';
                     } else {
@@ -888,7 +843,7 @@
                                 '</div>' +
                             '</div>' +
                             '<div class="pl-0 sm:pl-8">' +
-                                renderBlocFace(idBase + '_recto', configId.label + ' (Page principale avec photo)', 'Page identité du Passeport', docPasseport, estValide, true, 'passeport') +
+                                renderBlocFace(idBase + '_recto', configId.label + ' (Page principale avec photo)', 'Page avec votre photo', docPasseport, estValide, true) +
                             '</div>' +
                         '</div>';
                     }
@@ -900,8 +855,8 @@
 
                     const selectDomicileHtml = '<div class="mt-2.5 max-w-md">' +
                         '<select onchange="changerModeDomicile(this.value)" class="w-full bg-slate-50 border border-slate-300 focus:border-blue-900 text-slate-900 text-xs font-bold rounded-lg px-3 py-2 outline-none transition">' +
-                            '<option value="direct"' + (modeDomicile === 'direct' ? ' selected' : '') + '>Facture à mon nom (Eau, Électricité, Internet, Loyer)</option>' +
-                            '<option value="heberge"' + (modeDomicile === 'heberge' ? ' selected' : '') + '>Je suis hébergé(e) (+ Attestation + Pièce d\'identité du logeur)</option>' +
+                            '<option value="direct"' + (modeDomicile === 'direct' ? ' selected' : '') + '>J\'ai une facture à mon nom (Eau, Électricité, Internet, Loyer)</option>' +
+                            '<option value="heberge"' + (modeDomicile === 'heberge' ? ' selected' : '') + '>Je vis chez quelqu\'un (Hébergé)</option>' +
                         '</select>' +
                     '</div>';
 
@@ -920,7 +875,7 @@
                                 '</div>' +
                             '</div>' +
                             '<div class="pl-0 sm:pl-8">' +
-                                renderBlocFace('domicile', 'Justificatif de domicile (- de 3 mois)', 'Facture ou quittance (- de 3 mois)', docDom, okDom, false, 'a4') +
+                                renderBlocFace('domicile', 'Justificatif de domicile (- de 3 mois)', 'Votre facture ou quittance récente', docDom, okDom, false) +
                             '</div>' +
                         '</div>';
                     } else {
@@ -946,11 +901,11 @@
 
                         const blocsIdentiteLogeur = configLogeur.rectoVerso
                             ? '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2.5">' +
-                                renderBlocFace('heb_cni_recto', configLogeur.label + ' de l\'hébergeur - FACE RECTO', 'Recto (Face avant)', docIdRecto, okIdR, true, configLogeur.gabarit) +
-                                renderBlocFace('heb_cni_verso', configLogeur.label + ' de l\'hébergeur - FACE VERSO', 'Verso (Face arrière)', docIdVerso, okIdV, true, configLogeur.gabarit) +
+                                renderBlocFace('heb_cni_recto', configLogeur.label + ' de l\'hébergeur - FACE RECTO', 'Face avant (Recto)', docIdRecto, okIdR, true) +
+                                renderBlocFace('heb_cni_verso', configLogeur.label + ' de l\'hébergeur - FACE VERSO', 'Face arrière (Verso)', docIdVerso, okIdV, true) +
                               '</div>'
                             : '<div class="mt-2.5">' +
-                                renderBlocFace('heb_cni_recto', configLogeur.label + ' de l\'hébergeur (Page identité)', 'Page identité du Passeport', docIdRecto, okIdR, true, 'passeport') +
+                                renderBlocFace('heb_cni_recto', configLogeur.label + ' de l\'hébergeur (Page identité)', 'Page avec photo', docIdRecto, okIdR, true) +
                               '</div>';
 
                         return '<div class="p-5 sm:p-6 flex flex-col gap-4 hover:bg-slate-50/70 transition" id="row-domicile">' +
@@ -958,15 +913,15 @@
                                 '<div class="mt-1">' + iconeStatut + '</div>' +
                                 '<div class="flex-1">' +
                                     '<h3 class="font-bold text-slate-900 text-sm sm:text-base">' + item.titre + ' (Hébergé)</h3>' +
-                                    '<p class="text-xs text-slate-500 mt-0.5">Facture de l\'hébergeur + attestation d\'hébergement + pièce d\'identité de l\'hébergeur</p>' +
+                                    '<p class="text-xs text-slate-500 mt-0.5">Il faut les 3 papiers de la personne qui vous héberge :</p>' +
                                     selectDomicileHtml +
                                 '</div>' +
                             '</div>' +
                             '<div class="space-y-3 pl-0 sm:pl-8">' +
-                                renderBlocFace('domicile', 'Justificatif de domicile de l\'hébergeur (- de 3 mois)', '1. Facture / Quittance de l\'hébergeur', docDom, okDom, false, 'a4') +
-                                renderBlocFace('heb_attestation', 'Attestation d\'hébergement datée et signée par l\'hébergeur', '2. Attestation d\'hébergement signée', docAttest, okAttest, false, 'a4') +
+                                renderBlocFace('domicile', 'Justificatif de domicile de l\'hébergeur (- de 3 mois)', '1. Sa facture récente (moins de 3 mois)', docDom, okDom, false) +
+                                renderBlocFace('heb_attestation', 'Attestation d\'hébergement datée et signée par l\'hébergeur', '2. Sa lettre d\'hébergement signée et datée', docAttest, okAttest, false) +
                                 '<div class="border border-slate-200 bg-slate-100/70 rounded-xl p-3.5">' +
-                                    '<p class="text-xs font-extrabold text-slate-800">3. Pièce d\'identité de l\'hébergeur</p>' +
+                                    '<p class="text-xs font-extrabold text-slate-800">3. Sa pièce d\'identité</p>' +
                                     selectLogeurHtml +
                                     blocsIdentiteLogeur +
                                 '</div>' +
@@ -987,15 +942,14 @@
                 }
 
                 const btnCouleur = (docSauvegarde && !estValide) ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-900 hover:bg-blue-800';
-                const btnLabel = docSauvegarde ? 'Remplacer' : 'Scanner / Document';
+                const btnLabel = docSauvegarde ? 'Refaire la photo' : 'Prendre en photo';
                 const miniature = docSauvegarde
                     ? '<img src="' + docSauvegarde.image + '" alt="Aperçu" class="w-12 h-12 object-contain bg-white rounded-lg border border-slate-300 shadow-sm cursor-pointer" onclick="ouvrirCoffreFort()">'
                     : '';
                 const badge = docSauvegarde ? renderBadgeIA(docSauvegarde) : '';
                 const btnSuppr = item.estSupplementaire
-                    ? '<button type="button" onclick="supprimerPieceSupplementaire(\'' + item.id + '\')" class="text-slate-400 hover:text-red-600 text-xs px-1.5" title="Retirer cette pièce"><i class="fa-solid fa-trash"></i></button>'
+                    ? '<button type="button" onclick="supprimerPieceSupplementaire(\'' + item.id + '\')" class="text-slate-400 hover:text-red-600 text-xs px-1.5" title="Retirer ce papier"><i class="fa-solid fa-trash"></i></button>'
                     : '';
-                const gabaritItem = item.gabarit || 'a4';
 
                 return '<div class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition" id="row-' + item.id + '">' +
                     '<div class="flex items-start space-x-3.5">' +
@@ -1003,7 +957,7 @@
                         '<div>' +
                             '<div class="flex items-center gap-2">' +
                                 '<h3 class="font-bold text-slate-900 text-sm sm:text-base">' + item.titre + '</h3>' +
-                                (item.estSupplementaire ? '<span class="bg-amber-100 text-amber-900 text-[10px] font-extrabold px-2 py-0.5 rounded">IA</span>' : '') +
+                                (item.estSupplementaire ? '<span class="bg-amber-100 text-amber-900 text-[10px] font-extrabold px-2 py-0.5 rounded">Ajouté</span>' : '') +
                             '</div>' +
                             '<p class="text-xs text-slate-500 mt-0.5">' + item.info + '</p>' +
                             '<div id="status-' + cleCoffreCorrespondante + '" class="mt-2">' + badge + '</div>' +
@@ -1015,25 +969,25 @@
                         '<label class="cursor-pointer ' + btnCouleur + ' text-white text-xs font-bold px-3.5 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">' +
                             '<i class="fa-solid fa-camera"></i>' +
                             '<span>' + btnLabel + '</span>' +
-                            '<input type="file" accept="image/*" class="hidden" data-cle="' + cleCoffreCorrespondante + '" data-titre="' + item.titre.replace(/"/g, '&quot;') + '" data-couleur="' + (item.couleur ? 'true' : 'false') + '" data-gabarit="' + gabaritItem + '" onchange="ouvrirStudioScanDepuisInput(this)">' +
+                            '<input type="file" accept="image/*" class="hidden" data-cle="' + cleCoffreCorrespondante + '" data-titre="' + item.titre.replace(/"/g, '&quot;') + '" data-couleur="' + (item.couleur ? 'true' : 'false') + '" onchange="ouvrirStudioScanDepuisInput(this)">' +
                         '</label>' +
                     '</div>' +
                 '</div>';
             }).join('');
 
             const pct = liste.length > 0 ? Math.round((valides / liste.length) * 100) : 0;
-            document.getElementById('progression-texte').textContent = valides + ' / ' + liste.length + ' validés';
+            document.getElementById('progression-texte').textContent = valides + ' / ' + liste.length + ' prêts';
             document.getElementById('barre-progression').style.width = pct + '%';
         }
 
-        function renderBlocFace(cleId, titreIA, labelFace, docFace, estValide, garderCouleur, gabarit) {
+        function renderBlocFace(cleId, titreIA, labelFace, docFace, estValide, garderCouleur) {
             const bordure = docFace ? (estValide ? 'border-emerald-200 bg-emerald-50/30' : 'border-red-200 bg-red-50/30') : 'border-slate-200 bg-white';
             const btnCouleur = (docFace && !estValide) ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-900 hover:bg-blue-800';
-            const btnLabel = docFace ? 'Remplacer' : 'Scanner / Document';
+            const btnLabel = docFace ? 'Refaire' : 'Photo';
             const miniature = docFace
                 ? '<img src="' + docFace.image + '" class="w-9 h-9 object-contain bg-white rounded border border-slate-300 cursor-pointer" onclick="ouvrirCoffreFort()">'
                 : '';
-            const badge = docFace ? renderBadgeIA(docFace) : '<span class="text-[11px] text-slate-400">En attente (à la lumière)</span>';
+            const badge = docFace ? renderBadgeIA(docFace) : '<span class="text-[11px] text-slate-400">À prendre en photo à la lumière</span>';
 
             return '<div class="border ' + bordure + ' rounded-xl p-3.5 flex flex-col justify-between gap-2.5">' +
                 '<div class="flex items-center justify-between gap-2">' +
@@ -1043,7 +997,7 @@
                         '<label class="cursor-pointer ' + btnCouleur + ' text-white text-[11px] font-bold px-3 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm">' +
                             '<i class="fa-solid fa-camera"></i>' +
                             '<span>' + btnLabel + '</span>' +
-                            '<input type="file" accept="image/*" class="hidden" data-cle="' + cleId + '" data-titre="' + titreIA.replace(/"/g, '&quot;') + '" data-couleur="' + (garderCouleur ? 'true' : 'false') + '" data-gabarit="' + (gabarit || 'a4') + '" onchange="ouvrirStudioScanDepuisInput(this)">' +
+                            '<input type="file" accept="image/*" class="hidden" data-cle="' + cleId + '" data-titre="' + titreIA.replace(/"/g, '&quot;') + '" data-couleur="' + (garderCouleur ? 'true' : 'false') + '" onchange="ouvrirStudioScanDepuisInput(this)">' +
                         '</label>' +
                     '</div>' +
                 '</div>' +
@@ -1052,7 +1006,7 @@
         }
 
         function renderBadgeIA(doc) {
-            const msg = doc.messageIA || (doc.statut === 'valide' ? 'Scan conforme (Coffre)' : 'Refusé, rescannez');
+            const msg = doc.messageIA || (doc.statut === 'valide' ? 'Papier validé et enregistré' : 'À refaire, rescannez');
             if (doc.statut === 'valide') {
                 return '<span class="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold px-2.5 py-1 rounded-md">' +
                     '<i class="fa-solid fa-check-circle text-emerald-600 shrink-0"></i> <span>' + msg + '</span>' +
@@ -1064,27 +1018,26 @@
             }
         }
 
-        // --- STUDIO SCANNER HAUTE NETTETE + DETECTION DE LUMINOSITE ---
+        // --- SCANNER SIMPLE SANS CADRE ---
 
         function ouvrirStudioScanDepuisInput(input) {
             if (!input.files || !input.files[0]) return;
             const cleId = input.getAttribute('data-cle');
             const titreDoc = input.getAttribute('data-titre');
             const garderCouleur = input.getAttribute('data-couleur') === 'true';
-            const gabarit = input.getAttribute('data-gabarit') || 'a4';
             const file = input.files[0];
 
-            chargerImageDansStudio(file, cleId, titreDoc, garderCouleur ? 'couleur' : 'nb', gabarit);
+            chargerImageDansStudio(file, cleId, titreDoc, garderCouleur ? 'couleur' : 'nb');
             input.value = '';
         }
 
         function remplacerPhotoDansStudio(input) {
             if (!input.files || !input.files[0]) return;
-            chargerImageDansStudio(input.files[0], scanEnCours.cleId, scanEnCours.titreDoc, scanEnCours.filtre, scanEnCours.gabarit);
+            chargerImageDansStudio(input.files[0], scanEnCours.cleId, scanEnCours.titreDoc, scanEnCours.filtre);
             input.value = '';
         }
 
-        function chargerImageDansStudio(file, cleId, titreDoc, filtre, gabarit) {
+        function chargerImageDansStudio(file, cleId, titreDoc, filtre) {
             const reader = new FileReader();
             reader.onload = function(event) {
                 const img = new Image();
@@ -1098,14 +1051,11 @@
                         titreDoc: titreDoc,
                         rotation: 0,
                         filtre: filtre,
-                        gabarit: gabarit,
                         luminositeMoyenne: lumMoyenne
                     };
 
                     document.getElementById('titre-studio-scan').textContent = titreDoc;
-                    document.getElementById('slider-zoom-cadre').value = 100;
 
-                    // Si la photo est sombre, on eclaire automatiquement et on affiche l'alerte
                     const sliderLum = document.getElementById('slider-lum-scan');
                     const alerteLum = document.getElementById('alerte-luminosite-scan');
                     if (estTropSombre) {
@@ -1116,7 +1066,6 @@
                         alerteLum.classList.add('hidden');
                     }
 
-                    mettreAJourBoutonsGabarit();
                     mettreAJourBoutonsFiltre();
                     actualiserApercuScan();
                     document.getElementById('modal-scanner').classList.remove('hidden');
@@ -1150,35 +1099,6 @@
             actualiserApercuScan();
         }
 
-        function changerGabaritScan(nouveauGab) {
-            scanEnCours.gabarit = nouveauGab;
-            document.getElementById('slider-zoom-cadre').value = 100;
-            mettreAJourBoutonsGabarit();
-            actualiserApercuScan();
-        }
-
-        function mettreAJourBoutonsGabarit() {
-            ['carte', 'passeport', 'a4', 'complet'].forEach(function(g) {
-                const btn = document.getElementById('btn-gab-' + g);
-                if (!btn) return;
-                if (scanEnCours.gabarit === g) {
-                    btn.className = 'px-2.5 py-1 rounded-lg font-bold border border-emerald-600 bg-emerald-600 text-white transition';
-                } else {
-                    btn.className = 'px-2.5 py-1 rounded-lg font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 transition';
-                }
-            });
-
-            const infoGab = GABARITS_SCAN[scanEnCours.gabarit] || GABARITS_SCAN.a4;
-            document.getElementById('sous-titre-gabarit').textContent = infoGab.label;
-
-            const repereCni = document.getElementById('repere-nouvelle-cni');
-            if (scanEnCours.gabarit === 'carte') {
-                repereCni.classList.remove('hidden');
-            } else {
-                repereCni.classList.add('hidden');
-            }
-        }
-
         function changerFiltreScan(nouveauFiltre) {
             scanEnCours.filtre = nouveauFiltre;
             mettreAJourBoutonsFiltre();
@@ -1201,10 +1121,7 @@
             const img = scanEnCours.imgSource;
             if (!img) return;
 
-            const zoomPct = parseInt(document.getElementById('slider-zoom-cadre').value, 10) / 100;
             const lumBoost = parseInt(document.getElementById('slider-lum-scan').value, 10);
-
-            document.getElementById('val-zoom-cadre').textContent = Math.round(zoomPct * 100) + '%';
             document.getElementById('val-lum-scan').textContent = lumBoost === 0 ? 'Auto' : (lumBoost > 0 ? '+' + lumBoost : lumBoost);
 
             const rotCanvas = document.createElement('canvas');
@@ -1223,29 +1140,8 @@
             rCtx.drawImage(img, -img.width / 2, -img.height / 2);
             rCtx.restore();
 
-            const gab = GABARITS_SCAN[scanEnCours.gabarit] || GABARITS_SCAN.complet;
-            let sw = rotCanvas.width;
-            let sh = rotCanvas.height;
-
-            if (gab.ratio) {
-                const imgRatio = rotCanvas.width / rotCanvas.height;
-                if (imgRatio > gab.ratio) {
-                    sh = rotCanvas.height * gab.margeBase;
-                    sw = sh * gab.ratio;
-                } else {
-                    sw = rotCanvas.width * gab.margeBase;
-                    sh = sw / gab.ratio;
-                }
-            }
-
-            sw = Math.min(rotCanvas.width, Math.max(80, sw / zoomPct));
-            sh = Math.min(rotCanvas.height, Math.max(80, sh / zoomPct));
-
-            const sx = (rotCanvas.width - sw) / 2;
-            const sy = (rotCanvas.height - sh) / 2;
-
-            let outW = sw;
-            let outH = sh;
+            let outW = rotCanvas.width;
+            let outH = rotCanvas.height;
             if (outW > outH && outW > maxDimension) {
                 outH *= maxDimension / outW;
                 outW = maxDimension;
@@ -1257,9 +1153,8 @@
             canvasCible.width = Math.round(outW);
             canvasCible.height = Math.round(outH);
             const ctx = canvasCible.getContext('2d');
-            ctx.drawImage(rotCanvas, sx, sy, sw, sh, 0, 0, canvasCible.width, canvasCible.height);
+            ctx.drawImage(rotCanvas, 0, 0, canvasCible.width, canvasCible.height);
 
-            // Traitement Scanner Pro : egalisation d'exposition + contraste + blanchiment papier
             appliquerTraitementScannerPro(ctx, canvasCible.width, canvasCible.height, scanEnCours.filtre, lumBoost);
         }
 
@@ -1272,7 +1167,6 @@
             const imgData = ctx.getImageData(0, 0, width, height);
             const data = imgData.data;
 
-            // 1. Analyse rapide du point blanc local pour corriger l'éclairage faible
             let sommeLum = 0;
             let count = 0;
             for (let i = 0; i < data.length; i += 16) {
@@ -1292,7 +1186,6 @@
                     data[i + 1] = Math.min(255, Math.max(0, g));
                     data[i + 2] = Math.min(255, Math.max(0, b));
                 } else if (modeFiltre === 'couleur') {
-                    // Scan Couleur Pro : fond eclairci + couleurs et textes bien nets
                     const contraste = 1.28;
                     r = (r - 128) * contraste + 142;
                     g = (g - 128) * contraste + 142;
@@ -1301,7 +1194,6 @@
                     data[i + 1] = Math.min(255, Math.max(0, g));
                     data[i + 2] = Math.min(255, Math.max(0, b));
                 } else {
-                    // Scan N&B Haute Nettete : papier blanc pur + texte noir profond
                     const lum = 0.299 * r + 0.587 * g + 0.114 * b;
                     let val;
                     if (lum > 158) {
@@ -1324,12 +1216,10 @@
             const id = scanEnCours.cleId;
             const titre = scanEnCours.titreDoc;
 
-            // Export HD haute lisibilite pour le PDF client
             const canvasHD = document.createElement('canvas');
             dessinerScanSurCanvas(canvasHD, 1400);
             const imageHD = canvasHD.toDataURL('image/jpeg', 0.82);
 
-            // Version nette envoyee a l'IA pour lire tous les details
             const canvasIA = document.createElement('canvas');
             dessinerScanSurCanvas(canvasIA, 850);
             const imageIA = canvasIA.toDataURL('image/jpeg', 0.72);
@@ -1338,7 +1228,7 @@
 
             const statusEl = document.getElementById('status-' + id);
             if (statusEl) {
-                statusEl.innerHTML = '<span class="inline-flex items-center gap-1.5 text-blue-800 text-[11px] font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Contrôle IA strict de netteté et conformité...</span>';
+                statusEl.innerHTML = '<span class="inline-flex items-center gap-1.5 text-blue-800 text-[11px] font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Vérification du papier en cours...</span>';
             }
 
             const selectEl = document.getElementById('select-dossier');
@@ -1356,9 +1246,8 @@
                     })
                 });
 
-                if (!reponse.ok) throw new Error('Serveur HTTP ' + reponse.status);
-
                 const resultat = await reponse.json();
+                if (!reponse.ok) throw new Error(resultat.message || ('Serveur HTTP ' + reponse.status));
 
                 coffrePhotos[id] = {
                     id: id,
@@ -1366,7 +1255,7 @@
                     image: imageHD,
                     dateAjout: new Date().toLocaleDateString('fr-FR'),
                     statut: resultat.valide ? 'valide' : 'refuse',
-                    messageIA: resultat.message || (resultat.valide ? 'Scan conforme' : 'Document non conforme')
+                    messageIA: resultat.message || (resultat.valide ? 'Papier validé' : 'Papier refusé, refaites la photo')
                 };
 
                 if (Array.isArray(resultat.pieces_manquantes) && resultat.pieces_manquantes.length > 0) {
@@ -1381,7 +1270,6 @@
                                 id: idPropre,
                                 titre: pm.titre,
                                 info: pm.info,
-                                gabarit: 'a4',
                                 couleur: Boolean(pm.couleur)
                             });
                             ajouts.push(pm.titre);
@@ -1401,7 +1289,7 @@
                     image: imageHD,
                     dateAjout: new Date().toLocaleDateString('fr-FR'),
                     statut: 'refuse',
-                    messageIA: "Erreur réseau (" + err.message + "). Rescannez."
+                    messageIA: "Erreur réseau (" + err.message + "). Réessayez."
                 };
             }
 
@@ -1409,7 +1297,7 @@
             chargerChecklist();
         }
 
-        // --- GENERATION DU PDF BLINDE LOCAL ---
+        // --- GENERATION DU DOSSIER PDF ---
 
         function genererDossierLocal() {
             const selectEl = document.getElementById('select-dossier');
@@ -1452,21 +1340,21 @@
             });
 
             if (docsValides.length === 0) {
-                alert("Numérisez et faites valider au moins un document par l'IA avant de générer votre dossier.");
+                alert("Prenez en photo et faites valider au moins un papier avant de créer votre dossier.");
                 return;
             }
 
             const destinataire = document.getElementById('input-destinataire').value.trim().toUpperCase();
             const mentionDest = destinataire ? ('EXCLUSIF POUR : ' + destinataire) : 'USAGE EXCLUSIF DÉMARCHE ADMINISTRATIVE';
 
-            document.getElementById('titre-dossier-pdf').textContent = nomDossier + " — Numérisé le " + new Date().toLocaleDateString('fr-FR');
+            document.getElementById('titre-dossier-pdf').textContent = nomDossier + " — Préparé le " + new Date().toLocaleDateString('fr-FR');
             const containerPages = document.getElementById('liste-pages-filigranees');
 
             containerPages.innerHTML = docsValides.map(function(doc, index) {
                 return '<div class="page-a4-scan border-2 border-slate-300 rounded-xl p-5 bg-white shadow-sm relative overflow-hidden">' +
                     '<div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-3">' +
-                        '<p class="text-xs font-extrabold uppercase text-blue-950">Pièce n°' + (index + 1) + ' — ' + doc.titre + '</p>' +
-                        '<span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">SCAN HAUTE NETTETÉ</span>' +
+                        '<p class="text-xs font-extrabold uppercase text-blue-950">Papier n°' + (index + 1) + ' — ' + doc.titre + '</p>' +
+                        '<span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">SCAN VÉRIFIÉ</span>' +
                     '</div>' +
                     '<div class="relative flex justify-center bg-white rounded-lg overflow-hidden p-2">' +
                         '<img src="' + doc.image + '" class="max-h-[480px] object-contain shadow-sm">' +
@@ -1489,7 +1377,7 @@
             const docs = Object.values(coffrePhotos);
 
             if (docs.length === 0) {
-                contenu.innerHTML = '<p class="text-sm text-slate-500 text-center py-8">Votre coffre local est vide. Vos scans restent uniquement sur votre téléphone et se réutilisent automatiquement dans tous vos dossiers.</p>';
+                contenu.innerHTML = '<p class="text-sm text-slate-500 text-center py-8">Aucun papier enregistré pour le moment. Vos photos restent uniquement sur votre téléphone.</p>';
             } else {
                 contenu.innerHTML = '<div class="grid sm:grid-cols-2 gap-4">' + docs.map(function(d) {
                     const couleur = d.statut === 'valide' ? 'text-emerald-700' : 'text-red-600';
@@ -1498,7 +1386,7 @@
                         '<img src="' + d.image + '" class="w-full h-44 object-contain bg-white rounded-lg mb-2 border border-slate-200">' +
                         '<p class="font-bold text-xs text-slate-900">' + d.titre + '</p>' +
                         '<p class="text-[11px] ' + couleur + ' font-semibold mt-0.5">' +
-                            '<i class="fa-solid ' + icone + ' mr-1"></i>' + (d.messageIA || 'Stocké sur votre appareil') +
+                            '<i class="fa-solid ' + icone + ' mr-1"></i>' + (d.messageIA || 'Enregistré sur votre téléphone') +
                         '</p>' +
                     '</div>';
                 }).join('') + '</div>';
@@ -1525,7 +1413,6 @@
     </script>
 </body>
 </html>
-
 
 
 
