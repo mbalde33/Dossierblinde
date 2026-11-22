@@ -411,7 +411,1018 @@
             permis_repassage: [
                 { id: "cni", titre: "Pièce d'identité", info: "Carte d'identité, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
                 { id: "domicile", titre: "Justificatif de domicile (moins de 6 mois)", info: "Facture récente ou papiers d'hébergement", typeSpecifique: "domicile" },
-                { id: "permis_ref44", titre: "Courrier d'annulation ou suspension du permis (Réf. 44 ou 48SI)", info: "Document remis par
+                { id: "permis_ref44", titre: "Courrier d'annulation ou suspension du permis (Réf. 44 ou 48SI)", info: "Document remis par la préfecture ou le tribunal" },
+                { id: "permis_ref7", titre: "Relevé d'information restreint (Réf. 7)", info: "À télécharger gratuitement sur mespoints.permis.gouv.fr" },
+                { id: "avis_medical", titre: "Avis médical favorable", info: "Délivré par un médecin agréé préfecture" }
+            ],
+            cni_passeport: [
+                { id: "predemande_ants", titre: "Récapitulatif de pré-demande (ants.gouv.fr)", info: "À faire gratuitement en ligne avant le rendez-vous en mairie" },
+                { id: "domicile", titre: "Justificatif de domicile (moins de 1 an)", info: "Facture récente ou papiers d'hébergement", typeSpecifique: "domicile" },
+                { id: "cni", titre: "Ancienne pièce d'identité (ou déclaration de perte/vol)", info: "Carte d'identité ou Passeport actuel", typeSpecifique: "identite" }
+            ],
+            caf_aides: [
+                { id: "cni", titre: "Pièce d'identité", info: "Carte d'identité, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
+                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "Avec votre nom et votre IBAN bien visibles" },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Toutes les pages du document" },
+                { id: "paie", titre: "3 derniers justificatifs de revenus", info: "Fiches de paie ou déclarations URSSAF" }
+            ],
+            achat_immo: [
+                { id: "cni", titre: "Pièce d'identité (Carte d'identité ou Passeport)", info: "En cours de validité", typeSpecifique: "identite" },
+                { id: "domicile", titre: "Justificatif de domicile (moins de 3 mois)", info: "Facture récente ou attestation d'hébergement", typeSpecifique: "domicile" },
+                { id: "situation_fam", titre: "Livret de famille / Acte de mariage ou PACS", info: "Demandé par le notaire" },
+                { id: "apport_tracfin", titre: "Justificatif de votre apport (relevé bancaire)", info: "Prouvant d'où vient l'argent de l'apport" },
+                { id: "impots", titre: "2 derniers avis d'imposition", info: "Complets avec toutes les pages" }
+            ],
+            declaration_deces: [
+                { id: "certif_deces", titre: "Certificat de décès + Acte de décès de la mairie", info: "Délivré par le médecin puis la mairie" },
+                { id: "cni", titre: "Votre pièce d'identité", info: "En cours de validité", typeSpecifique: "identite" },
+                { id: "livret_defunt", titre: "Livret de famille + Pièce d'identité du défunt", info: "Pour la mairie, les banques et la retraite" },
+                { id: "rib_succession", titre: "RIB du compte concerné / Notaire", info: "Pour les démarches bancaires" }
+            ],
+            compte_banque: [
+                { id: "cni", titre: "Pièce d'identité", info: "Carte d'identité, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
+                { id: "domicile", titre: "Justificatif de domicile (moins de 3 mois)", info: "Facture eau, électricité, internet ou loyer", typeSpecifique: "domicile" }
+            ],
+            inscription_club: [
+                { id: "cni", titre: "Pièce d'identité", info: "Carte d'identité ou Passeport valide", typeSpecifique: "identite" },
+                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "À votre nom" }
+            ],
+            carte_vitale: [
+                { id: "cni", titre: "Pièce d'identité", info: "Carte d'identité, Passeport ou Titre de séjour", typeSpecifique: "identite" },
+                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "Pour les remboursements" }
+            ],
+            dossier_recherche: []
+        };
+
+        let coffrePhotos = {};
+        let choixIdentite = {};
+        let modeDomicile = 'direct';
+        let piecesSupplementaires = {};
+        let photoCourrierBase64 = null;
+
+        let scanEnCours = {
+            imgSource: null,
+            cleId: '',
+            titreDoc: '',
+            rotation: 0,
+            filtre: 'nb',
+            luminositeMoyenne: 150
+        };
+
+        try {
+            coffrePhotos = JSON.parse(localStorage.getItem('dossierBlinde_coffre_local') || '{}');
+            choixIdentite = JSON.parse(localStorage.getItem('dossierBlinde_choix_id') || '{}');
+            modeDomicile = localStorage.getItem('dossierBlinde_mode_domicile') || 'direct';
+            piecesSupplementaires = JSON.parse(localStorage.getItem('dossierBlinde_pieces_supp') || '{}');
+        } catch (e) {
+            coffrePhotos = {};
+            choixIdentite = {};
+            modeDomicile = 'direct';
+            piecesSupplementaires = {};
+        }
+
+        function sauvegarderCoffre() {
+            try {
+                localStorage.setItem('dossierBlinde_coffre_local', JSON.stringify(coffrePhotos));
+                localStorage.setItem('dossierBlinde_choix_id', JSON.stringify(choixIdentite));
+                localStorage.setItem('dossierBlinde_mode_domicile', modeDomicile);
+                localStorage.setItem('dossierBlinde_pieces_supp', JSON.stringify(piecesSupplementaires));
+                mettreAJourCompteurCoffre();
+            } catch (err) {
+                alert("Mémoire pleine sur le téléphone. Supprimez d'anciens papiers dans 'Mes papiers'.");
+            }
+        }
+
+        function mettreAJourCompteurCoffre() {
+            const nb = Object.keys(coffrePhotos).length;
+            const el = document.getElementById('compteur-coffre');
+            if (el) el.textContent = nb;
+        }
+
+        function normaliserPieceIA(p, idx) {
+            const estObjet = p && typeof p === 'object';
+            const titre = estObjet ? (p.titre || p.nom || p.label || '') : String(p || '');
+            if (!titre.trim()) return null;
+            const baseId = (estObjet && p.id) ? String(p.id) : ('item_' + idx + '_' + titre.slice(0, 15));
+            return {
+                id: 'ia_' + baseId.replace(/[^a-zA-Z0-9_]/g, '_'),
+                titre: titre.trim(),
+                info: (estObjet && p.info) ? String(p.info) : "Papier obligatoire pour ce dossier",
+                couleur: Boolean(estObjet && p.couleur)
+            };
+        }
+
+        // --- BARRE DE RECHERCHE ---
+
+        function filtrerOuProposerDemarche() {
+            const input = document.getElementById('recherche-demarche');
+            const texte = input.value.trim();
+            const btnEffacer = document.getElementById('btn-effacer-recherche');
+            const zoneProp = document.getElementById('zone-proposition-recherche');
+            const select = document.getElementById('select-dossier');
+
+            if (!texte) {
+                btnEffacer.classList.add('hidden');
+                zoneProp.classList.add('hidden');
+                return;
+            }
+
+            btnEffacer.classList.remove('hidden');
+            const q = texte.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
+            for (let i = 0; i < select.options.length; i++) {
+                const opt = select.options[i];
+                if (opt.value === 'dossier_recherche') continue;
+                const labelNorm = opt.text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+                if (labelNorm.includes(q)) {
+                    select.value = opt.value;
+                    chargerChecklist();
+                    break;
+                }
+            }
+
+            document.getElementById('label-recherche-tapee').textContent = '« ' + texte + ' »';
+            zoneProp.classList.remove('hidden');
+        }
+
+        function effacerRecherche() {
+            document.getElementById('recherche-demarche').value = '';
+            document.getElementById('btn-effacer-recherche').classList.add('hidden');
+            document.getElementById('zone-proposition-recherche').classList.add('hidden');
+        }
+
+        async function creerDossierDepuisRecherche() {
+            const texte = document.getElementById('recherche-demarche').value.trim();
+            if (!texte) return;
+
+            const btn = document.getElementById('btn-creer-depuis-recherche');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Recherche...';
+
+            try {
+                const reponse = await fetch('/api/verifier', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: 'diagnostic',
+                        descriptionSituation: "Liste EXHAUSTIVEMENT TOUTES les pièces obligatoires et pièces pièges sans exception pour un dossier de : " + texte + " en France (ne pas oublier justificatif de domicile, identité, revenus, avis d'imposition, RIB ou permis selon le cas)."
+                    })
+                });
+                const res = await reponse.json();
+
+                if (res.ok && Array.isArray(res.pieces) && res.pieces.length > 0) {
+                    const listePropre = res.pieces.map((p, idx) => normaliserPieceIA(p, idx)).filter(Boolean);
+                    if (listePropre.length === 0) {
+                        alert("Impossible de lire la liste des papiers pour le moment.");
+                        return;
+                    }
+
+                    const optCustom = document.getElementById('option-dossier-recherche');
+                    optCustom.textContent = "Mon dossier : " + texte;
+                    optCustom.classList.remove('hidden');
+
+                    const select = document.getElementById('select-dossier');
+                    select.value = 'dossier_recherche';
+
+                    piecesSupplementaires['dossier_recherche'] = listePropre;
+
+                    document.getElementById('detail-alerte-ia').textContent = res.resume || ("Liste des papiers pour : " + texte);
+                    document.getElementById('banniere-alerte-ia').classList.remove('hidden');
+                    document.getElementById('zone-proposition-recherche').classList.add('hidden');
+
+                    sauvegarderCoffre();
+                    chargerChecklist();
+                } else {
+                    alert(res.message || "Impossible de créer cette liste pour le moment.");
+                }
+            } catch (err) {
+                alert("Erreur réseau : " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = 'Voir la liste';
+            }
+        }
+
+        // --- LECTEUR PHOTO COURRIER RECU ---
+
+        function basculerAssistantIA() {
+            const bloc = document.getElementById('bloc-assistant-ia');
+            bloc.classList.toggle('hidden');
+        }
+
+        function preparerPhotoCourrier(input) {
+            if (!input.files || !input.files[0]) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const max = 900;
+                    let w = img.width, h = img.height;
+                    if (w > h && w > max) { h *= max / w; w = max; }
+                    else if (h > max) { w *= max / h; h = max; }
+                    canvas.width = Math.round(w);
+                    canvas.height = Math.round(h);
+                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+                    photoCourrierBase64 = canvas.toDataURL('image/jpeg', 0.72);
+                    document.getElementById('label-courrier-joint').textContent = "Photo du courrier prête ✓";
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+
+        async function lancerDiagnosticIA() {
+            const situation = document.getElementById('input-situation-ia').value.trim();
+            if (!situation && !photoCourrierBase64) {
+                alert("Prenez en photo le courrier reçu ou expliquez votre question.");
+                return;
+            }
+
+            const btn = document.getElementById('btn-lancer-diag');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Lecture en cours...</span>';
+
+            try {
+                const reponse = await fetch('/api/verifier', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: 'diagnostic',
+                        descriptionSituation: situation || "Lis attentivement ce courrier reçu et indique en mots très simples quels documents fournir pour y répondre.",
+                        imageBase64: photoCourrierBase64
+                    })
+                });
+                const res = await reponse.json();
+
+                if (res.ok) {
+                    const typeActuel = document.getElementById('select-dossier').value;
+                    if (!piecesSupplementaires[typeActuel]) piecesSupplementaires[typeActuel] = [];
+
+                    const nomsAjoutes = [];
+                    (res.pieces || []).forEach(function(p, idx) {
+                        const item = normaliserPieceIA(p, idx);
+                        if (!item) return;
+                        const existeDeja = piecesSupplementaires[typeActuel].some(x => x.id === item.id);
+                        if (!existeDeja) {
+                            piecesSupplementaires[typeActuel].push(item);
+                            nomsAjoutes.push(item.titre);
+                        }
+                    });
+
+                    document.getElementById('texte-resume-diag').textContent = res.resume || "Liste mise à jour.";
+                    document.getElementById('resultat-diagnostic-ia').classList.remove('hidden');
+
+                    if (res.reponse_type && res.reponse_type.trim().length > 5) {
+                        document.getElementById('texte-reponse-type').textContent = res.reponse_type;
+                        document.getElementById('zone-reponse-type').classList.remove('hidden');
+                    } else {
+                        document.getElementById('zone-reponse-type').classList.add('hidden');
+                    }
+
+                    if (nomsAjoutes.length > 0) {
+                        document.getElementById('detail-alerte-ia').textContent = nomsAjoutes.join(' • ');
+                        document.getElementById('banniere-alerte-ia').classList.remove('hidden');
+                    }
+
+                    sauvegarderCoffre();
+                    chargerChecklist();
+                } else {
+                    alert(res.message || "Impossible de lire ce courrier pour le moment.");
+                }
+            } catch (err) {
+                alert("Erreur réseau : " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i><span>Lire le courrier</span>';
+            }
+        }
+
+        function copierReponseType() {
+            const texte = document.getElementById('texte-reponse-type').textContent;
+            navigator.clipboard.writeText(texte);
+            alert("Réponse copiée !");
+        }
+
+        function ajouterPieceManuelle() {
+            const input = document.getElementById('input-nouvelle-piece');
+            const titre = input.value.trim();
+            if (!titre) return;
+
+            const typeActuel = document.getElementById('select-dossier').value;
+            if (!piecesSupplementaires[typeActuel]) piecesSupplementaires[typeActuel] = [];
+
+            piecesSupplementaires[typeActuel].push({
+                id: 'custom_' + Date.now(),
+                titre: titre,
+                info: "Papier ajouté à votre liste",
+                couleur: false
+            });
+
+            input.value = '';
+            sauvegarderCoffre();
+            chargerChecklist();
+        }
+
+        function supprimerPieceSupplementaire(idPiece) {
+            const typeActuel = document.getElementById('select-dossier').value;
+            if (piecesSupplementaires[typeActuel]) {
+                piecesSupplementaires[typeActuel] = piecesSupplementaires[typeActuel].filter(p => p.id !== idPiece);
+                sauvegarderCoffre();
+                chargerChecklist();
+            }
+        }
+
+        function changerTypeIdentite(cleChoix, nouveauType) {
+            choixIdentite[cleChoix] = nouveauType;
+            if (!TYPES_PIECE_IDENTITE[nouveauType].rectoVerso) {
+                delete coffrePhotos[cleChoix + '_verso'];
+            }
+            sauvegarderCoffre();
+            chargerChecklist();
+        }
+
+        function changerModeDomicile(nouveauMode) {
+            modeDomicile = nouveauMode;
+            sauvegarderCoffre();
+            chargerChecklist();
+        }
+
+        function genererSelecteurIdentite(cleChoix, typeChoisi) {
+            return '<div class="mt-2 max-w-xs">' +
+                '<select onchange="changerTypeIdentite(\'' + cleChoix + '\', this.value)" class="w-full bg-white border border-slate-300 focus:border-blue-900 text-slate-900 text-xs font-bold rounded-lg px-3 py-2 outline-none transition">' +
+                    '<option value="cni"' + (typeChoisi === 'cni' ? ' selected' : '') + '>Carte d\'identité (Avant + Arrière)</option>' +
+                    '<option value="passeport"' + (typeChoisi === 'passeport' ? ' selected' : '') + '>Passeport (Page avec photo)</option>' +
+                    '<option value="permis"' + (typeChoisi === 'permis' ? ' selected' : '') + '>Permis de conduire (Avant + Arrière)</option>' +
+                    '<option value="titre_sejour"' + (typeChoisi === 'titre_sejour' ? ' selected' : '') + '>Titre de séjour (Avant + Arrière)</option>' +
+                '</select>' +
+            '</div>';
+        }
+
+        function obtenirListeCompleteDossier(type) {
+            const base = REFERENTIEL_DOSSIERS[type] || [];
+            const supp = piecesSupplementaires[type] || [];
+            return base.concat(supp.map(s => ({ ...s, estSupplementaire: true })));
+        }
+
+        function chargerChecklist() {
+            const selectEl = document.getElementById('select-dossier');
+            const type = selectEl.value;
+            const liste = obtenirListeCompleteDossier(type);
+            const container = document.getElementById('checklist-container');
+            
+            document.getElementById('titre-checklist-active').textContent = "2. Papiers pour : " + selectEl.options[selectEl.selectedIndex].text.replace(/^\d+\.\s*/, '');
+
+            if (liste.length === 0) {
+                container.innerHTML = '<div class="p-8 text-center space-y-2">' +
+                    '<p class="text-sm font-bold text-slate-800">Aucun papier affiché pour le moment.</p>' +
+                    '<p class="text-xs text-slate-500">Utilisez la barre de recherche ci-dessus ou ajoutez un papier juste en dessous.</p>' +
+                '</div>';
+                document.getElementById('progression-texte').textContent = '0 / 0 prêts';
+                document.getElementById('barre-progression').style.width = '0%';
+                return;
+            }
+
+            let valides = 0;
+
+            container.innerHTML = liste.map(function(item) {
+                const titreLow = item.titre.toLowerCase();
+                let cleCoffreCorrespondante = item.id;
+                const estUnRib = titreLow.includes('rib') || titreLow.includes('bancaire') || titreLow.includes('iban');
+
+                if (!estUnRib && (titreLow.includes('pièce d\'identité') || titreLow.includes('piece d\'identite') || titreLow.includes('carte nationale') || titreLow.includes('cni') || titreLow.includes('passeport'))) {
+                    item.typeSpecifique = item.typeSpecifique || 'identite';
+                    if (item.id.startsWith('ia_')) cleCoffreCorrespondante = 'cni';
+                } else if (titreLow.includes('domicile') || titreLow.includes('résidence')) {
+                    item.typeSpecifique = item.typeSpecifique || 'domicile';
+                } else if (titreLow.includes('imposition') || titreLow.includes('impôt')) {
+                    if (coffrePhotos['impots']) cleCoffreCorrespondante = 'impots';
+                } else if (estUnRib) {
+                    if (coffrePhotos['rib']) cleCoffreCorrespondante = 'rib';
+                }
+
+                if (item.typeSpecifique === 'identite') {
+                    const idBase = cleCoffreCorrespondante === 'cni' ? 'cni' : item.id;
+                    const typeChoisi = choixIdentite[idBase] || 'cni';
+                    const configId = TYPES_PIECE_IDENTITE[typeChoisi] || TYPES_PIECE_IDENTITE.cni;
+                    const selecteurHtml = genererSelecteurIdentite(idBase, typeChoisi);
+
+                    if (configId.rectoVerso) {
+                        const docRecto = coffrePhotos[idBase + '_recto'];
+                        const docVerso = coffrePhotos[idBase + '_verso'];
+                        const rectoValide = docRecto && docRecto.statut === 'valide';
+                        const versoValide = docVerso && docVerso.statut === 'valide';
+                        const toutValide = rectoValide && versoValide;
+                        if (toutValide) valides++;
+
+                        let iconeStatut = '<i class="fa-regular fa-circle text-slate-300 text-xl"></i>';
+                        if (toutValide) iconeStatut = '<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>';
+                        else if ((docRecto && !rectoValide) || (docVerso && !versoValide)) iconeStatut = '<i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>';
+
+                        return '<div class="p-5 sm:p-6 flex flex-col gap-4 hover:bg-slate-50/70 transition" id="row-' + idBase + '">' +
+                            '<div class="flex items-start space-x-3.5">' +
+                                '<div class="mt-1">' + iconeStatut + '</div>' +
+                                '<div class="flex-1">' +
+                                    '<h3 class="font-bold text-slate-900 text-sm sm:text-base">' + item.titre + '</h3>' +
+                                    '<p class="text-xs text-slate-500 mt-0.5">' + item.info + '</p>' +
+                                    selecteurHtml +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pl-0 sm:pl-8">' +
+                                renderBlocFace(idBase + '_recto', configId.label + ' - FACE RECTO', 'Face avant (Recto)', docRecto, rectoValide, true) +
+                                renderBlocFace(idBase + '_verso', configId.label + ' - FACE VERSO', 'Face arrière (Verso)', docVerso, versoValide, true) +
+                            '</div>' +
+                        '</div>';
+                    } else {
+                        const docPasseport = coffrePhotos[idBase + '_recto'];
+                        const estValide = docPasseport && docPasseport.statut === 'valide';
+                        if (estValide) valides++;
+
+                        let iconeStatut = '<i class="fa-regular fa-circle text-slate-300 text-xl"></i>';
+                        if (docPasseport) iconeStatut = estValide ? '<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>' : '<i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>';
+
+                        return '<div class="p-5 sm:p-6 flex flex-col gap-4 hover:bg-slate-50/70 transition" id="row-' + idBase + '">' +
+                            '<div class="flex items-start space-x-3.5">' +
+                                '<div class="mt-1">' + iconeStatut + '</div>' +
+                                '<div class="flex-1">' +
+                                    '<h3 class="font-bold text-slate-900 text-sm sm:text-base">' + item.titre + '</h3>' +
+                                    '<p class="text-xs text-slate-500 mt-0.5">' + item.info + '</p>' +
+                                    selecteurHtml +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="pl-0 sm:pl-8">' +
+                                renderBlocFace(idBase + '_recto', configId.label + ' (Page principale avec photo)', 'Page avec votre photo', docPasseport, estValide, true) +
+                            '</div>' +
+                        '</div>';
+                    }
+                }
+
+                if (item.typeSpecifique === 'domicile') {
+                    const docDom = coffrePhotos['domicile'];
+                    const okDom = docDom && docDom.statut === 'valide';
+
+                    const selectDomicileHtml = '<div class="mt-2.5 max-w-md">' +
+                        '<select onchange="changerModeDomicile(this.value)" class="w-full bg-slate-50 border border-slate-300 focus:border-blue-900 text-slate-900 text-xs font-bold rounded-lg px-3 py-2 outline-none transition">' +
+                            '<option value="direct"' + (modeDomicile === 'direct' ? ' selected' : '') + '>J\'ai une facture à mon nom (Eau, Électricité, Internet, Loyer)</option>' +
+                            '<option value="heberge"' + (modeDomicile === 'heberge' ? ' selected' : '') + '>Je vis chez quelqu\'un (Hébergé)</option>' +
+                        '</select>' +
+                    '</div>';
+
+                    if (modeDomicile === 'direct') {
+                        if (okDom) valides++;
+                        let iconeStatut = '<i class="fa-regular fa-circle text-slate-300 text-xl"></i>';
+                        if (docDom) iconeStatut = okDom ? '<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>' : '<i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>';
+
+                        return '<div class="p-5 sm:p-6 flex flex-col gap-4 hover:bg-slate-50/70 transition" id="row-domicile">' +
+                            '<div class="flex items-start space-x-3.5">' +
+                                '<div class="mt-1">' + iconeStatut + '</div>' +
+                                '<div class="flex-1">' +
+                                    '<h3 class="font-bold text-slate-900 text-sm sm:text-base">' + item.titre + '</h3>' +
+                                    '<p class="text-xs text-slate-500 mt-0.5">' + item.info + '</p>' +
+                                    selectDomicileHtml +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="pl-0 sm:pl-8">' +
+                                renderBlocFace('domicile', 'Justificatif de domicile (- de 3 mois)', 'Votre facture ou quittance récente', docDom, okDom, false) +
+                            '</div>' +
+                        '</div>';
+                    } else {
+                        const typeLogeur = choixIdentite['heb_cni'] || 'cni';
+                        const configLogeur = TYPES_PIECE_IDENTITE[typeLogeur] || TYPES_PIECE_IDENTITE.cni;
+                        const selectLogeurHtml = genererSelecteurIdentite('heb_cni', typeLogeur);
+
+                        const docAttest = coffrePhotos['heb_attestation'];
+                        const docIdRecto = coffrePhotos['heb_cni_recto'];
+                        const docIdVerso = coffrePhotos['heb_cni_verso'];
+
+                        const okAttest = docAttest && docAttest.statut === 'valide';
+                        const okIdR = docIdRecto && docIdRecto.statut === 'valide';
+                        const okIdV = !configLogeur.rectoVerso || (docIdVerso && docIdVerso.statut === 'valide');
+
+                        const toutOk = okDom && okAttest && okIdR && okIdV;
+                        if (toutOk) valides++;
+
+                        const aUneErreur = (docDom && !okDom) || (docAttest && !okAttest) || (docIdRecto && !okIdR) || (configLogeur.rectoVerso && docIdVerso && !okIdV);
+                        let iconeStatut = '<i class="fa-regular fa-circle text-slate-300 text-xl"></i>';
+                        if (toutOk) iconeStatut = '<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>';
+                        else if (aUneErreur) iconeStatut = '<i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>';
+
+                        const blocsIdentiteLogeur = configLogeur.rectoVerso
+                            ? '<div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mt-2.5">' +
+                                renderBlocFace('heb_cni_recto', configLogeur.label + ' de l\'hébergeur - FACE RECTO', 'Face avant (Recto)', docIdRecto, okIdR, true) +
+                                renderBlocFace('heb_cni_verso', configLogeur.label + ' de l\'hébergeur - FACE VERSO', 'Face arrière (Verso)', docIdVerso, okIdV, true) +
+                              '</div>'
+                            : '<div class="mt-2.5">' +
+                                renderBlocFace('heb_cni_recto', configLogeur.label + ' de l\'hébergeur (Page identité)', 'Page avec photo', docIdRecto, okIdR, true) +
+                              '</div>';
+
+                        return '<div class="p-5 sm:p-6 flex flex-col gap-4 hover:bg-slate-50/70 transition" id="row-domicile">' +
+                            '<div class="flex items-start space-x-3.5">' +
+                                '<div class="mt-1">' + iconeStatut + '</div>' +
+                                '<div class="flex-1">' +
+                                    '<h3 class="font-bold text-slate-900 text-sm sm:text-base">' + item.titre + ' (Hébergé)</h3>' +
+                                    '<p class="text-xs text-slate-500 mt-0.5">Il faut les 3 papiers de la personne qui vous héberge :</p>' +
+                                    selectDomicileHtml +
+                                '</div>' +
+                            '</div>' +
+                            '<div class="space-y-3 pl-0 sm:pl-8">' +
+                                renderBlocFace('domicile', 'Justificatif de domicile de l\'hébergeur (- de 3 mois)', '1. Sa facture récente (moins de 3 mois)', docDom, okDom, false) +
+                                renderBlocFace('heb_attestation', 'Attestation d\'hébergement datée et signée par l\'hébergeur', '2. Sa lettre d\'hébergement signée et datée', docAttest, okAttest, false) +
+                                '<div class="border border-slate-200 bg-slate-100/70 rounded-xl p-3.5">' +
+                                    '<p class="text-xs font-extrabold text-slate-800">3. Sa pièce d\'identité</p>' +
+                                    selectLogeurHtml +
+                                    blocsIdentiteLogeur +
+                                '</div>' +
+                            '</div>' +
+                        '</div>';
+                    }
+                }
+
+                const docSauvegarde = coffrePhotos[cleCoffreCorrespondante];
+                const estValide = docSauvegarde && docSauvegarde.statut === 'valide';
+                if (estValide) valides++;
+
+                let iconeStatut = '<i class="fa-regular fa-circle text-slate-300 text-xl"></i>';
+                if (docSauvegarde) {
+                    iconeStatut = estValide
+                        ? '<i class="fa-solid fa-circle-check text-emerald-600 text-xl"></i>'
+                        : '<i class="fa-solid fa-circle-exclamation text-red-600 text-xl"></i>';
+                }
+
+                const btnCouleur = (docSauvegarde && !estValide) ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-900 hover:bg-blue-800';
+                const btnLabel = docSauvegarde ? 'Refaire la photo' : 'Prendre en photo';
+                const miniature = docSauvegarde
+                    ? '<img src="' + docSauvegarde.image + '" alt="Aperçu" class="w-12 h-12 object-contain bg-white rounded-lg border border-slate-300 shadow-sm cursor-pointer" onclick="ouvrirCoffreFort()">'
+                    : '';
+                const badge = docSauvegarde ? renderBadgeIA(docSauvegarde) : '';
+                const btnSuppr = item.estSupplementaire
+                    ? '<button type="button" onclick="supprimerPieceSupplementaire(\'' + item.id + '\')" class="text-slate-400 hover:text-red-600 text-xs px-1.5" title="Retirer ce papier"><i class="fa-solid fa-trash"></i></button>'
+                    : '';
+
+                return '<div class="p-5 sm:p-6 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-50/70 transition" id="row-' + item.id + '">' +
+                    '<div class="flex items-start space-x-3.5">' +
+                        '<div class="mt-1">' + iconeStatut + '</div>' +
+                        '<div>' +
+                            '<div class="flex items-center gap-2">' +
+                                '<h3 class="font-bold text-slate-900 text-sm sm:text-base">' + item.titre + '</h3>' +
+                                (item.estSupplementaire ? '<span class="bg-amber-100 text-amber-900 text-[10px] font-extrabold px-2 py-0.5 rounded">Ajouté</span>' : '') +
+                            '</div>' +
+                            '<p class="text-xs text-slate-500 mt-0.5">' + item.info + '</p>' +
+                            '<div id="status-' + cleCoffreCorrespondante + '" class="mt-2">' + badge + '</div>' +
+                        '</div>' +
+                    '</div>' +
+                    '<div class="flex items-center space-x-2 shrink-0 self-end sm:self-center">' +
+                        btnSuppr +
+                        miniature +
+                        '<label class="cursor-pointer ' + btnCouleur + ' text-white text-xs font-bold px-3.5 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">' +
+                            '<i class="fa-solid fa-camera"></i>' +
+                            '<span>' + btnLabel + '</span>' +
+                            '<input type="file" accept="image/*" class="hidden" data-cle="' + cleCoffreCorrespondante + '" data-titre="' + item.titre.replace(/"/g, '&quot;') + '" data-couleur="' + (item.couleur ? 'true' : 'false') + '" onchange="ouvrirStudioScanDepuisInput(this)">' +
+                        '</label>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+
+            const pct = liste.length > 0 ? Math.round((valides / liste.length) * 100) : 0;
+            document.getElementById('progression-texte').textContent = valides + ' / ' + liste.length + ' prêts';
+            document.getElementById('barre-progression').style.width = pct + '%';
+        }
+
+        function renderBlocFace(cleId, titreIA, labelFace, docFace, estValide, garderCouleur) {
+            const bordure = docFace ? (estValide ? 'border-emerald-200 bg-emerald-50/30' : 'border-red-200 bg-red-50/30') : 'border-slate-200 bg-white';
+            const btnCouleur = (docFace && !estValide) ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-900 hover:bg-blue-800';
+            const btnLabel = docFace ? 'Refaire' : 'Photo';
+            const miniature = docFace
+                ? '<img src="' + docFace.image + '" class="w-9 h-9 object-contain bg-white rounded border border-slate-300 cursor-pointer" onclick="ouvrirCoffreFort()">'
+                : '';
+            const badge = docFace ? renderBadgeIA(docFace) : '<span class="text-[11px] text-slate-400">À prendre en photo à la lumière</span>';
+
+            return '<div class="border ' + bordure + ' rounded-xl p-3.5 flex flex-col justify-between gap-2.5">' +
+                '<div class="flex items-center justify-between gap-2">' +
+                    '<span class="text-xs font-extrabold text-slate-800">' + labelFace + '</span>' +
+                    '<div class="flex items-center gap-2">' +
+                        miniature +
+                        '<label class="cursor-pointer ' + btnCouleur + ' text-white text-[11px] font-bold px-3 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm">' +
+                            '<i class="fa-solid fa-camera"></i>' +
+                            '<span>' + btnLabel + '</span>' +
+                            '<input type="file" accept="image/*" class="hidden" data-cle="' + cleId + '" data-titre="' + titreIA.replace(/"/g, '&quot;') + '" data-couleur="' + (garderCouleur ? 'true' : 'false') + '" onchange="ouvrirStudioScanDepuisInput(this)">' +
+                        '</label>' +
+                    '</div>' +
+                '</div>' +
+                '<div id="status-' + cleId + '">' + badge + '</div>' +
+            '</div>';
+        }
+
+        function renderBadgeIA(doc) {
+            const msg = doc.messageIA || (doc.statut === 'valide' ? 'Papier validé et enregistré' : 'À refaire, rescannez');
+            if (doc.statut === 'valide') {
+                return '<span class="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold px-2.5 py-1 rounded-md">' +
+                    '<i class="fa-solid fa-check-circle text-emerald-600 shrink-0"></i> <span>' + msg + '</span>' +
+                '</span>';
+            } else {
+                return '<span class="inline-flex items-center gap-1.5 bg-red-50 border border-red-200 text-red-800 text-[11px] font-semibold px-2.5 py-1 rounded-md">' +
+                    '<i class="fa-solid fa-triangle-exclamation text-red-600 shrink-0"></i> <span>' + msg + '</span>' +
+                '</span>';
+            }
+        }
+
+        // --- SCANNER SIMPLE SANS CADRE ---
+
+        function ouvrirStudioScanDepuisInput(input) {
+            if (!input.files || !input.files[0]) return;
+            const cleId = input.getAttribute('data-cle');
+            const titreDoc = input.getAttribute('data-titre');
+            const garderCouleur = input.getAttribute('data-couleur') === 'true';
+            const file = input.files[0];
+
+            chargerImageDansStudio(file, cleId, titreDoc, garderCouleur ? 'couleur' : 'nb');
+            input.value = '';
+        }
+
+        function remplacerPhotoDansStudio(input) {
+            if (!input.files || !input.files[0]) return;
+            chargerImageDansStudio(input.files[0], scanEnCours.cleId, scanEnCours.titreDoc, scanEnCours.filtre);
+            input.value = '';
+        }
+
+        function chargerImageDansStudio(file, cleId, titreDoc, filtre) {
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    const lumMoyenne = mesurerLuminositeImage(img);
+                    const estTropSombre = lumMoyenne < 95;
+
+                    scanEnCours = {
+                        imgSource: img,
+                        cleId: cleId,
+                        titreDoc: titreDoc,
+                        rotation: 0,
+                        filtre: filtre,
+                        luminositeMoyenne: lumMoyenne
+                    };
+
+                    document.getElementById('titre-studio-scan').textContent = titreDoc;
+
+                    const sliderLum = document.getElementById('slider-lum-scan');
+                    const alerteLum = document.getElementById('alerte-luminosite-scan');
+                    if (estTropSombre) {
+                        sliderLum.value = 35;
+                        alerteLum.classList.remove('hidden');
+                    } else {
+                        sliderLum.value = 0;
+                        alerteLum.classList.add('hidden');
+                    }
+
+                    mettreAJourBoutonsFiltre();
+                    actualiserApercuScan();
+                    document.getElementById('modal-scanner').classList.remove('hidden');
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function mesurerLuminositeImage(img) {
+            const c = document.createElement('canvas');
+            c.width = 100;
+            c.height = 100;
+            const ctx = c.getContext('2d');
+            ctx.drawImage(img, 0, 0, 100, 100);
+            const data = ctx.getImageData(0, 0, 100, 100).data;
+            let totalLum = 0;
+            for (let i = 0; i < data.length; i += 4) {
+                totalLum += (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+            }
+            return totalLum / (100 * 100);
+        }
+
+        function fermerStudioScan() {
+            document.getElementById('modal-scanner').classList.add('hidden');
+            scanEnCours.imgSource = null;
+        }
+
+        function pivoterScan90() {
+            scanEnCours.rotation = (scanEnCours.rotation + 90) % 360;
+            actualiserApercuScan();
+        }
+
+        function changerFiltreScan(nouveauFiltre) {
+            scanEnCours.filtre = nouveauFiltre;
+            mettreAJourBoutonsFiltre();
+            actualiserApercuScan();
+        }
+
+        function mettreAJourBoutonsFiltre() {
+            ['nb', 'couleur', 'original'].forEach(function(f) {
+                const btn = document.getElementById('btn-filtre-' + f);
+                if (!btn) return;
+                if (scanEnCours.filtre === f) {
+                    btn.className = 'px-2.5 py-1 rounded-lg font-bold border border-blue-900 bg-blue-900 text-white transition';
+                } else {
+                    btn.className = 'px-2.5 py-1 rounded-lg font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 transition';
+                }
+            });
+        }
+
+        function dessinerScanSurCanvas(canvasCible, maxDimension) {
+            const img = scanEnCours.imgSource;
+            if (!img) return;
+
+            const lumBoost = parseInt(document.getElementById('slider-lum-scan').value, 10);
+            document.getElementById('val-lum-scan').textContent = lumBoost === 0 ? 'Auto' : (lumBoost > 0 ? '+' + lumBoost : lumBoost);
+
+            const rotCanvas = document.createElement('canvas');
+            const rot = scanEnCours.rotation;
+            if (rot === 90 || rot === 270) {
+                rotCanvas.width = img.height;
+                rotCanvas.height = img.width;
+            } else {
+                rotCanvas.width = img.width;
+                rotCanvas.height = img.height;
+            }
+            const rCtx = rotCanvas.getContext('2d');
+            rCtx.save();
+            rCtx.translate(rotCanvas.width / 2, rotCanvas.height / 2);
+            rCtx.rotate((rot * Math.PI) / 180);
+            rCtx.drawImage(img, -img.width / 2, -img.height / 2);
+            rCtx.restore();
+
+            let outW = rotCanvas.width;
+            let outH = rotCanvas.height;
+            if (outW > outH && outW > maxDimension) {
+                outH *= maxDimension / outW;
+                outW = maxDimension;
+            } else if (outH > maxDimension) {
+                outW *= maxDimension / outH;
+                outH = maxDimension;
+            }
+
+            canvasCible.width = Math.round(outW);
+            canvasCible.height = Math.round(outH);
+            const ctx = canvasCible.getContext('2d');
+            ctx.drawImage(rotCanvas, 0, 0, canvasCible.width, canvasCible.height);
+
+            appliquerTraitementScannerPro(ctx, canvasCible.width, canvasCible.height, scanEnCours.filtre, lumBoost);
+        }
+
+        function actualiserApercuScan() {
+            const canvasApercu = document.getElementById('canvas-apercu-scan');
+            dessinerScanSurCanvas(canvasApercu, 800);
+        }
+
+        function appliquerTraitementScannerPro(ctx, width, height, modeFiltre, lumBoost) {
+            const imgData = ctx.getImageData(0, 0, width, height);
+            const data = imgData.data;
+
+            let sommeLum = 0;
+            let count = 0;
+            for (let i = 0; i < data.length; i += 16) {
+                sommeLum += (0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2]);
+                count++;
+            }
+            const moyenneLocale = count > 0 ? (sommeLum / count) : 140;
+            const gainAuto = moyenneLocale < 135 ? Math.min(1.55, 145 / Math.max(45, moyenneLocale)) : 1.05;
+
+            for (let i = 0; i < data.length; i += 4) {
+                let r = data[i] * gainAuto + lumBoost;
+                let g = data[i + 1] * gainAuto + lumBoost;
+                let b = data[i + 2] * gainAuto + lumBoost;
+
+                if (modeFiltre === 'original') {
+                    data[i] = Math.min(255, Math.max(0, r));
+                    data[i + 1] = Math.min(255, Math.max(0, g));
+                    data[i + 2] = Math.min(255, Math.max(0, b));
+                } else if (modeFiltre === 'couleur') {
+                    const contraste = 1.28;
+                    r = (r - 128) * contraste + 142;
+                    g = (g - 128) * contraste + 142;
+                    b = (b - 128) * contraste + 142;
+                    data[i] = Math.min(255, Math.max(0, r));
+                    data[i + 1] = Math.min(255, Math.max(0, g));
+                    data[i + 2] = Math.min(255, Math.max(0, b));
+                } else {
+                    const lum = 0.299 * r + 0.587 * g + 0.114 * b;
+                    let val;
+                    if (lum > 158) {
+                        val = 255;
+                    } else if (lum < 85) {
+                        val = Math.max(0, lum * 0.45);
+                    } else {
+                        val = ((lum - 85) / (158 - 85)) * 255;
+                    }
+                    data[i] = val;
+                    data[i + 1] = val;
+                    data[i + 2] = val;
+                }
+            }
+            ctx.putImageData(imgData, 0, 0);
+        }
+
+        async function validerEtEnvoyerScan() {
+            if (!scanEnCours.imgSource) return;
+            const id = scanEnCours.cleId;
+            const titre = scanEnCours.titreDoc;
+
+            const canvasHD = document.createElement('canvas');
+            dessinerScanSurCanvas(canvasHD, 1400);
+            const imageHD = canvasHD.toDataURL('image/jpeg', 0.82);
+
+            const canvasIA = document.createElement('canvas');
+            dessinerScanSurCanvas(canvasIA, 850);
+            const imageIA = canvasIA.toDataURL('image/jpeg', 0.72);
+
+            fermerStudioScan();
+
+            const statusEl = document.getElementById('status-' + id);
+            if (statusEl) {
+                statusEl.innerHTML = '<span class="inline-flex items-center gap-1.5 text-blue-800 text-[11px] font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Vérification du papier en cours...</span>';
+            }
+
+            const selectEl = document.getElementById('select-dossier');
+            const contexteDossier = selectEl.options[selectEl.selectedIndex].text;
+
+            try {
+                const reponse = await fetch('/api/verifier', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        mode: 'document',
+                        imageBase64: imageIA,
+                        documentAttendu: titre,
+                        contexteDossier: contexteDossier
+                    })
+                });
+
+                const resultat = await reponse.json();
+                if (!reponse.ok) throw new Error(resultat.message || ('Serveur HTTP ' + reponse.status));
+
+                coffrePhotos[id] = {
+                    id: id,
+                    titre: titre,
+                    image: imageHD,
+                    dateAjout: new Date().toLocaleDateString('fr-FR'),
+                    statut: resultat.valide ? 'valide' : 'refuse',
+                    messageIA: resultat.message || (resultat.valide ? 'Papier validé' : 'Papier refusé, refaites la photo')
+                };
+
+                if (Array.isArray(resultat.pieces_manquantes) && resultat.pieces_manquantes.length > 0) {
+                    const typeActuel = selectEl.value;
+                    if (!piecesSupplementaires[typeActuel]) piecesSupplementaires[typeActuel] = [];
+                    const ajouts = [];
+
+                    resultat.pieces_manquantes.forEach(function(pm, idx) {
+                        const item = normaliserPieceIA(pm, idx);
+                        if (!item) return;
+                        const idPropre = 'ia_auto_' + item.id;
+                        if (!piecesSupplementaires[typeActuel].some(x => x.id === idPropre)) {
+                            piecesSupplementaires[typeActuel].push({
+                                id: idPropre,
+                                titre: item.titre,
+                                info: item.info,
+                                couleur: item.couleur
+                            });
+                            ajouts.push(item.titre);
+                        }
+                    });
+
+                    if (ajouts.length > 0) {
+                        document.getElementById('detail-alerte-ia').textContent = ajouts.join(' • ');
+                        document.getElementById('banniere-alerte-ia').classList.remove('hidden');
+                    }
+                }
+
+            } catch (err) {
+                coffrePhotos[id] = {
+                    id: id,
+                    titre: titre,
+                    image: imageHD,
+                    dateAjout: new Date().toLocaleDateString('fr-FR'),
+                    statut: 'refuse',
+                    messageIA: "Erreur réseau (" + err.message + "). Réessayez."
+                };
+            }
+
+            sauvegarderCoffre();
+            chargerChecklist();
+        }
+
+        // --- GENERATION DU DOSSIER PDF ---
+
+        function genererDossierLocal() {
+            const selectEl = document.getElementById('select-dossier');
+            const type = selectEl.value;
+            const nomDossier = selectEl.options[selectEl.selectedIndex].text;
+            const liste = obtenirListeCompleteDossier(type);
+
+            const docsValides = [];
+            liste.forEach(function(item) {
+                if (item.typeSpecifique === 'identite') {
+                    const typeChoisi = choixIdentite[item.id] || 'cni';
+                    const configId = TYPES_PIECE_IDENTITE[typeChoisi] || TYPES_PIECE_IDENTITE.cni;
+                    const r = coffrePhotos[item.id + '_recto'];
+                    if (r && r.statut === 'valide') docsValides.push(r);
+                    if (configId.rectoVerso) {
+                        const v = coffrePhotos[item.id + '_verso'];
+                        if (v && v.statut === 'valide') docsValides.push(v);
+                    }
+                } else if (item.typeSpecifique === 'domicile') {
+                    const d = coffrePhotos['domicile'];
+                    if (d && d.statut === 'valide') docsValides.push(d);
+                    if (modeDomicile === 'heberge') {
+                        const att = coffrePhotos['heb_attestation'];
+                        if (att && att.statut === 'valide') docsValides.push(att);
+
+                        const typeLogeur = choixIdentite['heb_cni'] || 'cni';
+                        const configLogeur = TYPES_PIECE_IDENTITE[typeLogeur] || TYPES_PIECE_IDENTITE.cni;
+                        const lr = coffrePhotos['heb_cni_recto'];
+                        if (lr && lr.statut === 'valide') docsValides.push(lr);
+                        if (configLogeur.rectoVerso) {
+                            const lv = coffrePhotos['heb_cni_verso'];
+                            if (lv && lv.statut === 'valide') docsValides.push(lv);
+                        }
+                    }
+                } else {
+                    const cle = (item.id.startsWith('ia_') && coffrePhotos['impots'] && item.titre.toLowerCase().includes('imposition')) ? 'impots' : item.id;
+                    const d = coffrePhotos[cle];
+                    if (d && d.statut === 'valide') docsValides.push(d);
+                }
+            });
+
+            if (docsValides.length === 0) {
+                alert("Prenez en photo et faites valider au moins un papier avant de créer votre dossier.");
+                return;
+            }
+
+            const destinataire = document.getElementById('input-destinataire').value.trim().toUpperCase();
+            const mentionDest = destinataire ? ('EXCLUSIF POUR : ' + destinataire) : 'USAGE EXCLUSIF DÉMARCHE ADMINISTRATIVE';
+
+            document.getElementById('titre-dossier-pdf').textContent = nomDossier + " — Préparé le " + new Date().toLocaleDateString('fr-FR');
+            const containerPages = document.getElementById('liste-pages-filigranees');
+
+            containerPages.innerHTML = docsValides.map(function(doc, index) {
+                return '<div class="page-a4-scan border-2 border-slate-300 rounded-xl p-5 bg-white shadow-sm relative overflow-hidden">' +
+                    '<div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-3">' +
+                        '<p class="text-xs font-extrabold uppercase text-blue-950">Papier n°' + (index + 1) + ' — ' + doc.titre + '</p>' +
+                        '<span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">SCAN VÉRIFIÉ</span>' +
+                    '</div>' +
+                    '<div class="relative flex justify-center bg-white rounded-lg overflow-hidden p-2">' +
+                        '<img src="' + doc.image + '" class="max-h-[480px] object-contain shadow-sm">' +
+                        '<div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none">' +
+                            '<span class="text-red-600/35 font-extrabold text-base sm:text-xl uppercase tracking-widest -rotate-12 border-2 border-red-600/35 px-4 py-2 text-center">' +
+                                'DOCUMENT PROTÉGÉ • ' + mentionDest + ' • ' + doc.dateAjout +
+                            '</span>' +
+                        '</div>' +
+                    '</div>' +
+                '</div>';
+            }).join('');
+
+            document.getElementById('apercu-dossier-final').classList.remove('hidden');
+            document.getElementById('apercu-dossier-final').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function ouvrirCoffreFort() {
+            const modal = document.getElementById('modal-coffre');
+            const contenu = document.getElementById('contenu-coffre');
+            const docs = Object.values(coffrePhotos);
+
+            if (docs.length === 0) {
+                contenu.innerHTML = '<p class="text-sm text-slate-500 text-center py-8">Aucun papier enregistré pour le moment. Vos photos restent uniquement sur votre téléphone.</p>';
+            } else {
+                contenu.innerHTML = '<div class="grid sm:grid-cols-2 gap-4">' + docs.map(function(d) {
+                    const couleur = d.statut === 'valide' ? 'text-emerald-700' : 'text-red-600';
+                    const icone = d.statut === 'valide' ? 'fa-check-circle' : 'fa-triangle-exclamation';
+                    return '<div class="border border-slate-200 rounded-xl p-3 bg-slate-50">' +
+                        '<img src="' + d.image + '" class="w-full h-44 object-contain bg-white rounded-lg mb-2 border border-slate-200">' +
+                        '<p class="font-bold text-xs text-slate-900">' + d.titre + '</p>' +
+                        '<p class="text-[11px] ' + couleur + ' font-semibold mt-0.5">' +
+                            '<i class="fa-solid ' + icone + ' mr-1"></i>' + (d.messageIA || 'Enregistré sur votre téléphone') +
+                        '</p>' +
+                    '</div>';
+                }).join('') + '</div>';
+            }
+            modal.classList.remove('hidden');
+        }
+
+        function fermerCoffreFort() {
+            document.getElementById('modal-coffre').classList.add('hidden');
+        }
+
+        function viderCoffre() {
+            coffrePhotos = {};
+            choixIdentite = {};
+            modeDomicile = 'direct';
+            piecesSupplementaires = {};
+            sauvegarderCoffre();
+            chargerChecklist();
+            ouvrirCoffreFort();
+        }
+
+        mettreAJourCompteurCoffre();
+        chargerChecklist();
+    </script>
+</body>
+</html>
 
 
 
