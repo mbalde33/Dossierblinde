@@ -53,7 +53,7 @@ Analyse attentivement le texte et l'image (si fournie) et réponds STRICTEMENT e
                 parts.push({ inline_data: { mime_type: mimeType, data: base64Data } });
             }
 
-            const reponseGemini = await appelerGeminiCascade(apiKey.trim(), parts);
+            const reponseGemini = await appelerGeminiAuto(apiKey.trim(), parts);
             return res.status(200).json(reponseGemini);
         }
 
@@ -106,7 +106,7 @@ Réponds STRICTEMENT en JSON valide :
   "pieces_manquantes": []
 }`;
 
-        const resultat = await appelerGeminiCascade(apiKey.trim(), [
+        const resultat = await appelerGeminiAuto(apiKey.trim(), [
             { text: promptVerification },
             { inline_data: { mime_type: mimeType, data: base64Data } }
         ]);
@@ -121,13 +121,28 @@ Réponds STRICTEMENT en JSON valide :
         return res.status(200).json({
             valide: false,
             ok: false,
-            message: "Refus technique IA : " + (erreur.message || "Erreur inconnue")
+            message: "Refus technique IA (v3) : " + (erreur.message || "Erreur inconnue")
         });
     }
 }
 
-async function appelerGeminiCascade(apiKey, parts) {
-    const modeles = ['gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'];
+async function trouverModelesDisponibles(apiKey) {
+    try {
+        const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`);
+        const data = await res.json();
+        if (!res.ok || !Array.isArray(data.models)) return [];
+        return data.models
+            .filter(m => Array.isArray(m.supportedGenerationMethods) && m.supportedGenerationMethods.includes('generateContent'))
+            .map(m => m.name.replace('models/', ''))
+            .filter(nom => nom.includes('flash') && !nom.includes('2.0') && !nom.includes('1.5'));
+    } catch (e) {
+        return [];
+    }
+}
+
+async function appelerGeminiAuto(apiKey, parts) {
+    const modelesDetectes = await trouverModelesDisponibles(apiKey);
+    const modeles = [...new Set([...modelesDetectes, 'gemini-2.5-flash', 'gemini-3.8-flash', 'gemini-2.5-flash-lite'])];
     let derniereErreur = "Aucune réponse de Gemini";
 
     for (const modele of modeles) {
@@ -166,7 +181,3 @@ async function appelerGeminiCascade(apiKey, parts) {
 
     throw new Error(derniereErreur);
 }
-
-
-
-
