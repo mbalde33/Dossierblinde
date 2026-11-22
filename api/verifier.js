@@ -27,7 +27,7 @@ export default async function handler(req, res) {
         // MODE 1 : LECTEUR DE COURRIER RECU & RECHERCHE DE DEMARCHE
         if (mode === 'diagnostic') {
             const promptDiagnostic = `Tu es un expert administratif français intraitable.
-Date du jour : 19 novembre 2026.
+Date du jour : 22 novembre 2026.
 Situation ou demande de l'utilisateur : "${descriptionSituation || 'Analyse du courrier joint'}".
 
 Analyse attentivement le texte et l'image (si fournie) et réponds STRICTEMENT en JSON valide :
@@ -69,7 +69,7 @@ Analyse attentivement le texte et l'image (si fournie) et réponds STRICTEMENT e
         const mimeType = meta.match(/:(.*?);/)?.[1] || 'image/jpeg';
 
         const promptVerification = `Tu es un contrôleur administratif français ZÉRO TOLÉRANCE (préfecture, banque, notaire, CAF).
-Date du jour : 19 novembre 2026.
+Date du jour : 22 novembre 2026.
 Document attendu : "${documentAttendu}"
 Dossier concerné : "${contexteDossier || 'Dossier administratif'}"
 
@@ -83,10 +83,10 @@ INSPECTE LE DOCUMENT POINT PAR POINT. DÈS QU'UN SEUL ÉLÉMENT MANQUE OU EST CO
    - Pièce d'identité (CNI, Passeport, Permis, Titre de séjour) :
      * Recto : les 4 coins de la carte, la photo d'identité entière, le nom, tous les prénoms, le sexe, la nationalité, la date et le lieu de naissance, le numéro du document et la date d'expiration doivent être 100 % visibles et non coupés.
      * Verso : les 4 coins, l'adresse complète, l'autorité de délivrance, la date de délivrance et les 3 lignes complètes de la bande MRZ (chevrons <<<) doivent être entièrement visibles et lisibles.
-     * Validité : si la date d'expiration est dépassée par rapport au 19/11/2026 -> REFUSER (document expiré).
+     * Validité : si la date d'expiration est dépassée par rapport au 22/11/2026 -> REFUSER (document expiré).
    - Justificatif de domicile :
      * L'en-tête/logo de l'organisme émetteur (EDF, Engie, eau, opérateur télécom, bailleur), le nom et prénom du titulaire, l'adresse postale complète et la DATE D'ÉMISSION doivent être visibles.
-     * Si la date manque, est coupée, ou date de plus de 3 mois (avant le 19 août 2026) -> REFUSER en précisant la date constatée ou manquante.
+     * Si la date manque, est coupée, ou date de plus de 3 mois (avant le 22 août 2026) -> REFUSER en précisant la date constatée ou manquante.
    - Attestation d'hébergement :
      * Identité complète de l'hébergeur, identité complète de l'hébergé, adresse du logement, date de rédaction et SIGNATURE manuscrite doivent être présentes. Sans date ou sans signature -> REFUSER.
    - RIB (Relevé d'Identité Bancaire) :
@@ -127,7 +127,7 @@ Réponds STRICTEMENT en JSON valide :
 }
 
 async function appelerGeminiCascade(apiKey, parts) {
-    const modeles = ['gemini-2.5-flash', 'gemini-2.0-flash'];
+    const modeles = ['gemini-3.8-flash', 'gemini-2.5-flash', 'gemini-2.5-flash-lite'];
     let derniereErreur = "Aucune réponse de Gemini";
 
     for (const modele of modeles) {
@@ -166,7 +166,6 @@ async function appelerGeminiCascade(apiKey, parts) {
 
     throw new Error(derniereErreur);
 }
-
 
 
 
