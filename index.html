@@ -36,6 +36,10 @@
                 <span id="badge-membre" class="hidden bg-emerald-100 text-emerald-900 text-[11px] font-extrabold px-2.5 py-1 rounded-full border border-emerald-300">
                     <i class="fa-solid fa-crown text-amber-500 mr-1"></i>PASS ACTIF
                 </span>
+                <button id="btn-nav-pass" onclick="ouvrirModalePaiement('upgrade')" class="text-[11px] sm:text-xs font-extrabold text-amber-950 bg-amber-300 hover:bg-amber-400 px-3 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-bolt"></i>
+                    <span id="label-essais-restants">2 essais gratuits</span>
+                </button>
                 <button onclick="ouvrirCoffreFort()" class="text-xs sm:text-sm font-semibold text-blue-900 bg-blue-50 hover:bg-blue-100 px-3.5 py-2 rounded-lg border border-blue-200 transition flex items-center gap-2">
                     <i class="fa-solid fa-folder-open"></i>
                     <span>Mes papiers (<span id="compteur-coffre">0</span>)</span>
@@ -240,7 +244,7 @@
             <div>
                 <button type="button" onclick="genererDossierLocal()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold py-4 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
                     <i class="fa-solid fa-file-shield"></i>
-                    <span>Créer mon dossier prêt à envoyer</span>
+                    <span>Créer mon dossier PDF protégé</span>
                 </button>
             </div>
 
@@ -274,7 +278,67 @@
 
     </main>
 
-    <!-- Modale Scanner Simple (Sans cadre impose) -->
+    <!-- MODALE PAIEMENT STRIPE (PAYWALL) -->
+    <div id="modal-paiement" class="hidden fixed inset-0 bg-slate-950/85 z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200">
+            <div class="bg-blue-950 text-white px-6 py-4 flex items-center justify-between">
+                <div class="flex items-center gap-2">
+                    <i class="fa-solid fa-shield-halved text-emerald-400 text-lg"></i>
+                    <h3 class="font-extrabold text-base sm:text-lg">Débloquez DossierBlindé</h3>
+                </div>
+                <button onclick="fermerModalePaiement()" class="text-slate-300 hover:text-white text-xl">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <div class="p-6 space-y-4">
+                <div id="message-contexte-paiement" class="bg-amber-50 border border-amber-300 text-amber-950 text-xs font-semibold p-3.5 rounded-xl">
+                    Vous avez utilisé vos 2 vérifications gratuites. Activez votre Pass pour continuer sans limite et télécharger votre dossier PDF protégé.
+                </div>
+
+                <ul class="space-y-2 text-xs text-slate-700 font-medium">
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i><span>Vérification IA illimitée de tous vos papiers (zéro rejet)</span></li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i><span>Lecture automatique de vos courriers reçus & réponses prêtes</span></li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i><span>Génération du dossier PDF complet avec filigrane anti-usurpation</span></li>
+                </ul>
+
+                <div class="grid sm:grid-cols-2 gap-3 pt-2">
+                    <!-- Offre 1 : Pass Unique -->
+                    <div class="border-2 border-slate-200 hover:border-blue-900 rounded-xl p-4 flex flex-col justify-between transition">
+                        <div>
+                            <span class="text-[10px] font-extrabold uppercase text-slate-500">Sans engagement</span>
+                            <h4 class="font-extrabold text-slate-900 text-base mt-0.5">Pass 1 Dossier</h4>
+                            <p class="text-2xl font-extrabold text-blue-950 my-2">9,90 € <span class="text-xs font-normal text-slate-500">une fois</span></p>
+                            <p class="text-[11px] text-slate-500">Idéal pour boucler un dossier logement, permis ou CAF.</p>
+                        </div>
+                        <a id="lien-stripe-unique" href="#" target="_blank" rel="noopener" class="mt-4 w-full bg-blue-900 hover:bg-blue-800 text-white text-center font-extrabold text-xs py-3 rounded-lg transition block">
+                            Choisir le Pass 9,90 €
+                        </a>
+                    </div>
+
+                    <!-- Offre 2 : Illimite -->
+                    <div class="border-2 border-emerald-500 bg-emerald-50/40 rounded-xl p-4 flex flex-col justify-between relative">
+                        <span class="absolute -top-2.5 right-3 bg-emerald-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">POPULAIRE</span>
+                        <div>
+                            <span class="text-[10px] font-extrabold uppercase text-emerald-700">Accès total</span>
+                            <h4 class="font-extrabold text-slate-900 text-base mt-0.5">Pass Illimité</h4>
+                            <p class="text-2xl font-extrabold text-emerald-700 my-2">9,90 € <span class="text-xs font-normal text-slate-600">/ mois</span></p>
+                            <p class="text-[11px] text-slate-600">Tous vos dossiers et courriers illimités, résiliable en 1 clic.</p>
+                        </div>
+                        <a id="lien-stripe-mensuel" href="#" target="_blank" rel="noopener" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-700 text-white text-center font-extrabold text-xs py-3 rounded-lg transition block shadow">
+                            Activer l'illimité
+                        </a>
+                    </div>
+                </div>
+
+                <p class="text-[11px] text-center text-slate-400 pt-1">
+                    <i class="fa-solid fa-lock mr-1"></i>Paiement 100 % sécurisé par Stripe • Activation immédiate
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modale Scanner Simple -->
     <div id="modal-scanner" class="hidden fixed inset-0 bg-slate-950/90 z-50 flex items-center justify-center p-2 sm:p-4">
         <div class="bg-white rounded-2xl max-w-xl w-full max-h-[95vh] flex flex-col overflow-hidden shadow-2xl">
             <div class="bg-blue-950 text-white px-4 py-3 flex items-center justify-between">
@@ -290,7 +354,6 @@
                 </button>
             </div>
 
-            <!-- Alerte automatique si la photo est prise dans un endroit trop sombre -->
             <div id="alerte-luminosite-scan" class="hidden bg-red-600 text-white px-4 py-2.5 text-xs flex items-center justify-between gap-2">
                 <div class="flex items-start gap-2">
                     <i class="fa-solid fa-lightbulb text-amber-300 text-sm mt-0.5 shrink-0"></i>
@@ -305,13 +368,11 @@
                 </label>
             </div>
 
-            <!-- Apercu entier du document -->
             <div class="bg-slate-900 flex-1 overflow-auto flex flex-col items-center justify-center p-3 min-h-[240px]">
                 <canvas id="canvas-apercu-scan" class="max-w-full max-h-[42vh] rounded shadow-lg border-2 border-emerald-400"></canvas>
             </div>
 
             <div class="p-3.5 sm:p-4 bg-slate-50 border-t border-slate-200 space-y-2.5 text-xs">
-                <!-- Reglages Luminosite + Style Scan -->
                 <div class="bg-white p-3 rounded-xl border border-slate-200 space-y-2.5">
                     <div>
                         <div class="flex justify-between font-semibold text-slate-700 mb-0.5">
@@ -381,6 +442,66 @@
     </div>
 
     <script>
+        // ============================================================
+        // CONFIGURATION STRIPE & FREEMIUM (COLLE TES 2 LIENS ICI)
+        // ============================================================
+        const STRIPE_LIEN_UNIQUE = "https://buy.stripe.com/TON_LIEN_PASS_UNIQUE";
+        const STRIPE_LIEN_MENSUEL = "https://buy.stripe.com/TON_LIEN_ABONNEMENT";
+        const QUOTA_SCANS_GRATUITS = 2;
+
+        document.getElementById('lien-stripe-unique').href = STRIPE_LIEN_UNIQUE;
+        document.getElementById('lien-stripe-mensuel').href = STRIPE_LIEN_MENSUEL;
+
+        let estPremium = localStorage.getItem('dossierBlinde_premium') === 'true';
+        let scansUtilises = parseInt(localStorage.getItem('dossierBlinde_scans_utilises') || '0', 10);
+
+        // Détection automatique au retour de Stripe (?paiement=ok)
+        const paramsUrl = new URLSearchParams(window.location.search);
+        if (paramsUrl.get('paiement') === 'ok') {
+            estPremium = true;
+            localStorage.setItem('dossierBlinde_premium', 'true');
+            window.history.replaceState({}, document.title, window.location.pathname);
+            setTimeout(function() {
+                alert("Paiement confirmé ! Votre Pass DossierBlindé est activé en illimité.");
+            }, 300);
+        }
+
+        function mettreAJourStatutAbonnement() {
+            const badgeMembre = document.getElementById('badge-membre');
+            const btnNavPass = document.getElementById('btn-nav-pass');
+            const labelEssais = document.getElementById('label-essais-restants');
+
+            if (estPremium) {
+                badgeMembre.classList.remove('hidden');
+                btnNavPass.classList.add('hidden');
+            } else {
+                badgeMembre.classList.add('hidden');
+                btnNavPass.classList.remove('hidden');
+                const restants = Math.max(0, QUOTA_SCANS_GRATUITS - scansUtilises);
+                labelEssais.textContent = restants > 0 ? (restants + ' essai' + (restants > 1 ? 's' : '') + ' gratuit' + (restants > 1 ? 's' : '')) : 'Débloquer Pass';
+            }
+        }
+
+        function ouvrirModalePaiement(raison) {
+            const msg = document.getElementById('message-contexte-paiement');
+            if (raison === 'pdf') {
+                msg.textContent = "La vérification de vos 2 premiers papiers est offerte ! Activez votre Pass pour télécharger votre dossier PDF complet avec filigrane anti-usurpation.";
+            } else if (raison === 'courrier') {
+                msg.textContent = "La lecture automatique de courrier et la génération de réponse sont réservées aux membres Pass DossierBlindé.";
+            } else {
+                msg.textContent = "Vous avez utilisé vos " + QUOTA_SCANS_GRATUITS + " vérifications gratuites. Activez votre Pass pour scanner vos papiers en illimité et télécharger votre dossier PDF.";
+            }
+            document.getElementById('modal-paiement').classList.remove('hidden');
+        }
+
+        function fermerModalePaiement() {
+            document.getElementById('modal-paiement').classList.add('hidden');
+        }
+
+        // ============================================================
+        // REFERENTIELS & LOGIQUE METIER
+        // ============================================================
+
         const TYPES_PIECE_IDENTITE = {
             cni: { label: "Carte Nationale d'Identité", rectoVerso: true },
             passeport: { label: "Passeport", rectoVerso: false },
@@ -606,6 +727,10 @@
         // --- LECTEUR PHOTO COURRIER RECU ---
 
         function basculerAssistantIA() {
+            if (!estPremium && scansUtilises >= QUOTA_SCANS_GRATUITS) {
+                ouvrirModalePaiement('courrier');
+                return;
+            }
             const bloc = document.getElementById('bloc-assistant-ia');
             bloc.classList.toggle('hidden');
         }
@@ -633,6 +758,11 @@
         }
 
         async function lancerDiagnosticIA() {
+            if (!estPremium && scansUtilises >= QUOTA_SCANS_GRATUITS) {
+                ouvrirModalePaiement('courrier');
+                return;
+            }
+
             const situation = document.getElementById('input-situation-ia').value.trim();
             if (!situation && !photoCourrierBase64) {
                 alert("Prenez en photo le courrier reçu ou expliquez votre question.");
@@ -656,6 +786,12 @@
                 const res = await reponse.json();
 
                 if (res.ok) {
+                    if (!estPremium) {
+                        scansUtilises++;
+                        localStorage.setItem('dossierBlinde_scans_utilises', String(scansUtilises));
+                        mettreAJourStatutAbonnement();
+                    }
+
                     const typeActuel = document.getElementById('select-dossier').value;
                     if (!piecesSupplementaires[typeActuel]) piecesSupplementaires[typeActuel] = [];
 
@@ -1029,6 +1165,11 @@
         // --- SCANNER SIMPLE SANS CADRE ---
 
         function ouvrirStudioScanDepuisInput(input) {
+            if (!estPremium && scansUtilises >= QUOTA_SCANS_GRATUITS) {
+                input.value = '';
+                ouvrirModalePaiement('scan');
+                return;
+            }
             if (!input.files || !input.files[0]) return;
             const cleId = input.getAttribute('data-cle');
             const titreDoc = input.getAttribute('data-titre');
@@ -1257,6 +1398,12 @@
                 const resultat = await reponse.json();
                 if (!reponse.ok) throw new Error(resultat.message || ('Serveur HTTP ' + reponse.status));
 
+                if (!estPremium) {
+                    scansUtilises++;
+                    localStorage.setItem('dossierBlinde_scans_utilises', String(scansUtilises));
+                    mettreAJourStatutAbonnement();
+                }
+
                 coffrePhotos[id] = {
                     id: id,
                     titre: titre,
@@ -1265,32 +1412,6 @@
                     statut: resultat.valide ? 'valide' : 'refuse',
                     messageIA: resultat.message || (resultat.valide ? 'Papier validé' : 'Papier refusé, refaites la photo')
                 };
-
-                if (Array.isArray(resultat.pieces_manquantes) && resultat.pieces_manquantes.length > 0) {
-                    const typeActuel = selectEl.value;
-                    if (!piecesSupplementaires[typeActuel]) piecesSupplementaires[typeActuel] = [];
-                    const ajouts = [];
-
-                    resultat.pieces_manquantes.forEach(function(pm, idx) {
-                        const item = normaliserPieceIA(pm, idx);
-                        if (!item) return;
-                        const idPropre = 'ia_auto_' + item.id;
-                        if (!piecesSupplementaires[typeActuel].some(x => x.id === idPropre)) {
-                            piecesSupplementaires[typeActuel].push({
-                                id: idPropre,
-                                titre: item.titre,
-                                info: item.info,
-                                couleur: item.couleur
-                            });
-                            ajouts.push(item.titre);
-                        }
-                    });
-
-                    if (ajouts.length > 0) {
-                        document.getElementById('detail-alerte-ia').textContent = ajouts.join(' • ');
-                        document.getElementById('banniere-alerte-ia').classList.remove('hidden');
-                    }
-                }
 
             } catch (err) {
                 coffrePhotos[id] = {
@@ -1310,6 +1431,11 @@
         // --- GENERATION DU DOSSIER PDF ---
 
         function genererDossierLocal() {
+            if (!estPremium) {
+                ouvrirModalePaiement('pdf');
+                return;
+            }
+
             const selectEl = document.getElementById('select-dossier');
             const type = selectEl.value;
             const nomDossier = selectEl.options[selectEl.selectedIndex].text;
@@ -1418,6 +1544,7 @@
             ouvrirCoffreFort();
         }
 
+        mettreAJourStatutAbonnement();
         mettreAJourCompteurCoffre();
         chargerChecklist();
     </script>
