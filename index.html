@@ -10,6 +10,8 @@
     <title>DossierBlindé — Préparez vos papiers facilement sans erreur</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
         body { font-family: 'Inter', sans-serif; }
@@ -22,9 +24,7 @@
     </style>
 </head>
 <body class="bg-slate-50 text-slate-900 antialiased">
-    
-    
-    <!-- Navigation -->
+
     <nav class="bg-white border-b border-slate-200 sticky top-0 z-40">
         <div class="max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
             <a href="#" onclick="revenirAccueil(event)" class="flex items-center space-x-2 cursor-pointer hover:opacity-90 transition" title="Retour à l'accueil">
@@ -49,31 +49,27 @@
         </div>
     </nav>
 
-    <!-- Bandeau Garantie Confidentialite -->
     <div class="bg-emerald-950 text-emerald-100 text-xs py-2.5 px-4 text-center font-medium">
         <i class="fa-solid fa-lock text-emerald-400 mr-1.5"></i>
-        <strong>100 % Privé & Pratique :</strong> Prenez vos papiers en photo une seule fois. Ils restent uniquement dans votre téléphone et se réutilisent tout seuls pour vos prochains dossiers.
+        <strong>100 % Privé & Complet :</strong> Toutes les démarches administratives en France (simples ou complexes), vérification photo/PDF et dossier protégé en 1 clic.
     </div>
 
-    <!-- Hero simple -->
     <header class="bg-white border-b border-slate-200 pt-8 pb-10 px-4">
         <div class="max-w-3xl mx-auto text-center">
             <span class="inline-block bg-blue-50 border border-blue-200 text-blue-900 text-xs font-bold px-3 py-1 rounded-full mb-3">
-                Simple • Rapide • Vérifié avant envoi
+                100 % des démarches en France • Zéro pièce oubliée
             </span>
             <h1 class="text-2xl sm:text-4xl font-extrabold text-slate-900 tracking-tight mb-3">
-                Fini la galère des papiers : <span class="text-blue-900">préparez votre dossier sans vous faire recaler.</span>
+                N'importe quel dossier en France : <span class="text-blue-900">obtenez la liste exacte et préparez vos papiers sans faute.</span>
             </h1>
             <p class="text-xs sm:text-base text-slate-600 max-w-xl mx-auto">
-                Choisissez votre démarche (ou prenez en photo le courrier reçu), scannez vos papiers à la lumière et téléchargez votre dossier complet et protégé en un clic.
+                Tapez le nom de votre démarche (même très complexe) ou prenez en photo le courrier reçu : l'application liste tous les justificatifs exigés et assemble votre PDF protégé.
             </p>
         </div>
     </header>
 
-    <!-- Zone Principale Interactive -->
     <main class="max-w-3xl mx-auto px-4 py-8 space-y-6">
 
-        <!-- BLOC 1 : CHOIX DE LA DEMARCHE OU PHOTO DU COURRIER -->
         <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-6 space-y-4">
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <label for="recherche-demarche" class="block text-sm font-extrabold text-slate-900 uppercase tracking-wide">
@@ -85,46 +81,57 @@
                 </button>
             </div>
 
-            <!-- BARRE DE RECHERCHE SIMPLE -->
             <div class="relative">
-                <i class="fa-solid fa-magnifying-glass text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 text-sm"></i>
-                <input type="text" id="recherche-demarche" oninput="filtrerOuProposerDemarche()" placeholder="Tapez ce que vous voulez faire (ex: louer un appartement, permis, CAF, banque...)" class="w-full bg-slate-50 border-2 border-blue-900/25 focus:border-blue-900 text-slate-900 text-sm rounded-xl pl-10 pr-10 py-3 font-medium outline-none transition">
-                <button type="button" id="btn-effacer-recherche" onclick="effacerRecherche()" class="hidden text-slate-400 hover:text-slate-700 absolute right-3.5 top-1/2 -translate-y-1/2 text-sm">
+                <i class="fa-solid fa-magnifying-glass text-slate-400 absolute left-3.5 top-3.5 text-sm"></i>
+                <input type="text" id="recherche-demarche" autocomplete="off" oninput="filtrerOuProposerDemarche()" onfocus="filtrerOuProposerDemarche()" onkeydown="gererToucheRecherche(event)" placeholder="Écrivez n'importe quel dossier (ex: Surendettement, Regroupement familial, MDPH, SASU, HLM...)" class="w-full bg-slate-50 border-2 border-blue-900/25 focus:border-blue-900 text-slate-900 text-sm rounded-xl pl-10 pr-10 py-3 font-medium outline-none transition">
+                <button type="button" id="btn-effacer-recherche" onclick="effacerRecherche()" class="hidden text-slate-400 hover:text-slate-700 absolute right-3.5 top-3.5 text-sm">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
+                <div id="liste-suggestions-instantanees" class="hidden mt-1.5 bg-white border-2 border-blue-900/20 rounded-xl shadow-lg overflow-hidden divide-y divide-slate-100 max-h-64 overflow-y-auto"></div>
             </div>
 
-            <!-- Proposition dynamique IA -->
-            <div id="zone-proposition-recherche" class="hidden bg-emerald-50 border border-emerald-300 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div id="zone-proposition-recherche" class="hidden bg-emerald-50 border-2 border-emerald-400 rounded-xl p-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                 <div class="text-xs text-emerald-950">
-                    <span class="font-extrabold block"><i class="fa-solid fa-wand-magic-sparkles text-emerald-600 mr-1"></i>Liste sur-mesure</span>
-                    <span>Afficher exactement les papiers demandés pour : <strong id="label-recherche-tapee"></strong></span>
+                    <span class="font-extrabold block"><i class="fa-solid fa-wand-magic-sparkles text-emerald-600 mr-1"></i>Dossier officiel sur-mesure (ou appuyez sur Entrée)</span>
+                    <span>Afficher 100 % des pièces et Cerfa exigés pour : <strong id="label-recherche-tapee"></strong></span>
                 </div>
                 <button type="button" id="btn-creer-depuis-recherche" onclick="creerDossierDepuisRecherche()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-xs px-4 py-2.5 rounded-lg transition shrink-0 shadow-sm">
-                    Voir la liste
+                    Trouver toutes les pièces
                 </button>
             </div>
 
-            <!-- Menu des dossiers -->
             <div>
-                <span class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Ou choisissez directement dans la liste :</span>
+                <span class="block text-[11px] font-bold uppercase text-slate-400 mb-1.5">Ou choisissez parmi les démarches fréquentes :</span>
                 <select id="select-dossier" onchange="chargerChecklist()" class="w-full bg-slate-50 border border-slate-300 focus:border-blue-900 text-slate-900 text-sm sm:text-base rounded-xl p-3.5 font-semibold outline-none transition">
-                    <option value="loc_salarie">1. Louer un logement — Salarié (CDI / CDD)</option>
-                    <option value="loc_indep">2. Louer un logement — Indépendant / Auto-entrepreneur</option>
-                    <option value="loc_etudiant">3. Louer un logement — Étudiant / Alternant avec Garant</option>
-                    <option value="permis_repassage">4. Permis de conduire — Repasser le permis (annulation / suspension)</option>
-                    <option value="cni_passeport">5. Carte d'identité ou Passeport — Refaire ou renouveler</option>
-                    <option value="caf_aides">6. Dossier CAF — APL, Prime d'activité ou RSA</option>
-                    <option value="achat_immo">7. Achat immobilier — Notaire et prêt banque</option>
-                    <option value="declaration_deces">8. Déclaration de décès & démarches banques / succession</option>
-                    <option value="compte_banque">9. Ouvrir un compte bancaire</option>
-                    <option value="inscription_club">10. Inscription salle de sport, club ou association</option>
-                    <option value="carte_vitale">11. Carte Vitale / Attestation Sécurité sociale</option>
+                    <option value="loc_salarie">Louer un logement — Salarié (CDI / CDD)</option>
+                    <option value="loc_indep">Louer un logement — Indépendant / Auto-entrepreneur</option>
+                    <option value="loc_etudiant">Louer un logement — Étudiant / Alternant avec Garant</option>
+                    <option value="hlm_social">Logement social (HLM) — Demande ou renouvellement</option>
+                    <option value="surendettement">Surendettement — Dossier Banque de France</option>
+                    <option value="mdph_handicap">MDPH / Handicap — Demande AAH, RQTH ou Carte mobilité</option>
+                    <option value="regroupement_familial">Regroupement familial — Dossier OFII / Préfecture</option>
+                    <option value="naturalisation">Naturalisation française — Demande de nationalité</option>
+                    <option value="titre_sejour">Titre de séjour — Renouvellement préfecture</option>
+                    <option value="permis_repassage">Permis de conduire — Repasser le permis (annulation / suspension)</option>
+                    <option value="cni_passeport">Carte d'identité ou Passeport — Refaire ou renouveler</option>
+                    <option value="caf_aides">Dossier CAF — APL, Prime d'activité ou RSA</option>
+                    <option value="bourse_crous">Bourse étudiante CROUS — Dossier Social Étudiant (DSE)</option>
+                    <option value="creation_entreprise">Création d'entreprise / Auto-entrepreneur (INPI / URSSAF)</option>
+                    <option value="retraite">Retraite — Demande de pension de retraite</option>
+                    <option value="france_travail">Chômage / France Travail — Inscription et allocations</option>
+                    <option value="aide_juridictionnelle">Aide juridictionnelle — Prise en charge avocat / justice</option>
+                    <option value="achat_immo">Achat immobilier — Notaire et prêt banque</option>
+                    <option value="carte_grise">Carte grise — Changement de propriétaire véhicule</option>
+                    <option value="mariage_pacs">Mariage ou PACS — Dossier mairie / notaire</option>
+                    <option value="declaration_naissance">Déclaration de naissance / Livret de famille</option>
+                    <option value="declaration_deces">Déclaration de décès & démarches banques / succession</option>
+                    <option value="compte_banque">Ouvrir un compte bancaire</option>
+                    <option value="inscription_club">Inscription salle de sport, club ou association</option>
+                    <option value="carte_vitale">Carte Vitale / Attestation Sécurité sociale</option>
                     <option value="dossier_recherche" class="hidden" id="option-dossier-recherche">Mon dossier sur-mesure</option>
                 </select>
             </div>
 
-            <!-- Encart Lecteur de Courrier Recu -->
             <div id="bloc-assistant-ia" class="hidden mt-2 bg-blue-950 text-white rounded-xl p-4 sm:p-5 space-y-3">
                 <div class="flex items-start justify-between gap-2">
                     <div>
@@ -133,7 +140,7 @@
                             Comprendre un courrier reçu
                         </h3>
                         <p class="text-xs text-blue-200 mt-0.5">
-                            Vous ne savez pas ce qu'on vous demande ? Prenez la lettre en photo à la lumière : l'application vous explique en mots simples quels papiers envoyer et prépare même la réponse.
+                            Vous ne savez pas ce qu'on vous demande ? Prenez la lettre en photo ou importez le PDF : l'application vous explique en mots simples quels papiers envoyer et prépare même la réponse.
                         </p>
                     </div>
                     <button type="button" onclick="basculerAssistantIA()" class="text-blue-300 hover:text-white text-sm">
@@ -141,13 +148,13 @@
                     </button>
                 </div>
 
-                <textarea id="input-situation-ia" rows="2" placeholder="Facultatif : expliquez votre question en quelques mots, ou joignez juste la photo du courrier..." class="w-full bg-slate-900 border border-blue-800 rounded-lg p-3 text-xs sm:text-sm text-white placeholder-slate-400 outline-none focus:border-emerald-400"></textarea>
+                <textarea id="input-situation-ia" rows="2" placeholder="Facultatif : expliquez votre question en quelques mots, ou joignez la photo / le PDF du courrier..." class="w-full bg-slate-900 border border-blue-800 rounded-lg p-3 text-xs sm:text-sm text-white placeholder-slate-400 outline-none focus:border-emerald-400"></textarea>
 
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
                     <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-blue-100 border border-blue-700 text-xs font-semibold px-3.5 py-2.5 rounded-lg flex items-center justify-center gap-2 transition">
                         <i class="fa-solid fa-camera text-emerald-400"></i>
-                        <span id="label-courrier-joint">Prendre le courrier en photo</span>
-                        <input type="file" accept="image/*" id="input-photo-courrier" class="hidden" onchange="preparerPhotoCourrier(this)">
+                        <span id="label-courrier-joint">Photo ou PDF du courrier</span>
+                        <input type="file" accept="image/*,application/pdf" id="input-photo-courrier" class="hidden" onchange="preparerPhotoCourrier(this)">
                     </label>
                     <button type="button" onclick="lancerDiagnosticIA()" id="btn-lancer-diag" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-xs px-4 py-2.5 rounded-lg transition flex items-center justify-center gap-2 shadow">
                         <i class="fa-solid fa-magnifying-glass"></i>
@@ -155,7 +162,6 @@
                     </button>
                 </div>
 
-                <!-- Resultat de la lecture du courrier -->
                 <div id="resultat-diagnostic-ia" class="hidden bg-slate-900/90 border border-emerald-500/40 rounded-lg p-3.5 text-xs space-y-2">
                     <p id="texte-resume-diag" class="text-emerald-200 font-medium leading-relaxed"></p>
                     <div id="zone-reponse-type" class="hidden bg-slate-950 p-2.5 rounded border border-slate-700">
@@ -171,47 +177,41 @@
             </div>
         </div>
 
-        <!-- BLOC 2 : LISTE DES PAPIERS A SCANNER -->
         <div class="bg-white rounded-2xl shadow-md border border-slate-200 overflow-hidden">
             <div class="bg-blue-950 text-white px-6 py-4 flex items-center justify-between">
                 <div>
                     <h2 id="titre-checklist-active" class="font-bold text-base sm:text-lg">2. Vos papiers à préparer</h2>
-                    <p class="text-blue-200 text-xs">Les papiers déjà scannés se remplissent tout seuls</p>
+                    <p class="text-blue-200 text-xs">Photo ou fichier PDF — les papiers validés se remplissent tout seuls</p>
                 </div>
                 <div class="text-right">
                     <span id="progression-texte" class="text-sm font-extrabold text-emerald-400">0 / 0 prêts</span>
                 </div>
             </div>
 
-            <!-- Barre de progression -->
             <div class="w-full bg-slate-200 h-2">
                 <div id="barre-progression" class="bg-emerald-500 h-2 transition-all duration-300" style="width: 0%"></div>
             </div>
 
-            <!-- CONSIGNE SIMPLE AVANT PHOTO -->
             <div class="bg-blue-50 border-b border-blue-200 px-5 py-3 text-xs text-blue-950 flex items-start gap-2.5">
                 <i class="fa-solid fa-sun text-amber-500 text-base mt-0.5 shrink-0"></i>
                 <div>
-                    <p class="font-extrabold">Conseil pour une photo réussie du premier coup :</p>
+                    <p class="font-extrabold">Photo ou PDF acceptés :</p>
                     <p class="text-blue-900 mt-0.5">
-                        Mettez-vous <strong>à la lumière</strong> (près d'une fenêtre ou sous une lampe), posez le papier à plat en entier et vérifiez que <strong>tout est bien lisible et aucun bord n'est coupé</strong>.
+                        Vous pouvez soit <strong>importer un PDF</strong> déjà dans votre téléphone, soit prendre le papier en photo <strong>à la lumière</strong> sans couper les bords.
                     </p>
                 </div>
             </div>
 
-            <!-- Banniere si des papiers ont ete ajoutes suite a la lecture d'un courrier -->
             <div id="banniere-alerte-ia" class="hidden bg-amber-50 border-b border-amber-200 px-5 py-3 text-xs text-amber-950 flex items-start gap-2.5">
-                <i class="fa-solid fa-bell text-amber-600 mt-0.5 text-sm"></i>
+                <i class="fa-solid fa-circle-info text-amber-600 mt-0.5 text-sm"></i>
                 <div>
-                    <p class="font-extrabold">Papiers ajoutés à votre liste :</p>
-                    <p id="detail-alerte-ia" class="text-amber-800 mt-0.5"></p>
+                    <p class="font-extrabold">Points importants pour que votre dossier soit accepté :</p>
+                    <p id="detail-alerte-ia" class="text-amber-900 mt-0.5 leading-relaxed"></p>
                 </div>
             </div>
 
-            <!-- Liste des pieces -->
             <div id="checklist-container" class="divide-y divide-slate-200"></div>
 
-            <!-- Barre d'ajout rapide d'un papier supplementaire -->
             <div class="bg-slate-50 px-5 py-4 border-t border-slate-200 flex flex-col sm:flex-row gap-2">
                 <input type="text" id="input-nouvelle-piece" placeholder="On vous demande un autre papier ? Écrivez son nom ici..." class="flex-1 bg-white border border-slate-300 rounded-xl px-3.5 py-2 text-xs font-medium outline-none focus:border-blue-900">
                 <button type="button" onclick="ajouterPieceManuelle()" class="bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold px-4 py-2.5 rounded-xl transition flex items-center justify-center gap-1.5 shrink-0">
@@ -221,7 +221,6 @@
             </div>
         </div>
 
-        <!-- BLOC 3 : PROTECTION ET TELECHARGEMENT DU DOSSIER -->
         <div class="bg-slate-900 text-white rounded-2xl p-6 sm:p-8 shadow-xl space-y-6">
             <div>
                 <span class="inline-block bg-emerald-500/20 text-emerald-300 text-xs font-bold px-2.5 py-1 rounded mb-2">
@@ -233,34 +232,36 @@
                 </p>
             </div>
 
-            <!-- Champ destinataire -->
             <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-4">
                 <label for="input-destinataire" class="block text-xs font-bold text-emerald-300 uppercase tracking-wide mb-1.5">
                     À qui envoyez-vous ce dossier ? (écrit sur les pages pour vous protéger) :
                 </label>
-                <input type="text" id="input-destinataire" placeholder="Ex: CAF, AGENCE IMMOBILIÈRE, BANQUE, PRÉFECTURE..." class="w-full bg-slate-950 border border-slate-600 focus:border-emerald-400 rounded-lg px-3.5 py-2.5 text-sm text-white font-semibold outline-none">
+                <input type="text" id="input-destinataire" placeholder="Ex: BANQUE DE FRANCE, PRÉFECTURE, CAF, NOTAIRE..." class="w-full bg-slate-950 border border-slate-600 focus:border-emerald-400 rounded-lg px-3.5 py-2.5 text-sm text-white font-semibold outline-none">
             </div>
 
-            <!-- Bouton direct d'assemblage PDF -->
             <div>
                 <button type="button" onclick="genererDossierLocal()" class="w-full bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold py-4 rounded-xl text-sm transition shadow-lg flex items-center justify-center gap-2">
                     <i class="fa-solid fa-file-shield"></i>
-                    <span>Créer mon dossier PDF protégé</span>
+                    <span>Préparer mon dossier PDF protégé</span>
                 </button>
             </div>
 
-            <!-- Apercu du dossier genere localement -->
             <div id="apercu-dossier-final" class="hidden pt-6 border-t border-slate-700">
                 <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4">
                     <p class="text-sm font-bold text-emerald-400">
                         <i class="fa-solid fa-circle-check mr-1.5"></i>Votre dossier est prêt :
                     </p>
-                    <button onclick="window.print()" class="bg-white hover:bg-slate-100 text-slate-950 font-extrabold text-xs px-4 py-2.5 rounded-lg transition shadow">
-                        <i class="fa-solid fa-download mr-1.5"></i>Télécharger en PDF / Imprimer
-                    </button>
+                    <div class="flex flex-wrap items-center gap-2">
+                        <button type="button" id="btn-telecharger-pdf-direct" onclick="telechargerFichierPDFDirect()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs px-4 py-2.5 rounded-lg transition shadow flex items-center gap-1.5">
+                            <i class="fa-solid fa-file-arrow-down"></i>
+                            <span>Télécharger le fichier PDF</span>
+                        </button>
+                        <button type="button" onclick="window.print()" class="bg-white/10 hover:bg-white/20 text-white font-bold text-xs px-3 py-2.5 rounded-lg transition">
+                            <i class="fa-solid fa-print mr-1"></i>Imprimer
+                        </button>
+                    </div>
                 </div>
 
-                <!-- Document pret a etre enregistre en PDF -->
                 <div id="zone-impression-pdf" class="bg-white text-slate-900 rounded-xl p-6 sm:p-8 space-y-6">
                     <div class="border-b-2 border-blue-900 pb-4 flex justify-between items-center">
                         <div>
@@ -279,7 +280,6 @@
 
     </main>
 
-    <!-- MODALE PAIEMENT STRIPE (PAYWALL) -->
     <div id="modal-paiement" class="hidden fixed inset-0 bg-slate-950/85 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200">
             <div class="bg-blue-950 text-white px-6 py-4 flex items-center justify-between">
@@ -298,26 +298,24 @@
                 </div>
 
                 <ul class="space-y-2 text-xs text-slate-700 font-medium">
-                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i><span>Vérification IA illimitée de tous vos papiers (zéro rejet)</span></li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i><span>Vérification IA illimitée de tous vos papiers et PDF (zéro rejet)</span></li>
                     <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i><span>Lecture automatique de vos courriers reçus & réponses prêtes</span></li>
-                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i><span>Génération du dossier PDF complet avec filigrane anti-usurpation</span></li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i><span>Téléchargement direct du dossier PDF complet avec filigrane anti-usurpation</span></li>
                 </ul>
 
                 <div class="grid sm:grid-cols-2 gap-3 pt-2">
-                    <!-- Offre 1 : Pass Unique -->
                     <div class="border-2 border-slate-200 hover:border-blue-900 rounded-xl p-4 flex flex-col justify-between transition">
                         <div>
                             <span class="text-[10px] font-extrabold uppercase text-slate-500">Sans engagement</span>
                             <h4 class="font-extrabold text-slate-900 text-base mt-0.5">Pass 1 Dossier</h4>
                             <p class="text-2xl font-extrabold text-blue-950 my-2">9,90 € <span class="text-xs font-normal text-slate-500">une fois</span></p>
-                            <p class="text-[11px] text-slate-500">Idéal pour boucler un dossier logement, permis ou CAF.</p>
+                            <p class="text-[11px] text-slate-500">Idéal pour boucler un dossier complexe sans se faire recaler.</p>
                         </div>
                         <a id="lien-stripe-unique" href="#" target="_blank" rel="noopener" class="mt-4 w-full bg-blue-900 hover:bg-blue-800 text-white text-center font-extrabold text-xs py-3 rounded-lg transition block">
                             Choisir le Pass 9,90 €
                         </a>
                     </div>
 
-                    <!-- Offre 2 : Illimite -->
                     <div class="border-2 border-emerald-500 bg-emerald-50/40 rounded-xl p-4 flex flex-col justify-between relative">
                         <span class="absolute -top-2.5 right-3 bg-emerald-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">POPULAIRE</span>
                         <div>
@@ -339,7 +337,6 @@
         </div>
     </div>
 
-    <!-- Modale Scanner Simple -->
     <div id="modal-scanner" class="hidden fixed inset-0 bg-slate-950/90 z-50 flex items-center justify-center p-2 sm:p-4">
         <div class="bg-white rounded-2xl max-w-xl w-full max-h-[95vh] flex flex-col overflow-hidden shadow-2xl">
             <div class="bg-blue-950 text-white px-4 py-3 flex items-center justify-between">
@@ -355,6 +352,15 @@
                 </button>
             </div>
 
+            <div id="barre-pages-pdf" class="hidden bg-blue-900 text-white px-4 py-2 text-xs flex items-center justify-between gap-2">
+                <span class="font-bold"><i class="fa-solid fa-file-pdf text-amber-300 mr-1.5"></i>Fichier PDF (<span id="total-pages-pdf">1</span> pages) :</span>
+                <div class="flex items-center gap-2">
+                    <button type="button" onclick="changerPagePdfStudio(-1)" class="bg-blue-800 hover:bg-blue-700 px-2.5 py-1 rounded font-bold">◀</button>
+                    <span id="num-page-pdf" class="font-extrabold">Page 1</span>
+                    <button type="button" onclick="changerPagePdfStudio(1)" class="bg-blue-800 hover:bg-blue-700 px-2.5 py-1 rounded font-bold">▶</button>
+                </div>
+            </div>
+
             <div id="alerte-luminosite-scan" class="hidden bg-red-600 text-white px-4 py-2.5 text-xs flex items-center justify-between gap-2">
                 <div class="flex items-start gap-2">
                     <i class="fa-solid fa-lightbulb text-amber-300 text-sm mt-0.5 shrink-0"></i>
@@ -365,7 +371,7 @@
                 </div>
                 <label class="cursor-pointer bg-white text-red-700 font-extrabold text-[11px] px-2.5 py-1.5 rounded-lg shrink-0 shadow">
                     Reprendre
-                    <input type="file" accept="image/*" class="hidden" onchange="remplacerPhotoDansStudio(this)">
+                    <input type="file" accept="image/*,application/pdf" class="hidden" onchange="remplacerPhotoDansStudio(this)">
                 </label>
             </div>
 
@@ -386,19 +392,25 @@
                     <div class="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-100">
                         <div class="flex flex-wrap items-center gap-1.5">
                             <button type="button" onclick="changerFiltreScan('nb')" id="btn-filtre-nb" class="px-2.5 py-1 rounded-lg font-bold border transition">
-                                Scan Noir & Blanc
+                                Scan N&B
                             </button>
                             <button type="button" onclick="changerFiltreScan('couleur')" id="btn-filtre-couleur" class="px-2.5 py-1 rounded-lg font-bold border transition">
-                                Scan Couleur
+                                Couleur
                             </button>
                             <button type="button" onclick="changerFiltreScan('original')" id="btn-filtre-original" class="px-2.5 py-1 rounded-lg font-bold border transition">
-                                Photo normale
+                                Original
                             </button>
                         </div>
-                        <button type="button" onclick="pivoterScan90()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
-                            <i class="fa-solid fa-rotate-right"></i>
-                            <span>Tourner</span>
-                        </button>
+                        <div class="flex items-center gap-1.5">
+                            <button type="button" id="btn-recadrer-auto" onclick="basculerRecadrageAuto()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold px-2.5 py-1 rounded-lg flex items-center gap-1" title="Couper les bords autour de la feuille">
+                                <i class="fa-solid fa-crop-simple"></i>
+                                <span>Recadrer</span>
+                            </button>
+                            <button type="button" onclick="pivoterScan90()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold px-2.5 py-1 rounded-lg flex items-center gap-1">
+                                <i class="fa-solid fa-rotate-right"></i>
+                                <span>Tourner</span>
+                            </button>
+                        </div>
                     </div>
                 </div>
 
@@ -415,7 +427,6 @@
         </div>
     </div>
 
-    <!-- Modale Mes Papiers Enregistres -->
     <div id="modal-coffre" class="hidden fixed inset-0 bg-slate-950/70 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-2xl w-full max-h-[85vh] flex flex-col overflow-hidden shadow-2xl">
             <div class="bg-blue-950 text-white px-6 py-4 flex items-center justify-between">
@@ -443,9 +454,10 @@
     </div>
 
     <script>
-        // ============================================================
-        // CONFIGURATION STRIPE & FREEMIUM (COLLE TES 2 LIENS ICI)
-        // ============================================================
+        if (window.pdfjsLib) {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+
         const STRIPE_LIEN_UNIQUE = "https://buy.stripe.com/TON_LIEN_PASS_UNIQUE";
         const STRIPE_LIEN_MENSUEL = "https://buy.stripe.com/TON_LIEN_ABONNEMENT";
         const QUOTA_SCANS_GRATUITS = 2;
@@ -456,7 +468,6 @@
         let estPremium = localStorage.getItem('dossierBlinde_premium') === 'true';
         let scansUtilises = parseInt(localStorage.getItem('dossierBlinde_scans_utilises') || '0', 10);
 
-        // Détection automatique au retour de Stripe (?paiement=ok)
         const paramsUrl = new URLSearchParams(window.location.search);
         if (paramsUrl.get('paiement') === 'ok') {
             estPremium = true;
@@ -499,16 +510,40 @@
             document.getElementById('modal-paiement').classList.add('hidden');
         }
 
-        // ============================================================
-        // REFERENTIELS & LOGIQUE METIER
-        // ============================================================
-
         const TYPES_PIECE_IDENTITE = {
             cni: { label: "Carte Nationale d'Identité", rectoVerso: true },
             passeport: { label: "Passeport", rectoVerso: false },
             permis: { label: "Permis de conduire", rectoVerso: true },
             titre_sejour: { label: "Titre de séjour / Carte de résident", rectoVerso: true }
         };
+
+        const CATALOGUE_RECHERCHE_RAPIDE = [
+            { id: "surendettement", titre: "Surendettement — Dossier Banque de France", motsCles: "surendettement banque de france dettes credits huissier impayes" },
+            { id: "hlm_social", titre: "Logement social (HLM) — Demande ou renouvellement", motsCles: "hlm logement social bailleur mairie dalo" },
+            { id: "mdph_handicap", titre: "MDPH / Handicap — Demande AAH, RQTH ou Carte mobilité", motsCles: "mdph handicap aah rqth invalidite carte mobilite inclusion" },
+            { id: "regroupement_familial", titre: "Regroupement familial — Dossier OFII / Préfecture", motsCles: "regroupement familial ofii prefecture conjoint enfant etranger" },
+            { id: "naturalisation", titre: "Naturalisation française — Demande de nationalité", motsCles: "naturalisation nationalite francaise prefecture decret mariage" },
+            { id: "titre_sejour", titre: "Titre de séjour — Renouvellement préfecture", motsCles: "titre sejour carte resident prefecture renouvellement" },
+            { id: "loc_salarie", titre: "Louer un logement — Salarié (CDI / CDD)", motsCles: "louer logement appartement location salarie bail locataire" },
+            { id: "loc_indep", titre: "Louer un logement — Indépendant / Auto-entrepreneur", motsCles: "louer logement appartement independant auto entrepreneur micro" },
+            { id: "loc_etudiant", titre: "Louer un logement — Étudiant / Alternant avec Garant", motsCles: "louer logement etudiant alternant garant" },
+            { id: "permis_repassage", titre: "Permis de conduire — Repasser le permis (annulation / suspension)", motsCles: "permis conduire repasser annulation suspension points visite medicale" },
+            { id: "cni_passeport", titre: "Carte d'identité ou Passeport — Refaire ou renouveler", motsCles: "carte identite cni passeport renouveler mairie perte vol" },
+            { id: "caf_aides", titre: "Dossier CAF — APL, Prime d'activité ou RSA", motsCles: "caf apl prime activite rsa allocation logement" },
+            { id: "bourse_crous", titre: "Bourse étudiante CROUS — Dossier Social Étudiant (DSE)", motsCles: "bourse crous etudiant dse logement universitaire" },
+            { id: "creation_entreprise", titre: "Création d'entreprise / Auto-entrepreneur (INPI / URSSAF)", motsCles: "creation entreprise auto entrepreneur micro sasu sarl kbis inpi urssaf" },
+            { id: "retraite", titre: "Retraite — Demande de pension de retraite", motsCles: "retraite pension carsat agirc arrco senior" },
+            { id: "france_travail", titre: "Chômage / France Travail — Inscription et allocations", motsCles: "chomage france travail pole emploi are allocation" },
+            { id: "aide_juridictionnelle", titre: "Aide juridictionnelle — Prise en charge avocat / justice", motsCles: "aide juridictionnelle avocat tribunal justice proces" },
+            { id: "achat_immo", titre: "Achat immobilier — Notaire et prêt banque", motsCles: "achat immobilier maison appartement notaire credit pret banque" },
+            { id: "carte_grise", titre: "Carte grise — Changement de propriétaire véhicule", motsCles: "carte grise voiture vehicule immatriculation ants cession" },
+            { id: "mariage_pacs", titre: "Mariage ou PACS — Dossier mairie / notaire", motsCles: "mariage pacs mairie acte naissance union" },
+            { id: "declaration_naissance", titre: "Déclaration de naissance / Livret de famille", motsCles: "declaration naissance bebe enfant mairie livret famille" },
+            { id: "declaration_deces", titre: "Déclaration de décès & démarches banques / succession", motsCles: "deces succession heritage banque notaire obseques" },
+            { id: "compte_banque", titre: "Ouvrir un compte bancaire", motsCles: "ouvrir compte bancaire banque rib carte bleue" },
+            { id: "inscription_club", titre: "Inscription salle de sport, club ou association", motsCles: "inscription salle sport club association licence" },
+            { id: "carte_vitale", titre: "Carte Vitale / Attestation Sécurité sociale", motsCles: "carte vitale securite sociale ameli cpam sante" }
+        ];
 
         const REFERENTIEL_DOSSIERS = {
             loc_salarie: [
@@ -530,6 +565,37 @@
                 { id: "garant_cni", titre: "Pièce d'identité du Garant", info: "La personne qui se porte garante pour vous", typeSpecifique: "identite" },
                 { id: "garant_rev", titre: "Papiers de revenus du Garant", info: "3 dernières fiches de paie + dernier avis d'imposition du garant" }
             ],
+            hlm_social: [
+                { id: "cni", titre: "Pièce d'identité de toutes les personnes majeures du foyer", info: "Carte d'identité, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
+                { id: "formulaire_hlm", titre: "Formulaire Cerfa n°14069 de demande de logement social", info: "Rempli et signé (ou numéro unique d'enregistrement)" },
+                { id: "impots", titre: "Avis d'imposition N-1 et N-2 de toutes les personnes du foyer", info: "Toutes les pages obligatoires" },
+                { id: "paie", titre: "3 derniers justificatifs de revenus du foyer", info: "Fiches de paie, attestation CAF, France Travail ou retraite" },
+                { id: "domicile", titre: "Justificatif de logement actuel", info: "Quittance de loyer, attestation d'hébergement ou constat d'insalubrité", typeSpecifique: "domicile" }
+            ],
+            surendettement: [
+                { id: "cni", titre: "Pièce d'identité", info: "Carte d'identité, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
+                { id: "domicile", titre: "Justificatif de domicile (moins de 3 mois)", info: "Facture récente ou attestation d'hébergement", typeSpecifique: "domicile" },
+                { id: "formulaire_bdf", titre: "Formulaire Cerfa n°13594 de déclaration de surendettement", info: "Rempli et signé (téléchargeable sur banque-france.fr)" },
+                { id: "paie", titre: "Justificatifs de revenus récents (3 derniers mois)", info: "Fiches de paie, pensions retraite, CAF ou France Travail" },
+                { id: "releves_bancaires", titre: "3 derniers relevés de tous vos comptes bancaires", info: "Comptes courants et livrets d'épargne" },
+                { id: "impots", titre: "Dernier avis d'imposition + Taxe foncière", info: "Toutes les pages du document" },
+                { id: "dettes_courriers", titre: "Justificatifs des dettes et crédits en cours", info: "Tableaux d'amortissement, factures impayées, courriers huissier" }
+            ],
+            mdph_handicap: [
+                { id: "cni", titre: "Pièce d'identité (ou titre de séjour valide)", info: "Recto-verso", typeSpecifique: "identite" },
+                { id: "domicile", titre: "Justificatif de domicile (moins de 3 mois)", info: "Facture récente ou attestation d'hébergement", typeSpecifique: "domicile" },
+                { id: "cerfa_mdph", titre: "Formulaire de demande MDPH (Cerfa n°15692)", info: "Rempli, daté et signé avec le projet de vie" },
+                { id: "certif_medical_mdph", titre: "Certificat médical MDPH (Cerfa n°15695) de moins de 1 an", info: "Rempli, daté et tamponné par votre médecin" },
+                { id: "comptes_rendus", titre: "Comptes-rendus médicaux, bilans ou ordonnances", info: "Documents spécialistes justifiant le handicap" }
+            ],
+            regroupement_familial: [
+                { id: "titre_sejour_rf", titre: "Titre de séjour du demandeur (valable au moins 1 an)", info: "Recto et verso", typeSpecifique: "identite" },
+                { id: "cerfa_rf", titre: "Formulaire Cerfa n°11436 de demande de regroupement familial", info: "Rempli et signé" },
+                { id: "actes_etat_civil_rf", titre: "Actes de mariage et de naissance (copies intégrales)", info: "Traduits en français par un traducteur assermenté et légalisés" },
+                { id: "paie", titre: "12 derniers bulletins de salaire ou bilans comptables", info: "Justifiant de ressources stables suffisantes (hors prestations familiales)" },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Toutes les pages" },
+                { id: "logement_rf", titre: "Bail de location ou acte de propriété + Diagnostic surface", info: "Prouvant un logement conforme aux normes de surface" }
+            ],
             permis_repassage: [
                 { id: "cni", titre: "Pièce d'identité", info: "Carte d'identité, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
                 { id: "domicile", titre: "Justificatif de domicile (moins de 6 mois)", info: "Facture récente ou papiers d'hébergement", typeSpecifique: "domicile" },
@@ -548,12 +614,63 @@
                 { id: "impots", titre: "Dernier avis d'imposition", info: "Toutes les pages du document" },
                 { id: "paie", titre: "3 derniers justificatifs de revenus", info: "Fiches de paie ou déclarations URSSAF" }
             ],
+            bourse_crous: [
+                { id: "cni", titre: "Pièce d'identité de l'étudiant", info: "Carte d'identité ou Passeport", typeSpecifique: "identite" },
+                { id: "impots_parents", titre: "Avis d'imposition N-2 des parents (ou tuteur)", info: "Toutes les pages du document fiscal" },
+                { id: "certif_scolarite_crous", titre: "Certificat de scolarité ou justificatif d'inscription", info: "Pour l'année universitaire" },
+                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB) au nom de l'étudiant", info: "Obligatoirement au nom de l'étudiant" }
+            ],
+            creation_entreprise: [
+                { id: "cni", titre: "Pièce d'identité du dirigeant / entrepreneur", info: "En cours de validité avec mention manuscrite conforme", typeSpecifique: "identite" },
+                { id: "domicile", titre: "Justificatif de domicile de l'entreprise (moins de 3 mois)", info: "Facture ou contrat de domiciliation", typeSpecifique: "domicile" },
+                { id: "non_condamnation", titre: "Attestation sur l'honneur de non-condamnation et filiation", info: "Datée et signée" },
+                { id: "statuts_societe", titre: "Statuts signés + Attestation dépôt de capital (si société)", info: "Obligatoire pour SASU, SAS, EURL, SARL" }
+            ],
+            retraite: [
+                { id: "cni", titre: "Pièce d'identité", info: "Carte d'identité ou Passeport en cours de validité", typeSpecifique: "identite" },
+                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "À votre nom pour le versement de la pension" },
+                { id: "impots", titre: "Dernier avis d'imposition", info: "Toutes les pages" },
+                { id: "livret_famille", titre: "Livret de famille complet", info: "Pour la majoration enfants éventuelle" },
+                { id: "paie", titre: "Derniers bulletins de salaire ou attestations chômage/maladie", info: "Pour valider les derniers trimestres" }
+            ],
+            france_travail: [
+                { id: "cni", titre: "Pièce d'identité (ou titre de séjour avec droit au travail)", info: "En cours de validité", typeSpecifique: "identite" },
+                { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "À votre nom" },
+                { id: "attestation_employeur", titre: "Attestation employeur France Travail", info: "Remise à la fin du contrat de travail" },
+                { id: "carte_vitale_doc", titre: "Attestation de droits Sécurité sociale (Ameli)", info: "Téléchargeable sur ameli.fr" }
+            ],
+            aide_juridictionnelle: [
+                { id: "cni", titre: "Pièce d'identité (ou titre de séjour valide)", info: "Recto-verso", typeSpecifique: "identite" },
+                { id: "cerfa_aj", titre: "Formulaire Cerfa n°16146 de demande d'aide juridictionnelle", info: "Rempli et signé" },
+                { id: "impots", titre: "Dernier avis d'imposition (ou non-imposition)", info: "Toutes les pages" },
+                { id: "convocation_justice", titre: "Convocation au tribunal, assignation ou décision contestée", info: "Document justifiant la procédure en cours" },
+                { id: "attestation_assureur", titre: "Attestation de non-prise en charge par votre assurance", info: "Protection juridique habitation/carte bancaire" }
+            ],
             achat_immo: [
                 { id: "cni", titre: "Pièce d'identité (Carte d'identité ou Passeport)", info: "En cours de validité", typeSpecifique: "identite" },
                 { id: "domicile", titre: "Justificatif de domicile (moins de 3 mois)", info: "Facture récente ou attestation d'hébergement", typeSpecifique: "domicile" },
                 { id: "situation_fam", titre: "Livret de famille / Acte de mariage ou PACS", info: "Demandé par le notaire" },
                 { id: "apport_tracfin", titre: "Justificatif de votre apport (relevé bancaire)", info: "Prouvant d'où vient l'argent de l'apport" },
                 { id: "impots", titre: "2 derniers avis d'imposition", info: "Complets avec toutes les pages" }
+            ],
+            carte_grise: [
+                { id: "cni", titre: "Pièce d'identité", info: "En cours de validité", typeSpecifique: "identite" },
+                { id: "domicile", titre: "Justificatif de domicile (moins de 6 mois)", info: "Facture récente ou papiers d'hébergement", typeSpecifique: "domicile" },
+                { id: "ancienne_cg", titre: "Ancienne carte grise barrée, datée et signée", info: "Remise par le vendeur" },
+                { id: "certif_cession", titre: "Certificat de cession (Cerfa n°15776)", info: "Signé par l'ancien propriétaire et vous" },
+                { id: "controle_tech", titre: "Preuve du contrôle technique (moins de 6 mois)", info: "Obligatoire si le véhicule a plus de 4 ans" }
+            ],
+            mariage_pacs: [
+                { id: "cni", titre: "Pièce d'identité des deux futurs époux / partenaires", info: "En cours de validité", typeSpecifique: "identite" },
+                { id: "domicile", titre: "Justificatif de domicile (moins de 3 mois)", info: "À l'adresse commune ou individuelle", typeSpecifique: "domicile" },
+                { id: "acte_naissance", titre: "Copie intégrale d'acte de naissance (moins de 3 mois)", info: "À demander gratuitement à la mairie de naissance" },
+                { id: "cni_temoins", titre: "Pièces d'identité des témoins (pour le mariage)", info: "Copie recto-verso de chaque témoin" }
+            ],
+            declaration_naissance: [
+                { id: "certif_accouchement", titre: "Certificat médical d'accouchement", info: "Délivré par la maternité ou la sage-femme" },
+                { id: "cni", titre: "Pièces d'identité des deux parents", info: "En cours de validité", typeSpecifique: "identite" },
+                { id: "livret_famille_naiss", titre: "Livret de famille (ou acte de reconnaissance anticipée)", info: "Pour mise à jour en mairie sous 5 jours" },
+                { id: "domicile", titre: "Justificatif de domicile (moins de 3 mois)", info: "Si les parents ne sont pas mariés", typeSpecifique: "domicile" }
             ],
             declaration_deces: [
                 { id: "certif_deces", titre: "Certificat de décès + Acte de décès de la mairie", info: "Délivré par le médecin puis la mairie" },
@@ -573,6 +690,19 @@
                 { id: "cni", titre: "Pièce d'identité", info: "Carte d'identité, Passeport ou Titre de séjour", typeSpecifique: "identite" },
                 { id: "rib", titre: "Relevé d'Identité Bancaire (RIB)", info: "Pour les remboursements" }
             ],
+            naturalisation: [
+                { id: "titre_sejour_nat", titre: "Titre de séjour en cours de validité", info: "Recto et verso", typeSpecifique: "identite" },
+                { id: "domicile", titre: "Justificatif de domicile (moins de 3 mois)", info: "Facture récente ou quittance de loyer", typeSpecifique: "domicile" },
+                { id: "acte_naissance_nat", titre: "Acte de naissance intégral", info: "Traduit par un traducteur assermenté si étranger" },
+                { id: "impots", titre: "3 derniers avis d'imposition + Bordereau P237", info: "Preuve de situation fiscale à jour" },
+                { id: "diplome_francais", titre: "Diplôme ou attestation de niveau B1 en français", info: "TCF, TEF ou diplôme français" }
+            ],
+            titre_sejour: [
+                { id: "passeport_ts", titre: "Passeport + Ancien titre de séjour", info: "Pages identité et validité", typeSpecifique: "identite" },
+                { id: "domicile", titre: "Justificatif de domicile (moins de 6 mois)", info: "Facture récente ou attestation d'hébergement", typeSpecifique: "domicile" },
+                { id: "ephotos", titre: "Code e-photo (3 photos d'identité numériques)", info: "Fait en cabine agréée ANTS" },
+                { id: "justif_situation", titre: "Justificatif de situation (travail, études ou famille)", info: "Contrat de travail, certificat de scolarité ou livret de famille" }
+            ],
             dossier_recherche: []
         };
 
@@ -581,6 +711,9 @@
         let modeDomicile = 'direct';
         let piecesSupplementaires = {};
         let photoCourrierBase64 = null;
+        let dernierDocsDossierGenere = [];
+        let dernierMentionDest = '';
+        let dernierNomDossier = '';
 
         let scanEnCours = {
             imgSource: null,
@@ -588,7 +721,11 @@
             titreDoc: '',
             rotation: 0,
             filtre: 'nb',
-            luminositeMoyenne: 150
+            recadrageAuto: false,
+            luminositeMoyenne: 150,
+            pdfDoc: null,
+            pdfPage: 1,
+            pdfTotalPages: 1
         };
 
         try {
@@ -634,42 +771,99 @@
             };
         }
 
-        // --- BARRE DE RECHERCHE ---
+        async function convertirPagePdfEnImage(pdfDoc, pageNum, scale) {
+            const page = await pdfDoc.getPage(pageNum);
+            const viewport = page.getViewport({ scale: scale || 2.0 });
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(viewport.width);
+            canvas.height = Math.round(viewport.height);
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#ffffff';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+            return new Promise(function(resolve) {
+                const img = new Image();
+                img.onload = function() { resolve(img); };
+                img.src = canvas.toDataURL('image/jpeg', 0.92);
+            });
+        }
+
+        function normaliserTexteRecherche(str) {
+            return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+        }
+
+        function gererToucheRecherche(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const texte = document.getElementById('recherche-demarche').value.trim();
+                if (texte.length >= 2) {
+                    creerDossierDepuisRecherche();
+                }
+            }
+        }
 
         function filtrerOuProposerDemarche() {
             const input = document.getElementById('recherche-demarche');
             const texte = input.value.trim();
             const btnEffacer = document.getElementById('btn-effacer-recherche');
+            const listeBox = document.getElementById('liste-suggestions-instantanees');
             const zoneProp = document.getElementById('zone-proposition-recherche');
-            const select = document.getElementById('select-dossier');
 
             if (!texte) {
                 btnEffacer.classList.add('hidden');
+                listeBox.classList.add('hidden');
                 zoneProp.classList.add('hidden');
                 return;
             }
 
             btnEffacer.classList.remove('hidden');
-            const q = texte.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            const q = normaliserTexteRecherche(texte);
 
-            for (let i = 0; i < select.options.length; i++) {
-                const opt = select.options[i];
-                if (opt.value === 'dossier_recherche') continue;
-                const labelNorm = opt.text.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-                if (labelNorm.includes(q)) {
-                    select.value = opt.value;
-                    chargerChecklist();
-                    break;
-                }
+            const correspondances = CATALOGUE_RECHERCHE_RAPIDE.filter(function(item) {
+                const titreNorm = normaliserTexteRecherche(item.titre);
+                const motsNorm = normaliserTexteRecherche(item.motsCles);
+                return titreNorm.includes(q) || motsNorm.includes(q);
+            }).sort(function(a, b) {
+                const aDebut = normaliserTexteRecherche(a.titre).startsWith(q) ? 0 : 1;
+                const bDebut = normaliserTexteRecherche(b.titre).startsWith(q) ? 0 : 1;
+                return aDebut - bDebut;
+            });
+
+            if (correspondances.length > 0) {
+                listeBox.innerHTML = correspondances.map(function(item) {
+                    const nbPieces = (REFERENTIEL_DOSSIERS[item.id] || []).length;
+                    return '<button type="button" onclick="selectionnerDossierRapide(\'' + item.id + '\')" class="w-full text-left px-4 py-3 hover:bg-blue-50 transition flex items-center justify-between gap-2">' +
+                        '<span class="text-xs sm:text-sm font-bold text-slate-900"><i class="fa-solid fa-folder text-blue-900 mr-2"></i>' + item.titre + '</span>' +
+                        '<span class="text-[11px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded shrink-0">' + nbPieces + ' papiers</span>' +
+                    '</button>';
+                }).join('');
+                listeBox.classList.remove('hidden');
+            } else {
+                listeBox.classList.add('hidden');
             }
 
-            document.getElementById('label-recherche-tapee').textContent = '« ' + texte + ' »';
-            zoneProp.classList.remove('hidden');
+            if (texte.length >= 2) {
+                document.getElementById('label-recherche-tapee').textContent = '« ' + texte + ' »';
+                zoneProp.classList.remove('hidden');
+            } else {
+                zoneProp.classList.add('hidden');
+            }
+        }
+
+        function selectionnerDossierRapide(idDossier) {
+            const select = document.getElementById('select-dossier');
+            select.value = idDossier;
+            document.getElementById('liste-suggestions-instantanees').classList.add('hidden');
+            document.getElementById('zone-proposition-recherche').classList.add('hidden');
+            chargerChecklist();
+            document.getElementById('titre-checklist-active').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
         function effacerRecherche() {
             document.getElementById('recherche-demarche').value = '';
             document.getElementById('btn-effacer-recherche').classList.add('hidden');
+            document.getElementById('liste-suggestions-instantanees').classList.add('hidden');
             document.getElementById('zone-proposition-recherche').classList.add('hidden');
         }
 
@@ -679,7 +873,7 @@
 
             const btn = document.getElementById('btn-creer-depuis-recherche');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Recherche...';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin mr-1"></i>Analyse officielle...';
 
             try {
                 const reponse = await fetch('/api/verifier', {
@@ -687,7 +881,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         mode: 'diagnostic',
-                        descriptionSituation: "Liste EXHAUSTIVEMENT TOUTES les pièces obligatoires et pièces pièges sans exception pour un dossier de : " + texte + " en France (ne pas oublier justificatif de domicile, identité, revenus, avis d'imposition, RIB ou permis selon le cas)."
+                        descriptionSituation: "Démarche administrative en France demandée par l'usager : " + texte
                     })
                 });
                 const res = await reponse.json();
@@ -700,7 +894,7 @@
                     }
 
                     const optCustom = document.getElementById('option-dossier-recherche');
-                    optCustom.textContent = "Mon dossier : " + texte;
+                    optCustom.textContent = "Dossier complet : " + texte;
                     optCustom.classList.remove('hidden');
 
                     const select = document.getElementById('select-dossier');
@@ -708,12 +902,14 @@
 
                     piecesSupplementaires['dossier_recherche'] = listePropre;
 
-                    document.getElementById('detail-alerte-ia').textContent = res.resume || ("Liste des papiers pour : " + texte);
+                    document.getElementById('detail-alerte-ia').textContent = res.resume || ("Liste officielle complète des papiers pour : " + texte);
                     document.getElementById('banniere-alerte-ia').classList.remove('hidden');
                     document.getElementById('zone-proposition-recherche').classList.add('hidden');
+                    document.getElementById('liste-suggestions-instantanees').classList.add('hidden');
 
                     sauvegarderCoffre();
                     chargerChecklist();
+                    document.getElementById('titre-checklist-active').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
                 } else {
                     alert(res.message || "Impossible de créer cette liste pour le moment.");
                 }
@@ -721,11 +917,9 @@
                 alert("Erreur réseau : " + err.message);
             } finally {
                 btn.disabled = false;
-                btn.textContent = 'Voir la liste';
+                btn.textContent = 'Trouver toutes les pièces';
             }
         }
-
-        // --- LECTEUR PHOTO COURRIER RECU ---
 
         function basculerAssistantIA() {
             if (!estPremium && scansUtilises >= QUOTA_SCANS_GRATUITS) {
@@ -736,26 +930,45 @@
             bloc.classList.toggle('hidden');
         }
 
-        function preparerPhotoCourrier(input) {
+        async function preparerPhotoCourrier(input) {
             if (!input.files || !input.files[0]) return;
-            const reader = new FileReader();
-            reader.onload = function(e) {
-                const img = new Image();
-                img.onload = function() {
-                    const canvas = document.createElement('canvas');
-                    const max = 900;
-                    let w = img.width, h = img.height;
-                    if (w > h && w > max) { h *= max / w; w = max; }
-                    else if (h > max) { w *= max / h; h = max; }
-                    canvas.width = Math.round(w);
-                    canvas.height = Math.round(h);
-                    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                    photoCourrierBase64 = canvas.toDataURL('image/jpeg', 0.72);
-                    document.getElementById('label-courrier-joint').textContent = "Photo du courrier prête ✓";
-                };
-                img.src = e.target.result;
-            };
-            reader.readAsDataURL(input.files[0]);
+            const file = input.files[0];
+            document.getElementById('label-courrier-joint').textContent = "Chargement du courrier...";
+
+            try {
+                if (file.type === 'application/pdf' && window.pdfjsLib) {
+                    const buffer = await file.arrayBuffer();
+                    const pdfDoc = await pdfjsLib.getDocument({ data: buffer }).promise;
+                    const img = await convertirPagePdfEnImage(pdfDoc, 1, 1.6);
+                    compresserImageCourrier(img);
+                } else {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const img = new Image();
+                        img.onload = function() {
+                            compresserImageCourrier(img);
+                        };
+                        img.src = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            } catch (err) {
+                document.getElementById('label-courrier-joint').textContent = "Photo ou PDF du courrier";
+                alert("Impossible d'ouvrir ce fichier : " + err.message);
+            }
+        }
+
+        function compresserImageCourrier(img) {
+            const canvas = document.createElement('canvas');
+            const max = 950;
+            let w = img.width, h = img.height;
+            if (w > h && w > max) { h *= max / w; w = max; }
+            else if (h > max) { w *= max / h; h = max; }
+            canvas.width = Math.round(w);
+            canvas.height = Math.round(h);
+            canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+            photoCourrierBase64 = canvas.toDataURL('image/jpeg', 0.75);
+            document.getElementById('label-courrier-joint').textContent = "Courrier prêt ✓";
         }
 
         async function lancerDiagnosticIA() {
@@ -766,7 +979,7 @@
 
             const situation = document.getElementById('input-situation-ia').value.trim();
             if (!situation && !photoCourrierBase64) {
-                alert("Prenez en photo le courrier reçu ou expliquez votre question.");
+                alert("Prenez en photo le courrier reçu, importez son PDF ou expliquez votre question.");
                 return;
             }
 
@@ -1087,7 +1300,7 @@
                 }
 
                 const btnCouleur = (docSauvegarde && !estValide) ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-900 hover:bg-blue-800';
-                const btnLabel = docSauvegarde ? 'Refaire la photo' : 'Prendre en photo';
+                const btnLabel = docSauvegarde ? 'Refaire' : 'Photo / PDF';
                 const miniature = docSauvegarde
                     ? '<img src="' + docSauvegarde.image + '" alt="Aperçu" class="w-12 h-12 object-contain bg-white rounded-lg border border-slate-300 shadow-sm cursor-pointer" onclick="ouvrirCoffreFort()">'
                     : '';
@@ -1114,7 +1327,7 @@
                         '<label class="cursor-pointer ' + btnCouleur + ' text-white text-xs font-bold px-3.5 py-2.5 rounded-xl transition flex items-center gap-2 shadow-sm">' +
                             '<i class="fa-solid fa-camera"></i>' +
                             '<span>' + btnLabel + '</span>' +
-                            '<input type="file" accept="image/*" class="hidden" data-cle="' + cleCoffreCorrespondante + '" data-titre="' + item.titre.replace(/"/g, '&quot;') + '" data-couleur="' + (item.couleur ? 'true' : 'false') + '" onchange="ouvrirStudioScanDepuisInput(this)">' +
+                            '<input type="file" accept="image/*,application/pdf" class="hidden" data-cle="' + cleCoffreCorrespondante + '" data-titre="' + item.titre.replace(/"/g, '&quot;') + '" data-couleur="' + (item.couleur ? 'true' : 'false') + '" onchange="ouvrirStudioScanDepuisInput(this)">' +
                         '</label>' +
                     '</div>' +
                 '</div>';
@@ -1128,11 +1341,11 @@
         function renderBlocFace(cleId, titreIA, labelFace, docFace, estValide, garderCouleur) {
             const bordure = docFace ? (estValide ? 'border-emerald-200 bg-emerald-50/30' : 'border-red-200 bg-red-50/30') : 'border-slate-200 bg-white';
             const btnCouleur = (docFace && !estValide) ? 'bg-red-600 hover:bg-red-700' : 'bg-blue-900 hover:bg-blue-800';
-            const btnLabel = docFace ? 'Refaire' : 'Photo';
+            const btnLabel = docFace ? 'Refaire' : 'Photo / PDF';
             const miniature = docFace
                 ? '<img src="' + docFace.image + '" class="w-9 h-9 object-contain bg-white rounded border border-slate-300 cursor-pointer" onclick="ouvrirCoffreFort()">'
                 : '';
-            const badge = docFace ? renderBadgeIA(docFace) : '<span class="text-[11px] text-slate-400">À prendre en photo à la lumière</span>';
+            const badge = docFace ? renderBadgeIA(docFace) : '<span class="text-[11px] text-slate-400">Photo à la lumière ou fichier PDF</span>';
 
             return '<div class="border ' + bordure + ' rounded-xl p-3.5 flex flex-col justify-between gap-2.5">' +
                 '<div class="flex items-center justify-between gap-2">' +
@@ -1142,7 +1355,7 @@
                         '<label class="cursor-pointer ' + btnCouleur + ' text-white text-[11px] font-bold px-3 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm">' +
                             '<i class="fa-solid fa-camera"></i>' +
                             '<span>' + btnLabel + '</span>' +
-                            '<input type="file" accept="image/*" class="hidden" data-cle="' + cleId + '" data-titre="' + titreIA.replace(/"/g, '&quot;') + '" data-couleur="' + (garderCouleur ? 'true' : 'false') + '" onchange="ouvrirStudioScanDepuisInput(this)">' +
+                            '<input type="file" accept="image/*,application/pdf" class="hidden" data-cle="' + cleId + '" data-titre="' + titreIA.replace(/"/g, '&quot;') + '" data-couleur="' + (garderCouleur ? 'true' : 'false') + '" onchange="ouvrirStudioScanDepuisInput(this)">' +
                         '</label>' +
                     '</div>' +
                 '</div>' +
@@ -1163,8 +1376,6 @@
             }
         }
 
-        // --- SCANNER SIMPLE SANS CADRE ---
-
         function ouvrirStudioScanDepuisInput(input) {
             if (!estPremium && scansUtilises >= QUOTA_SCANS_GRATUITS) {
                 input.value = '';
@@ -1177,17 +1388,64 @@
             const garderCouleur = input.getAttribute('data-couleur') === 'true';
             const file = input.files[0];
 
-            chargerImageDansStudio(file, cleId, titreDoc, garderCouleur ? 'couleur' : 'nb');
+            chargerFichierDansStudio(file, cleId, titreDoc, garderCouleur ? 'couleur' : 'nb');
             input.value = '';
         }
 
         function remplacerPhotoDansStudio(input) {
             if (!input.files || !input.files[0]) return;
-            chargerImageDansStudio(input.files[0], scanEnCours.cleId, scanEnCours.titreDoc, scanEnCours.filtre);
+            chargerFichierDansStudio(input.files[0], scanEnCours.cleId, scanEnCours.titreDoc, scanEnCours.filtre);
             input.value = '';
         }
 
-        function chargerImageDansStudio(file, cleId, titreDoc, filtre) {
+        async function chargerFichierDansStudio(file, cleId, titreDoc, filtre) {
+            if (file.type === 'application/pdf') {
+                if (!window.pdfjsLib) {
+                    alert("Lecteur PDF non chargé. Vérifiez votre connexion internet.");
+                    return;
+                }
+                try {
+                    const buffer = await file.arrayBuffer();
+                    const pdfDoc = await pdfjsLib.getDocument({ data: buffer }).promise;
+                    const imgPage1 = await convertirPagePdfEnImage(pdfDoc, 1, 2.0);
+
+                    scanEnCours = {
+                        imgSource: imgPage1,
+                        cleId: cleId,
+                        titreDoc: titreDoc,
+                        rotation: 0,
+                        filtre: 'original',
+                        recadrageAuto: false,
+                        luminositeMoyenne: 240,
+                        pdfDoc: pdfDoc,
+                        pdfPage: 1,
+                        pdfTotalPages: pdfDoc.numPages
+                    };
+
+                    document.getElementById('titre-studio-scan').textContent = titreDoc;
+                    document.getElementById('slider-lum-scan').value = 0;
+                    document.getElementById('alerte-luminosite-scan').classList.add('hidden');
+
+                    const barrePdf = document.getElementById('barre-pages-pdf');
+                    if (pdfDoc.numPages > 1) {
+                        document.getElementById('total-pages-pdf').textContent = pdfDoc.numPages;
+                        document.getElementById('num-page-pdf').textContent = 'Page 1';
+                        barrePdf.classList.remove('hidden');
+                    } else {
+                        barrePdf.classList.add('hidden');
+                    }
+
+                    mettreAJourBoutonsFiltre();
+                    mettreAJourBoutonRecadrage();
+                    actualiserApercuScan();
+                    document.getElementById('modal-scanner').classList.remove('hidden');
+                } catch (err) {
+                    alert("Impossible de lire ce fichier PDF : " + err.message);
+                }
+                return;
+            }
+
+            document.getElementById('barre-pages-pdf').classList.add('hidden');
             const reader = new FileReader();
             reader.onload = function(event) {
                 const img = new Image();
@@ -1201,7 +1459,11 @@
                         titreDoc: titreDoc,
                         rotation: 0,
                         filtre: filtre,
-                        luminositeMoyenne: lumMoyenne
+                        recadrageAuto: false,
+                        luminositeMoyenne: lumMoyenne,
+                        pdfDoc: null,
+                        pdfPage: 1,
+                        pdfTotalPages: 1
                     };
 
                     document.getElementById('titre-studio-scan').textContent = titreDoc;
@@ -1217,12 +1479,23 @@
                     }
 
                     mettreAJourBoutonsFiltre();
+                    mettreAJourBoutonRecadrage();
                     actualiserApercuScan();
                     document.getElementById('modal-scanner').classList.remove('hidden');
                 };
                 img.src = event.target.result;
             };
             reader.readAsDataURL(file);
+        }
+
+        async function changerPagePdfStudio(delta) {
+            if (!scanEnCours.pdfDoc) return;
+            const nouvellePage = scanEnCours.pdfPage + delta;
+            if (nouvellePage < 1 || nouvellePage > scanEnCours.pdfTotalPages) return;
+            scanEnCours.pdfPage = nouvellePage;
+            document.getElementById('num-page-pdf').textContent = 'Page ' + nouvellePage;
+            scanEnCours.imgSource = await convertirPagePdfEnImage(scanEnCours.pdfDoc, nouvellePage, 2.0);
+            actualiserApercuScan();
         }
 
         function mesurerLuminositeImage(img) {
@@ -1242,11 +1515,28 @@
         function fermerStudioScan() {
             document.getElementById('modal-scanner').classList.add('hidden');
             scanEnCours.imgSource = null;
+            scanEnCours.pdfDoc = null;
         }
 
         function pivoterScan90() {
             scanEnCours.rotation = (scanEnCours.rotation + 90) % 360;
             actualiserApercuScan();
+        }
+
+        function basculerRecadrageAuto() {
+            scanEnCours.recadrageAuto = !scanEnCours.recadrageAuto;
+            mettreAJourBoutonRecadrage();
+            actualiserApercuScan();
+        }
+
+        function mettreAJourBoutonRecadrage() {
+            const btn = document.getElementById('btn-recadrer-auto');
+            if (!btn) return;
+            if (scanEnCours.recadrageAuto) {
+                btn.className = 'bg-emerald-600 text-white border border-emerald-700 font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 transition';
+            } else {
+                btn.className = 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 transition';
+            }
         }
 
         function changerFiltreScan(nouveauFiltre) {
@@ -1265,6 +1555,55 @@
                     btn.className = 'px-2.5 py-1 rounded-lg font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-100 transition';
                 }
             });
+        }
+
+        function detecterZoneDocument(canvas) {
+            const w = canvas.width;
+            const h = canvas.height;
+            const ctx = canvas.getContext('2d');
+            const data = ctx.getImageData(0, 0, w, h).data;
+
+            let lumCentre = 0;
+            let nbCentre = 0;
+            for (let y = Math.floor(h * 0.35); y < Math.floor(h * 0.65); y += 4) {
+                for (let x = Math.floor(w * 0.35); x < Math.floor(w * 0.65); x += 4) {
+                    const idx = (y * w + x) * 4;
+                    lumCentre += (0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2]);
+                    nbCentre++;
+                }
+            }
+            const moyCentre = nbCentre > 0 ? lumCentre / nbCentre : 180;
+            const seuilPapier = Math.max(95, moyCentre * 0.72);
+
+            let minX = w, minY = h, maxX = 0, maxY = 0;
+            let pointsTrouves = 0;
+
+            for (let y = 0; y < h; y += 3) {
+                for (let x = 0; x < w; x += 3) {
+                    const idx = (y * w + x) * 4;
+                    const lum = 0.299 * data[idx] + 0.587 * data[idx + 1] + 0.114 * data[idx + 2];
+                    if (lum >= seuilPapier) {
+                        if (x < minX) minX = x;
+                        if (x > maxX) maxX = x;
+                        if (y < minY) minY = y;
+                        if (y > maxY) maxY = y;
+                        pointsTrouves++;
+                    }
+                }
+            }
+
+            if (pointsTrouves < 50 || (maxX - minX) < w * 0.25 || (maxY - minY) < h * 0.25) {
+                return { x: 0, y: 0, w: w, h: h };
+            }
+
+            const margeX = Math.round((maxX - minX) * 0.03);
+            const margeY = Math.round((maxY - minY) * 0.03);
+            const cropX = Math.max(0, minX - margeX);
+            const cropY = Math.max(0, minY - margeY);
+            const cropW = Math.min(w - cropX, (maxX - minX) + margeX * 2);
+            const cropH = Math.min(h - cropY, (maxY - minY) + margeY * 2);
+
+            return { x: cropX, y: cropY, w: cropW, h: cropH };
         }
 
         function dessinerScanSurCanvas(canvasCible, maxDimension) {
@@ -1290,8 +1629,13 @@
             rCtx.drawImage(img, -img.width / 2, -img.height / 2);
             rCtx.restore();
 
-            let outW = rotCanvas.width;
-            let outH = rotCanvas.height;
+            let zone = { x: 0, y: 0, w: rotCanvas.width, h: rotCanvas.height };
+            if (scanEnCours.recadrageAuto) {
+                zone = detecterZoneDocument(rotCanvas);
+            }
+
+            let outW = zone.w;
+            let outH = zone.h;
             if (outW > outH && outW > maxDimension) {
                 outH *= maxDimension / outW;
                 outW = maxDimension;
@@ -1303,7 +1647,7 @@
             canvasCible.width = Math.round(outW);
             canvasCible.height = Math.round(outH);
             const ctx = canvasCible.getContext('2d');
-            ctx.drawImage(rotCanvas, 0, 0, canvasCible.width, canvasCible.height);
+            ctx.drawImage(rotCanvas, zone.x, zone.y, zone.w, zone.h, 0, 0, canvasCible.width, canvasCible.height);
 
             appliquerTraitementScannerPro(ctx, canvasCible.width, canvasCible.height, scanEnCours.filtre, lumBoost);
         }
@@ -1399,7 +1743,7 @@
                 const resultat = await reponse.json();
                 if (!reponse.ok) throw new Error(resultat.message || ('Serveur HTTP ' + reponse.status));
 
-                if (!estPremium) {
+                if (resultat.valide && !estPremium) {
                     scansUtilises++;
                     localStorage.setItem('dossierBlinde_scans_utilises', String(scansUtilises));
                     mettreAJourStatutAbonnement();
@@ -1428,8 +1772,6 @@
             sauvegarderCoffre();
             chargerChecklist();
         }
-
-        // --- GENERATION DU DOSSIER PDF ---
 
         function genererDossierLocal() {
             if (!estPremium) {
@@ -1477,12 +1819,16 @@
             });
 
             if (docsValides.length === 0) {
-                alert("Prenez en photo et faites valider au moins un papier avant de créer votre dossier.");
+                alert("Prenez en photo ou importez au moins un papier validé avant de créer votre dossier.");
                 return;
             }
 
             const destinataire = document.getElementById('input-destinataire').value.trim().toUpperCase();
             const mentionDest = destinataire ? ('EXCLUSIF POUR : ' + destinataire) : 'USAGE EXCLUSIF DÉMARCHE ADMINISTRATIVE';
+
+            dernierDocsDossierGenere = docsValides;
+            dernierMentionDest = mentionDest;
+            dernierNomDossier = nomDossier;
 
             document.getElementById('titre-dossier-pdf').textContent = nomDossier + " — Préparé le " + new Date().toLocaleDateString('fr-FR');
             const containerPages = document.getElementById('liste-pages-filigranees');
@@ -1506,6 +1852,94 @@
 
             document.getElementById('apercu-dossier-final').classList.remove('hidden');
             document.getElementById('apercu-dossier-final').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function fusionnerImageAvecFiligrane(imageSrc, texteFiligrane) {
+            return new Promise(function(resolve) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = img.width;
+                    canvas.height = img.height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0);
+
+                    ctx.save();
+                    ctx.translate(canvas.width / 2, canvas.height / 2);
+                    ctx.rotate(-22 * Math.PI / 180);
+                    const fontSize = Math.max(18, Math.round(canvas.width / 28));
+                    ctx.font = 'bold ' + fontSize + 'px sans-serif';
+                    ctx.fillStyle = 'rgba(220, 38, 38, 0.35)';
+                    ctx.strokeStyle = 'rgba(220, 38, 38, 0.35)';
+                    ctx.lineWidth = 2;
+                    ctx.textAlign = 'center';
+
+                    const pasY = fontSize * 4.5;
+                    for (let y = -canvas.height; y <= canvas.height; y += pasY) {
+                        ctx.fillText(texteFiligrane, 0, y);
+                    }
+                    ctx.restore();
+
+                    resolve({
+                        dataUrl: canvas.toDataURL('image/jpeg', 0.86),
+                        width: canvas.width,
+                        height: canvas.height
+                    });
+                };
+                img.src = imageSrc;
+            });
+        }
+
+        async function telechargerFichierPDFDirect() {
+            if (!window.jspdf || !window.jspdf.jsPDF) {
+                window.print();
+                return;
+            }
+            if (!dernierDocsDossierGenere || dernierDocsDossierGenere.length === 0) return;
+
+            const btn = document.getElementById('btn-telecharger-pdf-direct');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Création du PDF...</span>';
+
+            try {
+                const { jsPDF } = window.jspdf;
+                const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                const pageW = pdf.internal.pageSize.getWidth();
+                const pageH = pdf.internal.pageSize.getHeight();
+
+                for (let i = 0; i < dernierDocsDossierGenere.length; i++) {
+                    if (i > 0) pdf.addPage();
+                    const doc = dernierDocsDossierGenere[i];
+
+                    pdf.setFontSize(10);
+                    pdf.setTextColor(23, 37, 84);
+                    pdf.text('DOSSIERBLINDÉ — Papier ' + (i + 1) + '/' + dernierDocsDossierGenere.length + ' : ' + doc.titre, 14, 14);
+                    pdf.setFontSize(8);
+                    pdf.setTextColor(100, 116, 139);
+                    pdf.text(dernierNomDossier + ' • Généré le ' + doc.dateAjout, 14, 19);
+
+                    const texteFiligrane = 'DOCUMENT PROTÉGÉ • ' + dernierMentionDest + ' • ' + doc.dateAjout;
+                    const imgFiligranee = await fusionnerImageAvecFiligrane(doc.image, texteFiligrane);
+
+                    const maxW = pageW - 28;
+                    const maxH = pageH - 34;
+                    const ratio = Math.min(maxW / imgFiligranee.width, maxH / imgFiligranee.height);
+                    const drawW = imgFiligranee.width * ratio;
+                    const drawH = imgFiligranee.height * ratio;
+                    const posX = (pageW - drawW) / 2;
+                    const posY = 24;
+
+                    pdf.addImage(imgFiligranee.dataUrl, 'JPEG', posX, posY, drawW, drawH);
+                }
+
+                const nomFichier = 'DossierBlinde_' + new Date().toISOString().slice(0, 10) + '.pdf';
+                pdf.save(nomFichier);
+            } catch (err) {
+                alert("Erreur lors de la création du PDF : " + err.message);
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fa-solid fa-file-arrow-down"></i><span>Télécharger le fichier PDF</span>';
+            }
         }
 
         function ouvrirCoffreFort() {
@@ -1544,6 +1978,7 @@
             chargerChecklist();
             ouvrirCoffreFort();
         }
+
         function revenirAccueil(e) {
             if (e) e.preventDefault();
             fermerModalePaiement();
@@ -1565,7 +2000,6 @@
     </script>
 </body>
 </html>
-
 
 
 
