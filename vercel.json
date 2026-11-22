@@ -1,5 +1,0 @@
-{
-  "functions": {
-    "api/verifier.js": { "maxDuration": 60 }
-  }
-}
