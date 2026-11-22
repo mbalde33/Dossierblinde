@@ -12,10 +12,30 @@ export default async function handler(req, res) {
     }
 
     try {
-        const { mode, imageBase64, documentAttendu, contexteDossier, descriptionSituation } = req.body || {};
+        const { mode, imageBase64, documentAttendu, contexteDossier, descriptionSituation, villeOuCp } = req.body || {};
 
         let promptTexte = '';
-        if (mode === 'diagnostic') {
+        if (mode === 'destination') {
+            promptTexte = `Tu es un conseiller administratif français expert de Service-Public.fr.
+Démarche de l'usager : "${contexteDossier || ''}".
+Code postal ou ville de l'usager : "${villeOuCp || 'France entière'}".
+
+Donne les instructions EXACTES et CONCRÈTES pour envoyer ou déposer ce dossier en France :
+1. Nom court de l'organisme destinataire (pour mettre sur le filigrane de protection, ex: "BANQUE DE FRANCE RHÔNE" ou "PRÉFECTURE DU RHÔNE" ou "CAF").
+2. Canal d'envoi officiel (en ligne sur quel portail précis en .gouv.fr / .fr, ou par courrier recommandé AR, ou sur place sur rendez-vous).
+3. Adresse postale exacte du guichet ou service compétent pour la ville/code postal "${villeOuCp || ''}" (si applicable) et site web officiel exact.
+4. Conseil pratique en 1 phrase pour que l'envoi soit pris en compte immédiatement.
+
+Réponds UNIQUEMENT au format JSON strict (sans balises markdown) :
+{
+  "ok": true,
+  "destinataire_filigrane": "NOM COURT DE L'ORGANISME EN MAJUSCULES",
+  "mode_envoi": "En ligne / Courrier recommandé AR / Sur place",
+  "site_officiel": "Nom et adresse du site officiel (ex: banque-france.fr ou ants.gouv.fr)",
+  "adresse_postale": "Adresse postale précise de l'organisme local ou mention 'Démarche 100 % en ligne'",
+  "consigne": "Explication claire en 2 phrases simples de la marche à suivre pour envoyer le PDF"
+}`;
+        } else if (mode === 'diagnostic') {
             promptTexte = `Tu es le meilleur expert juriste et spécialiste des démarches administratives en France (Service-Public.fr, Préfectures, ANTS, CAF, CPAM, Impôts, Banque de France, Tribunaux, Urssaf, Notaires).
 Demande ou courrier de l'usager : "${descriptionSituation || ''}".
 
@@ -24,12 +44,15 @@ Tu dois fournir la liste EXHAUSTIVE, OFFICIELLE ET SANS AUCUNE FAUTE de TOUTES l
 Règles strictes :
 1. N'oublie JAMAIS les pièces de base (pièce d'identité en cours de validité, justificatif de domicile de moins de 3 ou 6 mois, etc.) NI les pièces techniques spécifiques (numéro exact du formulaire Cerfa s'il existe, acte d'état civil en copie intégrale, traduction par traducteur assermenté si document étranger, timbre fiscal, avis d'imposition, RIB, Kbis, etc.).
 2. Dans le champ "info" de chaque pièce, précise la règle exacte pour éviter tout rejet (ex: "Moins de 3 mois", "Copie intégrale et non extrait", "Formulaire Cerfa n°... signé", "Recto-verso").
-3. Si un courrier est joint, explique clairement ce que l'organisme demande et rédige une réponse officielle prête à envoyer.
+3. Indique aussi clairement où et comment déposer ce dossier (site officiel et type d'organisme destinataire).
+4. Si un courrier est joint, explique clairement ce que l'organisme demande et rédige une réponse officielle prête à envoyer.
 
 Réponds UNIQUEMENT au format JSON strict (sans balises markdown) avec cette structure exacte :
 {
   "ok": true,
   "resume": "Explication claire et rassurante en 2 phrases de la démarche et des points de vigilance pour ne pas être recalé",
+  "ou_envoyer": "Où et comment déposer ce dossier (site officiel précis ou organisme compétent)",
+  "destinataire_suggere": "NOM DE L'ORGANISME EN MAJUSCULES",
   "pieces": [
     {
       "id": "identifiant_unique_sans_espace",
