@@ -215,8 +215,9 @@
                             <strong class="text-white">Protéger mes papiers</strong> (écrit en léger à qui vous envoyez le dossier pour éviter le vol d'identité)
                         </span>
                     </label>
-                    <div id="bloc-champ-destinataire" class="pl-6">
-                        <input type="text" id="input-destinataire" placeholder="Nom de l'organisme (ex: CAF, Mairie, Agence...) — facultatif" class="w-full bg-slate-950 border border-blue-700 focus:border-emerald-400 rounded-lg px-3 py-2 text-xs text-white font-semibold outline-none">
+                    <div id="bloc-champ-destinataire" class="pl-6 relative">
+                        <input type="text" id="input-destinataire" autocomplete="off" placeholder="À qui envoyez-vous le dossier ? (ex : CAF Rhône, Préfecture 69…)" class="w-full bg-slate-950 border border-blue-700 focus:border-emerald-400 rounded-lg px-3 py-2 text-xs text-white font-semibold outline-none">
+                        <div id="suggestions-destinataire" class="hidden absolute left-6 right-0 top-full mt-1 bg-white rounded-lg shadow-xl border border-slate-200 overflow-hidden z-40 max-h-64 overflow-y-auto"></div>
                     </div>
                 </div>
 
@@ -577,8 +578,10 @@
                 { id: "formulaire_bdf", titre: "Formulaire Cerfa n°13594 de déclaration de surendettement", info: "Rempli et signé (téléchargeable sur banque-france.fr)" },
                 { id: "paie", titre: "Justificatifs de revenus récents (3 derniers mois)", info: "Fiches de paie, pensions retraite, CAF ou France Travail" },
                 { id: "releves_bancaires", titre: "3 derniers relevés de tous vos comptes bancaires", info: "Comptes courants et livrets d'épargne" },
-                { id: "impots", titre: "Dernier avis d'imposition + Taxe foncière", info: "Toutes les pages du document" },
-                { id: "dettes_courriers", titre: "Justificatifs des dettes et crédits en cours", info: "Tableaux d'amortissement, factures impayées, courriers huissier" }
+                { id: "impots", titre: "Dernier avis d'imposition (+ taxe foncière si vous êtes propriétaire)", info: "Toutes les pages du document" },
+                { id: "charges", titre: "Justificatifs de vos charges", info: "Loyer, énergie, assurances, pension alimentaire, frais de garde…" },
+                { id: "dettes_courriers", titre: "Justificatifs des dettes et crédits en cours", info: "Tableaux d'amortissement, factures impayées, courriers de commissaire de justice" },
+                { id: "lettre_situation", titre: "Lettre expliquant votre situation", info: "Datée et signée : votre situation, les causes du surendettement, saisies ou expulsion en cours" }
             ],
             mdph_handicap: [
                 { id: "cni", titre: "Pièce d'identité (ou titre de séjour valide)", info: "Recto-verso", typeSpecifique: "identite" },
@@ -605,7 +608,9 @@
             cni_passeport: [
                 { id: "predemande_ants", titre: "Récapitulatif de pré-demande (ants.gouv.fr)", info: "À faire gratuitement en ligne avant le rendez-vous en mairie" },
                 { id: "domicile", titre: "Justificatif de domicile (moins de 1 an)", info: "Facture récente ou papiers d'hébergement", typeSpecifique: "domicile" },
-                { id: "cni", titre: "Ancienne pièce d'identité (ou déclaration de perte/vol)", info: "Carte d'identité ou Passeport actuel", typeSpecifique: "identite" }
+                { id: "cni", titre: "Ancienne pièce d'identité (ou déclaration de perte/vol)", info: "Carte d'identité ou Passeport actuel", typeSpecifique: "identite" },
+                { id: "photo_identite", titre: "Photo d'identité de moins de 6 mois (ou code e-photo)", info: "Aux normes, faite chez un photographe ou en cabine agréée" },
+                { id: "timbre_fiscal", titre: "Timbre fiscal (si nécessaire)", info: "Obligatoire pour un passeport ; pour une carte d'identité seulement en cas de perte ou de vol. Achat sur timbres.impots.gouv.fr" }
             ],
             caf_aides: [
                 { id: "cni", titre: "Pièce d'identité", info: "Carte d'identité, Passeport ou Titre de séjour valide", typeSpecifique: "identite" },
@@ -694,7 +699,7 @@
                 { id: "domicile", titre: "Justificatif de domicile (moins de 3 mois)", info: "Facture récente ou quittance de loyer", typeSpecifique: "domicile" },
                 { id: "acte_naissance_nat", titre: "Acte de naissance intégral", info: "Traduit par un traducteur assermenté si étranger" },
                 { id: "impots", titre: "3 derniers avis d'imposition + Bordereau P237", info: "Preuve de situation fiscale à jour" },
-                { id: "diplome_francais", titre: "Diplôme ou attestation de niveau B1 en français", info: "TCF, TEF ou diplôme français" }
+                { id: "diplome_francais", titre: "Diplôme ou attestation de niveau de français (B2 exigé depuis 2026)", info: "Test reconnu (TCF, TEF…) ou diplôme français : vérifiez la liste à jour sur service-public.fr" }
             ],
             titre_sejour: [
                 { id: "passeport_ts", titre: "Passeport + Ancien titre de séjour", info: "Pages identité et validité", typeSpecifique: "identite" },
@@ -2024,7 +2029,8 @@
 
             const activerFiligrane = document.getElementById('check-protection-filigrane').checked;
             const destinataire = document.getElementById('input-destinataire').value.trim().toUpperCase();
-            const mentionDest = destinataire ? ('UNIQUEMENT POUR : ' + destinataire) : 'DÉMARCHE ADMINISTRATIVE';
+            const dateEnvoi = new Date().toLocaleDateString('fr-FR');
+            const mentionDest = destinataire ? ('UNIQUEMENT POUR : ' + destinataire + ' — ' + dateEnvoi) : ('DÉMARCHE ADMINISTRATIVE — ' + dateEnvoi);
 
             dernierDocsDossierGenere = docsValides;
             dernierMentionDest = mentionDest;
@@ -2212,6 +2218,147 @@
         mettreAJourStatutAbonnement();
         mettreAJourCompteurCoffre();
         chargerChecklist();
+
+        // ===== Suggestions d'organismes pour le filigrane (tout est calculé sur l'appareil) =====
+        const DEPARTEMENTS = [
+            ['01','Ain',"de l'Ain"],['02','Aisne',"de l'Aisne"],['03','Allier',"de l'Allier"],['04','Alpes-de-Haute-Provence','des Alpes-de-Haute-Provence'],
+            ['05','Hautes-Alpes','des Hautes-Alpes'],['06','Alpes-Maritimes','des Alpes-Maritimes'],['07','Ardèche',"de l'Ardèche"],['08','Ardennes','des Ardennes'],
+            ['09','Ariège',"de l'Ariège"],['10','Aube',"de l'Aube"],['11','Aude',"de l'Aude"],['12','Aveyron',"de l'Aveyron"],
+            ['13','Bouches-du-Rhône','des Bouches-du-Rhône'],['14','Calvados','du Calvados'],['15','Cantal','du Cantal'],['16','Charente','de la Charente'],
+            ['17','Charente-Maritime','de la Charente-Maritime'],['18','Cher','du Cher'],['19','Corrèze','de la Corrèze'],['2A','Corse-du-Sud','de la Corse-du-Sud'],
+            ['2B','Haute-Corse','de la Haute-Corse'],['21',"Côte-d'Or","de la Côte-d'Or"],['22',"Côtes-d'Armor","des Côtes-d'Armor"],['23','Creuse','de la Creuse'],
+            ['24','Dordogne','de la Dordogne'],['25','Doubs','du Doubs'],['26','Drôme','de la Drôme'],['27','Eure',"de l'Eure"],
+            ['28','Eure-et-Loir',"d'Eure-et-Loir"],['29','Finistère','du Finistère'],['30','Gard','du Gard'],['31','Haute-Garonne','de la Haute-Garonne'],
+            ['32','Gers','du Gers'],['33','Gironde','de la Gironde'],['34','Hérault',"de l'Hérault"],['35','Ille-et-Vilaine',"d'Ille-et-Vilaine"],
+            ['36','Indre',"de l'Indre"],['37','Indre-et-Loire',"d'Indre-et-Loire"],['38','Isère',"de l'Isère"],['39','Jura','du Jura'],
+            ['40','Landes','des Landes'],['41','Loir-et-Cher','de Loir-et-Cher'],['42','Loire','de la Loire'],['43','Haute-Loire','de la Haute-Loire'],
+            ['44','Loire-Atlantique','de la Loire-Atlantique'],['45','Loiret','du Loiret'],['46','Lot','du Lot'],['47','Lot-et-Garonne','de Lot-et-Garonne'],
+            ['48','Lozère','de la Lozère'],['49','Maine-et-Loire','de Maine-et-Loire'],['50','Manche','de la Manche'],['51','Marne','de la Marne'],
+            ['52','Haute-Marne','de la Haute-Marne'],['53','Mayenne','de la Mayenne'],['54','Meurthe-et-Moselle','de Meurthe-et-Moselle'],['55','Meuse','de la Meuse'],
+            ['56','Morbihan','du Morbihan'],['57','Moselle','de la Moselle'],['58','Nièvre','de la Nièvre'],['59','Nord','du Nord'],
+            ['60','Oise',"de l'Oise"],['61','Orne',"de l'Orne"],['62','Pas-de-Calais','du Pas-de-Calais'],['63','Puy-de-Dôme','du Puy-de-Dôme'],
+            ['64','Pyrénées-Atlantiques','des Pyrénées-Atlantiques'],['65','Hautes-Pyrénées','des Hautes-Pyrénées'],['66','Pyrénées-Orientales','des Pyrénées-Orientales'],['67','Bas-Rhin','du Bas-Rhin'],
+            ['68','Haut-Rhin','du Haut-Rhin'],['69','Rhône','du Rhône'],['70','Haute-Saône','de la Haute-Saône'],['71','Saône-et-Loire','de Saône-et-Loire'],
+            ['72','Sarthe','de la Sarthe'],['73','Savoie','de la Savoie'],['74','Haute-Savoie','de la Haute-Savoie'],['75','Paris','de Paris'],
+            ['76','Seine-Maritime','de la Seine-Maritime'],['77','Seine-et-Marne','de Seine-et-Marne'],['78','Yvelines','des Yvelines'],['79','Deux-Sèvres','des Deux-Sèvres'],
+            ['80','Somme','de la Somme'],['81','Tarn','du Tarn'],['82','Tarn-et-Garonne','de Tarn-et-Garonne'],['83','Var','du Var'],
+            ['84','Vaucluse','du Vaucluse'],['85','Vendée','de la Vendée'],['86','Vienne','de la Vienne'],['87','Haute-Vienne','de la Haute-Vienne'],
+            ['88','Vosges','des Vosges'],['89','Yonne',"de l'Yonne"],['90','Territoire de Belfort','du Territoire de Belfort'],['91','Essonne',"de l'Essonne"],
+            ['92','Hauts-de-Seine','des Hauts-de-Seine'],['93','Seine-Saint-Denis','de la Seine-Saint-Denis'],['94','Val-de-Marne','du Val-de-Marne'],['95',"Val-d'Oise","du Val-d'Oise"],
+            ['971','Guadeloupe','de la Guadeloupe'],['972','Martinique','de la Martinique'],['973','Guyane','de la Guyane'],['974','La Réunion','de La Réunion'],['976','Mayotte','de Mayotte']
+        ];
+
+        const ORGANISMES_PAR_DEPARTEMENT = ['CAF', 'CPAM', 'MDPH', 'Préfecture', 'Commission de surendettement', 'Conseil départemental'];
+
+        const ORGANISMES_NATIONAUX = [
+            'Banque de France', 'ANTS', 'France Travail', 'Assurance retraite', 'URSSAF', 'Centre des impôts',
+            'OFII', 'CROUS', "Bureau d'aide juridictionnelle", 'Tribunal judiciaire', 'Notaire', 'Agence immobilière',
+            'Propriétaire (bailleur)', 'Bailleur social', 'Banque', 'Assurance', 'Employeur', 'MSA'
+        ];
+
+        function sansAccents(t) {
+            return String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/['’\-]/g, ' ');
+        }
+
+        let LISTE_ORGANISMES = null;
+        function listeOrganismes() {
+            if (LISTE_ORGANISMES) return LISTE_ORGANISMES;
+            LISTE_ORGANISMES = [];
+            ORGANISMES_NATIONAUX.forEach(function (nom) {
+                LISTE_ORGANISMES.push({ libelle: nom, detail: '', cle: sansAccents(nom) });
+            });
+            ORGANISMES_PAR_DEPARTEMENT.forEach(function (org) {
+                DEPARTEMENTS.forEach(function (d) {
+                    const libelle = org + ' ' + d[2];
+                    LISTE_ORGANISMES.push({ libelle: libelle, detail: d[0], cle: sansAccents(libelle + ' ' + d[1] + ' ' + d[0]) });
+                });
+            });
+            return LISTE_ORGANISMES;
+        }
+
+        function chercherOrganismes(texte) {
+            const mots = sansAccents(texte).split(/\s+/).filter(Boolean);
+            const resultats = [];
+            if (mots.length === 0) return resultats;
+
+            // « Mairie de … » : on propose ce que la personne tape
+            if (mots[0] === 'mairie' && mots.length > 1) {
+                const ville = texte.trim().replace(/^mairie\s*(de\s+|d['’]\s*)?/i, '');
+                if (ville) resultats.push({ libelle: 'Mairie de ' + ville.charAt(0).toUpperCase() + ville.slice(1), detail: '' });
+            }
+
+            // Score : mot exact > début de mot > morceau de mot. Un numéro de département doit être exact.
+            const trouves = [];
+            listeOrganismes().forEach(function (o) {
+                const jetons = o.cle.split(/\s+/);
+                let score = 0;
+                for (const m of mots) {
+                    let s = 0;
+                    if (jetons.includes(m)) s = 3;
+                    else if (/^\d/.test(m)) s = 0;
+                    else if (jetons.some(function (j) { return j.startsWith(m); })) s = 2;
+                    else if (o.cle.includes(m)) s = 1;
+                    if (s === 0) return;
+                    score += s;
+                }
+                trouves.push({ o: o, score: score });
+            });
+            trouves.sort(function (a, b) { return b.score - a.score || a.o.libelle.length - b.o.libelle.length; });
+            return resultats.concat(trouves.slice(0, 8).map(function (t) { return t.o; }));
+        }
+
+        function afficherSuggestionsDestinataire() {
+            const input = document.getElementById('input-destinataire');
+            const boite = document.getElementById('suggestions-destinataire');
+            if (!input || !boite) return;
+            const texte = input.value;
+            boite.innerHTML = '';
+
+            if (!texte.trim()) {
+                const aide = document.createElement('div');
+                aide.className = 'px-3 py-2.5 text-[11px] text-slate-500';
+                aide.textContent = 'Tapez le nom ou le département : « CAF Rhône », « Préfecture 69 », « Mairie de Lyon »…';
+                boite.appendChild(aide);
+                boite.classList.remove('hidden');
+                return;
+            }
+
+            const resultats = chercherOrganismes(texte);
+            if (resultats.length === 0) { boite.classList.add('hidden'); return; }
+
+            resultats.forEach(function (o) {
+                const ligne = document.createElement('button');
+                ligne.type = 'button';
+                ligne.className = 'w-full text-left px-3 py-2.5 text-xs font-semibold text-slate-800 hover:bg-emerald-50 border-b border-slate-100 flex justify-between gap-2';
+                const nom = document.createElement('span');
+                nom.textContent = o.libelle;
+                ligne.appendChild(nom);
+                if (o.detail) {
+                    const dep = document.createElement('span');
+                    dep.className = 'text-slate-400 shrink-0';
+                    dep.textContent = o.detail;
+                    ligne.appendChild(dep);
+                }
+                // mousedown (et non click) pour que la sélection marche avant que le champ perde le focus
+                ligne.addEventListener('mousedown', function (e) {
+                    e.preventDefault();
+                    input.value = o.libelle;
+                    boite.classList.add('hidden');
+                });
+                boite.appendChild(ligne);
+            });
+            boite.classList.remove('hidden');
+        }
+
+        (function initialiserSuggestionsDestinataire() {
+            const input = document.getElementById('input-destinataire');
+            const boite = document.getElementById('suggestions-destinataire');
+            if (!input || !boite) return;
+            input.addEventListener('input', afficherSuggestionsDestinataire);
+            input.addEventListener('focus', afficherSuggestionsDestinataire);
+            input.addEventListener('blur', function () { setTimeout(function () { boite.classList.add('hidden'); }, 150); });
+            input.addEventListener('keydown', function (e) { if (e.key === 'Escape') boite.classList.add('hidden'); });
+        })();
     </script>
 </body>
 </html>
