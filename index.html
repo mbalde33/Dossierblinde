@@ -736,9 +736,11 @@
 
         // Sécurité : si l'app n'a pas servi depuis 30 jours, on efface les papiers stockés sur cet appareil
         const DUREE_CONSERVATION_JOURS = 30;
+        let purgerCoffreAuDemarrage = false;
         try {
             const derniere = parseInt(localStorage.getItem('dossierBlinde_derniere_activite') || '0', 10);
             if (derniere && Date.now() - derniere > DUREE_CONSERVATION_JOURS * 86400000) {
+                purgerCoffreAuDemarrage = true;
                 ['dossierBlinde_coffre_local', 'dossierBlinde_choix_id', 'dossierBlinde_mode_domicile', 'dossierBlinde_pieces_supp']
                     .forEach(function (k) { localStorage.removeItem(k); });
             }
@@ -756,16 +758,90 @@
             piecesSupplementaires = {};
         }
 
+        // ===== Stockage des photos : IndexedDB (des centaines de Mo, sur l'appareil uniquement) =====
+        // localStorage est limité à ~5 Mo (10 à 15 photos) : on ne l'utilise plus que pour les petits réglages.
+        const IDB_DISPONIBLE = (function () { try { return !!window.indexedDB; } catch (e) { return false; } })();
+        let promesseBase = null;
+
+        function ouvrirBaseCoffre() {
+            if (!promesseBase) {
+                promesseBase = new Promise(function (resoudre, rejeter) {
+                    const req = indexedDB.open('dossierBlinde', 1);
+                    req.onupgradeneeded = function () { req.result.createObjectStore('coffre'); };
+                    req.onsuccess = function () { resoudre(req.result); };
+                    req.onerror = function () { rejeter(req.error); };
+                });
+            }
+            return promesseBase;
+        }
+
+        async function lireCoffreIDB() {
+            const db = await ouvrirBaseCoffre();
+            return new Promise(function (resoudre, rejeter) {
+                const req = db.transaction('coffre', 'readonly').objectStore('coffre').get('photos');
+                req.onsuccess = function () { resoudre(req.result || {}); };
+                req.onerror = function () { rejeter(req.error); };
+            });
+        }
+
+        async function ecrireCoffreIDB(valeur) {
+            const db = await ouvrirBaseCoffre();
+            return new Promise(function (resoudre, rejeter) {
+                const tx = db.transaction('coffre', 'readwrite');
+                tx.objectStore('coffre').put(valeur, 'photos');
+                tx.oncomplete = function () { resoudre(); };
+                tx.onerror = function () { rejeter(tx.error); };
+                tx.onabort = function () { rejeter(tx.error); };
+            });
+        }
+
         function sauvegarderCoffre() {
             try {
-                localStorage.setItem('dossierBlinde_coffre_local', JSON.stringify(coffrePhotos));
                 localStorage.setItem('dossierBlinde_choix_id', JSON.stringify(choixIdentite));
                 localStorage.setItem('dossierBlinde_mode_domicile', modeDomicile);
                 localStorage.setItem('dossierBlinde_pieces_supp', JSON.stringify(piecesSupplementaires));
                 localStorage.setItem('dossierBlinde_derniere_activite', String(Date.now()));
+            } catch (err) { /* réglages non sauvegardés : sans gravité */ }
+
+            if (IDB_DISPONIBLE) {
+                // copie figée de l'état actuel, puis écriture en arrière-plan
+                const copie = Object.assign({}, coffrePhotos);
+                ecrireCoffreIDB(copie).then(function () {
+                    try { localStorage.removeItem('dossierBlinde_coffre_local'); } catch (e) { /* rien */ }
+                }).catch(function (err) {
+                    console.error('Stockage photos :', err);
+                    alert("La mémoire de votre téléphone est pleine. Supprimez d'anciens papiers dans « Mes papiers » ou libérez de l'espace.");
+                });
+            } else {
+                try {
+                    localStorage.setItem('dossierBlinde_coffre_local', JSON.stringify(coffrePhotos));
+                } catch (err) {
+                    alert("Mémoire pleine sur le téléphone. Supprimez d'anciens papiers dans 'Mes papiers'.");
+                }
+            }
+            mettreAJourCompteurCoffre();
+        }
+
+        // Au démarrage : charger les photos depuis IndexedDB (et reprendre celles de l'ancienne version)
+        async function chargerCoffreDepuisAppareil() {
+            if (!IDB_DISPONIBLE) return;
+            try {
+                if (navigator.storage && navigator.storage.persist) { navigator.storage.persist().catch(function () {}); }
+                if (purgerCoffreAuDemarrage) {
+                    await ecrireCoffreIDB({});
+                    return;
+                }
+                const enBase = await lireCoffreIDB();
+                const ancien = coffrePhotos; // photos lues depuis l'ancien stockage (localStorage), s'il y en avait
+                coffrePhotos = Object.assign({}, enBase, ancien);
+                if (Object.keys(ancien).length > 0) {
+                    await ecrireCoffreIDB(Object.assign({}, coffrePhotos));
+                    try { localStorage.removeItem('dossierBlinde_coffre_local'); } catch (e) { /* rien */ }
+                }
                 mettreAJourCompteurCoffre();
+                chargerChecklist();
             } catch (err) {
-                alert("Mémoire pleine sur le téléphone. Supprimez d'anciens papiers dans 'Mes papiers'.");
+                console.error('Lecture des photos :', err);
             }
         }
 
@@ -2230,6 +2306,7 @@
         mettreAJourStatutAbonnement();
         mettreAJourCompteurCoffre();
         chargerChecklist();
+        chargerCoffreDepuisAppareil();
 
         // ===== Suggestions d'organismes pour le filigrane (tout est calculé sur l'appareil) =====
         const DEPARTEMENTS = [
