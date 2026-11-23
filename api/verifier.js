@@ -10,7 +10,7 @@ const PREMIUM_PAR_JOUR = Number(process.env.PREMIUM_PAR_JOUR || 300);
 const TTL_GRATUIT = 30 * 86400;
 
 // Le modèle de vision actuel de Groq (l'ancien 3.6 a été retiré pour les comptes gratuits)
-const MODELE_PAR_DEFAUT = 'qwen/qwen3.8-27b';
+const MODELE_PAR_DEFAUT = 'meta-llama/llama-4-scout-17b-16e-instruct';
 const MODELE_VISION = () => process.env.GROQ_MODEL_VISION || MODELE_PAR_DEFAUT;
 const MODELE_TEXTE = () => process.env.GROQ_MODEL_TEXT || MODELE_VISION();
 
