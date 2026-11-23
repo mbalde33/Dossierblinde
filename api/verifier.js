@@ -1,4 +1,4 @@
-// api/verifier.js — version Claude, texte seulement (aucune image envoyée)
+// api/verifier.js — version Claude, texte seulement (aucune image envoyée) + diagnostic d'étape
 import {
   repondre, lireJson, nettoyerTexte, purger,
   empreinteClient, idAppareil, limiter, compter, redis, lireAcces
@@ -54,7 +54,7 @@ async function appelerClaude(demande) {
   const r = await fetch('https://api.anthropic.com/v1/messages', {
     method: 'POST',
     headers: {
-      'x-api-key': process.env.ANTHROPIC_API_KEY,
+      'x-api-key': process.env.ANTHROPIC_API_KEY.trim(),
       'anthropic-version': '2023-06-01',
       'content-type': 'application/json'
     },
@@ -95,11 +95,13 @@ export default async function handler(req, res) {
   }
 
   let annuler = async () => {};
+  let etape = 'debut';
   try {
     if (!process.env.ANTHROPIC_API_KEY) {
       return repondre(res, 500, { ok: false, message: 'Service non configuré.' });
     }
 
+    etape = 'redis';
     const ip = empreinteClient(req);
     if (!(await limiter(`verif:${ip}`, 30, 60))) {
       return repondre(res, 429, { ok: false, code: 'rate', message: 'Trop de demandes. Réessayez dans une minute.' });
@@ -139,7 +141,9 @@ export default async function handler(req, res) {
       restant = q.restant;
     }
 
+    etape = 'claude';
     const sortie = await appelerClaude(demande);
+    etape = 'reponse';
 
     const pieces = (Array.isArray(sortie.pieces) ? sortie.pieces : [])
       .slice(0, 25)
@@ -164,9 +168,10 @@ export default async function handler(req, res) {
       acces: { premium: !!acces, plan: acces?.plan || null, restant }
     });
   } catch (e) {
-    console.error('verifier:', e.message);
+    const cause = e.cause ? (e.cause.code || e.cause.message || '') : '';
+    console.error('verifier:', 'etape=' + etape, e.message, cause);
     try { await annuler(); } catch { /* rien */ }
-    const detail = process.env.DEBUG_ERREURS === '1' ? ` [${String(e.message).slice(0, 200)}]` : '';
+    const detail = process.env.DEBUG_ERREURS === '1' ? ` [${etape}: ${String(e.message).slice(0, 150)} ${cause}]` : '';
     return repondre(res, 502, { ok: false, valide: false, message: 'Le service est momentanément indisponible. Réessayez.' + detail });
   }
 }
