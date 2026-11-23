@@ -1525,6 +1525,7 @@
         }
 
         function fermerStudioScan() {
+            cacherMessageStudio();
             document.getElementById('modal-scanner').classList.add('hidden');
             scanEnCours.imgSource = null;
             scanEnCours.pdfDoc = null;
@@ -1831,8 +1832,122 @@
             return { niveau: 'ok', message: 'Papier ajouté : photo nette et lumineuse.' };
         }
 
+        // Texte d'aide selon le papier attendu (recto / verso / passeport…)
+        function aideCotePapier(titre) {
+            const t = (titre || '').toUpperCase();
+            if (t.includes('VERSO')) return 'Prenez le côté SANS votre photo (le dos de la carte).';
+            if (t.includes('RECTO')) return 'Prenez le côté AVEC votre photo (le devant de la carte).';
+            if (t.includes('PASSEPORT')) return 'Prenez la double page avec votre photo, ouverte en entier.';
+            return 'Vérifiez que c\'est bien ce papier-là, en entier.';
+        }
+
+        function afficherMessageStudio(texte) {
+            let zone = document.getElementById('message-studio-qualite');
+            if (!zone) {
+                zone = document.createElement('div');
+                zone.id = 'message-studio-qualite';
+                zone.className = 'bg-red-50 border border-red-300 text-red-800 text-xs font-bold rounded-lg p-3 mb-2 flex items-start gap-2';
+                const btn = document.getElementById('btn-valider-scan');
+                btn.parentElement.parentElement.insertBefore(zone, btn.parentElement);
+            }
+            zone.innerHTML = '';
+            const ic = document.createElement('i');
+            ic.className = 'fa-solid fa-triangle-exclamation mt-0.5';
+            const sp = document.createElement('span');
+            sp.textContent = texte;
+            const lab = document.createElement('label');
+            lab.className = 'ml-auto shrink-0 cursor-pointer bg-red-600 hover:bg-red-700 text-white text-[11px] font-extrabold px-2.5 py-1.5 rounded-lg';
+            lab.textContent = 'Reprendre la photo';
+            const inp = document.createElement('input');
+            inp.type = 'file'; inp.accept = 'image/*,application/pdf'; inp.className = 'hidden';
+            inp.addEventListener('change', function () { cacherMessageStudio(); remplacerPhotoDansStudio(inp); });
+            lab.appendChild(inp);
+            zone.appendChild(ic); zone.appendChild(sp); zone.appendChild(lab);
+            zone.classList.remove('hidden');
+        }
+
+        function cacherMessageStudio() {
+            const zone = document.getElementById('message-studio-qualite');
+            if (zone) zone.classList.add('hidden');
+        }
+
+        // Étape 1 : contrôle automatique, puis confirmation par l'utilisateur
         async function validerEtEnvoyerScan() {
             // Les photos restent sur l'appareil : aucune image n'est envoyée au serveur.
+            if (!scanEnCours.imgSource) return;
+
+            const qualite = analyserQualitePhoto();
+            if (qualite.niveau === 'refuse') {
+                afficherMessageStudio(qualite.message);
+                return; // le studio reste ouvert pour reprendre la photo
+            }
+            cacherMessageStudio();
+            ouvrirConfirmationPapier(qualite);
+        }
+
+        function ouvrirConfirmationPapier(qualite) {
+            const titre = scanEnCours.titreDoc;
+            const apercu = document.getElementById('canvas-apercu-scan').toDataURL('image/jpeg', 0.7);
+
+            fermerConfirmationPapier();
+            const fond = document.createElement('div');
+            fond.id = 'modal-confirmation-papier';
+            fond.style.zIndex = '9999';
+            fond.className = 'fixed inset-0 bg-slate-950/90 flex items-center justify-center p-3';
+            fond.innerHTML =
+                '<div class="bg-white rounded-2xl w-full max-w-md max-h-[92vh] overflow-y-auto p-5 space-y-3">' +
+                    '<h3 class="text-base font-extrabold text-slate-900">Vérifiez avant de valider</h3>' +
+                    '<p class="text-xs text-slate-600">Vous ajoutez : <strong id="conf-titre" class="text-blue-900"></strong></p>' +
+                    '<p id="conf-aide" class="text-xs font-bold text-blue-900 bg-blue-50 border border-blue-200 rounded-lg p-2.5"></p>' +
+                    '<img id="conf-image" alt="Aperçu du papier" class="w-full max-h-[34vh] object-contain rounded-lg border border-slate-200 bg-slate-50">' +
+                    '<p id="conf-alerte" class="hidden text-xs font-bold text-amber-900 bg-amber-50 border border-amber-300 rounded-lg p-2.5"></p>' +
+                    '<label class="flex items-start gap-2 text-sm text-slate-800 font-semibold cursor-pointer"><input type="checkbox" id="conf-cote" class="mt-1 w-4 h-4"> <span>C\'est bien le bon papier (et le bon côté)</span></label>' +
+                    '<label class="flex items-start gap-2 text-sm text-slate-800 font-semibold cursor-pointer"><input type="checkbox" id="conf-entier" class="mt-1 w-4 h-4"> <span>Le papier est entier, sans bord coupé, et tout se lit</span></label>' +
+                    '<div class="flex gap-2 pt-1">' +
+                        '<label class="w-1/2 cursor-pointer text-center bg-slate-100 hover:bg-slate-200 text-slate-800 font-extrabold text-sm py-2.5 rounded-xl">Reprendre la photo<input type="file" id="conf-reprendre" accept="image/*,application/pdf" class="hidden"></label>' +
+                        '<button type="button" id="conf-valider" disabled class="w-1/2 bg-emerald-600 text-white font-extrabold text-sm py-2.5 rounded-xl opacity-40">Valider</button>' +
+                    '</div>' +
+                '</div>';
+            document.body.appendChild(fond);
+
+            document.getElementById('conf-titre').textContent = titre;
+            document.getElementById('conf-aide').textContent = aideCotePapier(titre);
+            document.getElementById('conf-image').src = apercu;
+            if (qualite.niveau === 'alerte') {
+                const a = document.getElementById('conf-alerte');
+                a.textContent = qualite.message.replace('Papier ajouté, mais', 'Attention :').replace('Papier ajouté. ', 'Attention : ');
+                a.classList.remove('hidden');
+            }
+
+            const caseCote = document.getElementById('conf-cote');
+            const caseEntier = document.getElementById('conf-entier');
+            const btnValider = document.getElementById('conf-valider');
+            const majBouton = function () {
+                const ok = caseCote.checked && caseEntier.checked;
+                btnValider.disabled = !ok;
+                btnValider.classList.toggle('opacity-40', !ok);
+            };
+            caseCote.addEventListener('change', majBouton);
+            caseEntier.addEventListener('change', majBouton);
+
+            const inpReprendre = document.getElementById('conf-reprendre');
+            inpReprendre.addEventListener('change', function () {
+                fermerConfirmationPapier();
+                remplacerPhotoDansStudio(inpReprendre); // nouvelle photo, le studio reste ouvert
+            });
+            btnValider.addEventListener('click', function () {
+                fermerConfirmationPapier();
+                enregistrerScanConfirme(qualite);
+            });
+        }
+
+        function fermerConfirmationPapier() {
+            const m = document.getElementById('modal-confirmation-papier');
+            if (m) m.remove();
+        }
+
+        // Étape 2 : enregistrement sur le téléphone, une fois confirmé
+        function enregistrerScanConfirme(qualite) {
             if (!scanEnCours.imgSource) return;
             const id = scanEnCours.cleId;
             const titre = scanEnCours.titreDoc;
@@ -1841,7 +1956,6 @@
             dessinerScanSurCanvas(canvasHD, 1400);
             const imageHD = canvasHD.toDataURL('image/jpeg', 0.82);
 
-            const qualite = analyserQualitePhoto();
             fermerStudioScan();
 
             coffrePhotos[id] = {
@@ -1849,9 +1963,9 @@
                 titre: titre,
                 image: imageHD,
                 dateAjout: new Date().toLocaleDateString('fr-FR'),
-                statut: qualite.niveau === 'refuse' ? 'refuse' : 'valide',
-                alerte: qualite.niveau === 'alerte',
-                messageIA: qualite.message
+                statut: 'valide',
+                alerte: false,
+                messageIA: 'Papier ajouté et vérifié par vous.'
             };
 
             sauvegarderCoffre();
