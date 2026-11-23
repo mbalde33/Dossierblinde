@@ -51,7 +51,7 @@
 
     <div class="bg-emerald-950 text-emerald-100 text-xs py-2.5 px-4 text-center font-medium">
         <i class="fa-solid fa-lock text-emerald-400 mr-1.5"></i>
-        <strong>100 % Privé :<strong>100 % Confidentiel :<strong> Vos documents sont supprimés de nos serveurs après analyse et stockés sur votre appareil.</strong>
+        <strong>100 % Privé :</strong> Vos photos restent sur votre appareil et ne sont envoyées à aucun serveur.
     </div>
 
     <header class="bg-white border-b border-slate-200 pt-7 pb-8 px-4">
@@ -145,7 +145,7 @@
                     </button>
                 </div>
 
-                <textarea id="input-situation-ia" rows="2" placeholder="Facultatif : expliquez votre question ou joignez la photo / le PDF du courrier..." class="w-full bg-slate-900 border border-blue-800 rounded-lg p-3 text-xs sm:text-sm text-white placeholder-slate-400 outline-none focus:border-emerald-400"></textarea>
+                <textarea id="input-situation-ia" rows="2" placeholder="Expliquez votre question ou ce que demande le courrier (ex : la CAF me demande un avis d'imposition)..." class="w-full bg-slate-900 border border-blue-800 rounded-lg p-3 text-xs sm:text-sm text-white placeholder-slate-400 outline-none focus:border-emerald-400"></textarea>
 
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
                     <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-blue-100 border border-blue-700 text-xs font-semibold px-3.5 py-2.5 rounded-lg flex items-center justify-center gap-2 transition">
@@ -971,8 +971,8 @@
             }
 
             const situation = document.getElementById('input-situation-ia').value.trim();
-            if (!situation && !photoCourrierBase64) {
-                alert("Prenez en photo le courrier reçu, importez son PDF ou expliquez votre question.");
+            if (!situation) {
+                alert("Écrivez en quelques mots ce que demande le courrier ou votre question. Les photos restent sur votre appareil et ne sont pas envoyées.");
                 return;
             }
 
@@ -986,8 +986,7 @@
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
                         mode: 'diagnostic',
-                        descriptionSituation: situation || "Lis attentivement ce courrier reçu et indique en mots très simples quels documents fournir pour y répondre.",
-                        imageBase64: photoCourrierBase64
+                        descriptionSituation: situation || "Lis attentivement ce courrier reçu et indique en mots très simples quels documents fournir pour y répondre."
                     })
                 });
                 const res = await reponse.json();
@@ -1699,6 +1698,7 @@
         }
 
         async function validerEtEnvoyerScan() {
+            // Les photos restent sur l'appareil : aucune image n'est envoyée au serveur.
             if (!scanEnCours.imgSource) return;
             const id = scanEnCours.cleId;
             const titre = scanEnCours.titreDoc;
@@ -1707,60 +1707,16 @@
             dessinerScanSurCanvas(canvasHD, 1400);
             const imageHD = canvasHD.toDataURL('image/jpeg', 0.82);
 
-            const canvasIA = document.createElement('canvas');
-            dessinerScanSurCanvas(canvasIA, 850);
-            const imageIA = canvasIA.toDataURL('image/jpeg', 0.72);
-
             fermerStudioScan();
 
-            const statusEl = document.getElementById('status-' + id);
-            if (statusEl) {
-                statusEl.innerHTML = '<span class="inline-flex items-center gap-1.5 text-blue-800 text-[11px] font-bold"><i class="fa-solid fa-spinner fa-spin"></i> Vérification du papier en cours...</span>';
-            }
-
-            const selectEl = document.getElementById('select-dossier');
-            const contexteDossier = selectEl.options[selectEl.selectedIndex].text;
-
-            try {
-                const reponse = await fetch('/api/verifier', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        mode: 'document',
-                        imageBase64: imageIA,
-                        documentAttendu: titre,
-                        contexteDossier: contexteDossier
-                    })
-                });
-
-                const resultat = await reponse.json();
-                if (!reponse.ok) throw new Error(resultat.message || ('Serveur HTTP ' + reponse.status));
-
-                if (resultat.valide && !estPremium) {
-                    scansUtilises++;
-                    localStorage.setItem('dossierBlinde_scans_utilises', String(scansUtilises));
-                    mettreAJourStatutAbonnement();
-                }
-
-                coffrePhotos[id] = {
-                    id: id,
-                    titre: titre,
-                    image: imageHD,
-                    dateAjout: new Date().toLocaleDateString('fr-FR'),
-                    statut: resultat.valide ? 'valide' : 'refuse',
-                    messageIA: resultat.message || (resultat.valide ? 'Papier validé' : 'Papier refusé, refaites la photo')
-                };
-
-            } catch (err) {
-                coffrePhotos[id] = {
-                    id: id,
-                    titre: titre,
-                    image: imageHD,
-                    dateAjout: new Date().toLocaleDateString('fr-FR'),
-                    statut: 'refuse',
-                    messageIA: "Erreur réseau (" + err.message + "). Réessayez."
-                };
-            }
+            coffrePhotos[id] = {
+                id: id,
+                titre: titre,
+                image: imageHD,
+                dateAjout: new Date().toLocaleDateString('fr-FR'),
+                statut: 'valide',
+                messageIA: 'Papier ajouté. Vérifiez qu\'il est net et complet.'
+            };
 
             sauvegarderCoffre();
             chargerChecklist();
