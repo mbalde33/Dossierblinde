@@ -2635,6 +2635,131 @@
                 if (e.key === 'Enter') { e.preventDefault(); const t = input.value.trim(); if (t.length >= 3) chercherOrganismeIA(t); }
             });
         })();
+
+        // ===== Service client : bouton « Besoin d'aide ? » =====
+        // 👉 À REMPLIR : ton adresse de contact (publique) et, si tu veux, ton numéro WhatsApp au format international sans + ni espaces (ex : 33612345678).
+        const EMAIL_SUPPORT = "ton-adresse@exemple.fr";
+        const WHATSAPP_SUPPORT = "";
+
+        const FAQ_AIDE = [
+            ['Ma photo est refusée', "Posez le papier à plat, de préférence sur un fond sombre, près d'une fenêtre ou d'une lampe. Tenez le téléphone immobile et cadrez le papier en entier. Évitez les reflets (sortez la carte de sa pochette plastique)."],
+            ['Mes papiers ont disparu', "Vos papiers sont gardés uniquement sur ce téléphone, dans ce navigateur. Ils disparaissent si vous changez de navigateur, utilisez la navigation privée, appuyez sur « Tout effacer », ou après 30 jours sans utilisation. Sur iPhone, Safari peut aussi les effacer après 7 jours sans visite : ajoutez DossierBlindé à votre écran d'accueil (Partager → « Sur l'écran d'accueil ») pour l'éviter."],
+            ['Je n\'arrive pas à télécharger le PDF', "Vérifiez qu'au moins un papier est en vert dans la liste. Sur iPhone, le PDF peut s'ouvrir dans un nouvel onglet : appuyez sur Partager puis « Enregistrer dans Fichiers ». Si votre navigateur bloque le téléchargement, autorisez-le dans ses réglages."],
+            ['Mes papiers sont-ils en sécurité ?', "Vos photos restent sur votre téléphone : elles ne sont envoyées à aucun serveur. Seuls le nom de votre démarche et le nom de l'organisme, si vous utilisez la recherche, sont envoyés pour trouver la bonne liste. Le filigrane protège vos copies contre le vol d'identité."],
+            ['La liste de papiers est-elle officielle ?', "C'est une liste indicative préparée pour vous aider. Les exigences peuvent varier selon l'organisme : vérifiez toujours sur service-public.fr ou auprès de l'organisme avant d'envoyer votre dossier."],
+            ['J\'ai payé mais ça ne marche pas', "Écrivez-nous avec l'adresse e-mail utilisée pour le paiement et la date. Ne nous envoyez jamais votre numéro de carte bancaire."]
+        ];
+
+        function contactSupportConfigure() {
+            return EMAIL_SUPPORT && EMAIL_SUPPORT.includes('@') && !EMAIL_SUPPORT.includes('exemple');
+        }
+
+        function messageSupportPrepare() {
+            const sel = document.getElementById('select-dossier');
+            const demarche = sel && sel.selectedIndex >= 0 ? sel.options[sel.selectedIndex].text : 'non choisie';
+            const ua = navigator.userAgent;
+            const appareil = /iPhone|iPad/.test(ua) ? 'iPhone / iPad' : (/Android/.test(ua) ? 'Android' : 'Ordinateur');
+            return "Bonjour,\n\nJ'ai un problème avec DossierBlindé.\n\nCe qui se passe :\n\n\n---\nInfos pour vous aider (aucune donnée personnelle) :\nDémarche : " + demarche + "\nAppareil : " + appareil + "\nDate : " + new Date().toLocaleString('fr-FR') + "\n\n(N'ajoutez pas de photo de vos papiers ni de numéro de carte bancaire.)";
+        }
+
+        function ouvrirAide() {
+            fermerAide();
+            const fond = document.createElement('div');
+            fond.id = 'modal-aide';
+            fond.style.zIndex = '9998';
+            fond.className = 'fixed inset-0 bg-slate-950/80 flex items-end sm:items-center justify-center p-0 sm:p-4';
+            fond.addEventListener('click', function (e) { if (e.target === fond) fermerAide(); });
+
+            const boite = document.createElement('div');
+            boite.className = 'bg-white w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl max-h-[90vh] overflow-y-auto';
+
+            const entete = document.createElement('div');
+            entete.className = 'bg-blue-950 text-white p-4 flex items-start justify-between gap-2 sticky top-0';
+            entete.innerHTML = '<div><h3 class="font-extrabold text-base"><i class="fa-solid fa-life-ring text-emerald-400 mr-1.5"></i>Besoin d\'aide ?</h3><p class="text-[11px] text-blue-200 mt-0.5">Les réponses aux questions les plus fréquentes</p></div>';
+            const fermer = document.createElement('button');
+            fermer.type = 'button';
+            fermer.className = 'text-slate-300 hover:text-white text-xl';
+            fermer.innerHTML = '<i class="fa-solid fa-xmark"></i>';
+            fermer.addEventListener('click', fermerAide);
+            entete.appendChild(fermer);
+            boite.appendChild(entete);
+
+            const liste = document.createElement('div');
+            liste.className = 'p-4 space-y-2';
+            FAQ_AIDE.forEach(function (q) {
+                const d = document.createElement('details');
+                d.className = 'border border-slate-200 rounded-lg';
+                const sum = document.createElement('summary');
+                sum.className = 'cursor-pointer px-3 py-2.5 text-sm font-bold text-slate-900';
+                sum.textContent = q[0];
+                const rep = document.createElement('p');
+                rep.className = 'px-3 pb-3 text-xs text-slate-700 leading-relaxed';
+                rep.textContent = q[1];
+                d.appendChild(sum); d.appendChild(rep);
+                liste.appendChild(d);
+            });
+            boite.appendChild(liste);
+
+            const contact = document.createElement('div');
+            contact.className = 'p-4 pt-0 space-y-2';
+            const titre = document.createElement('p');
+            titre.className = 'text-xs font-bold text-slate-700';
+            titre.textContent = 'Toujours bloqué ? Écrivez-nous :';
+            contact.appendChild(titre);
+
+            if (contactSupportConfigure()) {
+                const mail = document.createElement('a');
+                mail.className = 'w-full flex items-center justify-center gap-2 bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-sm py-3 rounded-xl';
+                mail.href = 'mailto:' + EMAIL_SUPPORT + '?subject=' + encodeURIComponent('Aide DossierBlindé') + '&body=' + encodeURIComponent(messageSupportPrepare());
+                mail.innerHTML = '<i class="fa-solid fa-envelope"></i>';
+                const t = document.createElement('span'); t.textContent = 'Envoyer un e-mail'; mail.appendChild(t);
+                contact.appendChild(mail);
+                const adr = document.createElement('p');
+                adr.className = 'text-[11px] text-slate-500 text-center';
+                adr.textContent = EMAIL_SUPPORT;
+                contact.appendChild(adr);
+            } else {
+                const bientot = document.createElement('p');
+                bientot.className = 'text-xs text-slate-500';
+                bientot.textContent = 'Le contact par e-mail sera bientôt disponible.';
+                contact.appendChild(bientot);
+            }
+
+            if (/^\d{8,15}$/.test(WHATSAPP_SUPPORT)) {
+                const wa = document.createElement('a');
+                wa.className = 'w-full flex items-center justify-center gap-2 bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-sm py-3 rounded-xl';
+                wa.href = 'https://wa.me/' + WHATSAPP_SUPPORT + '?text=' + encodeURIComponent(messageSupportPrepare());
+                wa.target = '_blank'; wa.rel = 'noopener';
+                wa.innerHTML = '<i class="fa-brands fa-whatsapp"></i>';
+                const t2 = document.createElement('span'); t2.textContent = 'Écrire sur WhatsApp'; wa.appendChild(t2);
+                contact.appendChild(wa);
+            }
+
+            const note = document.createElement('p');
+            note.className = 'text-[10px] text-slate-400 text-center pt-1';
+            note.textContent = "N'envoyez jamais de photo de vos papiers ni de numéro de carte bancaire.";
+            contact.appendChild(note);
+            boite.appendChild(contact);
+
+            fond.appendChild(boite);
+            document.body.appendChild(fond);
+        }
+
+        function fermerAide() {
+            const m = document.getElementById('modal-aide');
+            if (m) m.remove();
+        }
+
+        (function ajouterBoutonAide() {
+            const b = document.createElement('button');
+            b.type = 'button';
+            b.id = 'bouton-aide';
+            b.setAttribute('aria-label', "Besoin d'aide ?");
+            b.className = 'fixed bottom-4 right-4 z-40 bg-blue-900 hover:bg-blue-800 text-white rounded-full shadow-lg px-4 py-3 text-xs font-extrabold flex items-center gap-1.5';
+            b.innerHTML = '<i class="fa-solid fa-circle-question text-emerald-400"></i><span>Aide</span>';
+            b.addEventListener('click', ouvrirAide);
+            document.body.appendChild(b);
+        })();
     </script>
 </body>
 </html>
