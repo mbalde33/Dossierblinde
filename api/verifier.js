@@ -13,7 +13,7 @@ const TTL_GRATUIT = 30 * 86400;
 // Rien à configurer : seule GROQ_API_KEY est obligatoire.
 // Si Groq change de modèle un jour, tu peux le remplacer SANS toucher au code avec ces variables Vercel :
 //  GROQ_MODEL_VISION (scans et courriers) et GROQ_MODEL_TEXT (listes de papiers sans image, facultatif)
-const MODELE_PAR_DEFAUT = 'qwen/qwen3.8-27b';
+const MODELE_PAR_DEFAUT = 'qwen/qwen3.6-27b';
 const MODELE_VISION = () => process.env.GROQ_MODEL_VISION || MODELE_PAR_DEFAUT;
 const MODELE_TEXTE = () => process.env.GROQ_MODEL_TEXT || MODELE_VISION();
 
