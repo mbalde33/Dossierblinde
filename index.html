@@ -448,6 +448,9 @@
         // Seuils du contrôle de netteté des photos (sur l'appareil). Plus haut = plus sévère.
         const SEUIL_NETTETE_REFUS = 20;
         const SEUIL_NETTETE_ALERTE = 60;
+        // Seuils de "présence de texte" (part de petits contours). Plus haut = plus sévère.
+        const SEUIL_TEXTE_MIN = 0.012;
+        const SEUIL_TEXTE_SANS_CADRE = 0.04;
 
         document.getElementById('lien-stripe-unique').href = STRIPE_LIEN_UNIQUE;
         document.getElementById('lien-stripe-mensuel').href = STRIPE_LIEN_MENSUEL;
@@ -1715,6 +1718,32 @@
         }
 
 
+
+        // Part de petits contours nets (lettres, chiffres) dans l'image, mesurée à 500 px.
+        // Un papier avec du texte en a beaucoup ; un drap, un mur ou un oreiller très peu.
+        function densiteTexte(source) {
+            const e = 500 / Math.max(source.width, source.height);
+            const w = Math.max(3, Math.round(source.width * e));
+            const h = Math.max(3, Math.round(source.height * e));
+            const c = document.createElement('canvas');
+            c.width = w; c.height = h;
+            const cx = c.getContext('2d', { willReadFrequently: true });
+            cx.drawImage(source, 0, 0, w, h);
+            const d = cx.getImageData(0, 0, w, h).data;
+            const g = new Float32Array(w * h);
+            for (let i = 0, j = 0; i < d.length; i += 4, j++) g[j] = 0.299 * d[i] + 0.587 * d[i + 1] + 0.114 * d[i + 2];
+            let fort = 0, total = 0;
+            for (let y = 1; y < h - 1; y++) {
+                for (let x = 1; x < w - 1; x++) {
+                    const k = y * w + x;
+                    const lap = g[k - w] + g[k + w] + g[k - 1] + g[k + 1] - 4 * g[k];
+                    if (lap > 25 || lap < -25) fort++;
+                    total++;
+                }
+            }
+            return total ? fort / total : 0;
+        }
+
         // ===== Contrôle de qualité de la photo, fait UNIQUEMENT sur l'appareil (rien n'est envoyé) =====
         // Mesure la netteté, la luminosité, les reflets et le cadrage du document.
         // Résultat : { niveau: 'ok' | 'alerte' | 'refuse', message: '...' }
@@ -1775,6 +1804,17 @@
                 return { niveau: 'refuse', message: 'Photo floue ou sans texte lisible : tenez le téléphone immobile et reprenez-la.' };
             }
 
+            // Présence d'un papier : document repéré et/ou assez de petits contours (texte)
+            let pleinCadre = false;
+            if (!depuisPdf) {
+                const zone = detecterZoneDocument(c);
+                pleinCadre = zone.x === 0 && zone.y === 0 && zone.w === w && zone.h === h;
+                const texte = densiteTexte(c);
+                if (texte < SEUIL_TEXTE_MIN || (pleinCadre && texte < SEUIL_TEXTE_SANS_CADRE)) {
+                    return { niveau: 'refuse', message: 'Aucun papier reconnu : posez le document à plat, bien éclairé, et cadrez-le en entier.' };
+                }
+            }
+
             // --- Alertes (le papier est gardé, mais l'utilisateur est prévenu) ---
             if (nettete < SEUIL_NETTETE_ALERTE) {
                 return { niveau: 'alerte', message: 'Papier ajouté, mais un peu flou : vérifiez que tout se lit bien.' };
@@ -1785,12 +1825,8 @@
             if (!depuisPdf && partBrulee > 0.06) {
                 return { niveau: 'alerte', message: 'Papier ajouté, mais il y a un reflet : vérifiez qu\'aucune information n\'est cachée.' };
             }
-            if (!depuisPdf) {
-                const zone = detecterZoneDocument(c);
-                const pleinCadre = zone.x === 0 && zone.y === 0 && zone.w === w && zone.h === h;
-                if (pleinCadre) {
-                    return { niveau: 'alerte', message: 'Papier ajouté. Vérifiez qu\'il est entier, sans bord coupé.' };
-                }
+            if (!depuisPdf && pleinCadre) {
+                return { niveau: 'alerte', message: 'Papier ajouté. Vérifiez qu\'il est entier, sans bord coupé.' };
             }
             return { niveau: 'ok', message: 'Papier ajouté : photo nette et lumineuse.' };
         }
