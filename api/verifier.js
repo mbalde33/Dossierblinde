@@ -1,4 +1,4 @@
-// api/verifier.js — version Claude, texte seulement (aucune image n'est envoyée)
+// api/verifier.js — version Claude, texte seulement (aucune image envoyée)
 import {
   repondre, lireJson, nettoyerTexte, purger,
   empreinteClient, idAppareil, limiter, compter, redis, lireAcces
@@ -166,6 +166,7 @@ export default async function handler(req, res) {
   } catch (e) {
     console.error('verifier:', e.message);
     try { await annuler(); } catch { /* rien */ }
-    return repondre(res, 502, { ok: false, valide: false, message: 'Le service est momentanément indisponible. Réessayez.' });
+    const detail = process.env.DEBUG_ERREURS === '1' ? ` [${String(e.message).slice(0, 200)}]` : '';
+    return repondre(res, 502, { ok: false, valide: false, message: 'Le service est momentanément indisponible. Réessayez.' + detail });
   }
 }
