@@ -2248,73 +2248,271 @@
             ['971','Guadeloupe','de la Guadeloupe'],['972','Martinique','de la Martinique'],['973','Guyane','de la Guyane'],['974','La Réunion','de La Réunion'],['976','Mayotte','de Mayotte']
         ];
 
-        const ORGANISMES_PAR_DEPARTEMENT = ['CAF', 'CPAM', 'MDPH', 'Préfecture', 'Commission de surendettement', 'Conseil départemental'];
+        // Organismes présents dans chaque département : [nom, mots-clés pour la recherche]
+        const ORGANISMES_PAR_DEPARTEMENT = [
+            ['CAF', 'allocations familiales apl rsa prime activite'],
+            ['CPAM', 'assurance maladie securite sociale secu ameli carte vitale'],
+            ['MDPH', 'handicap aah rqth'],
+            ['Préfecture', 'titre de sejour naturalisation etranger'],
+            ['Sous-préfecture', 'titre de sejour'],
+            ['Commission de surendettement', 'banque de france dettes'],
+            ['Conseil départemental', 'departement rsa apa aide sociale'],
+            ['Centre des impôts', 'impots tresor public dgfip finances publiques sip'],
+            ['France Travail', 'pole emploi chomage'],
+            ['Tribunal judiciaire', 'justice tribunal'],
+            ['Direction départementale des territoires (DDT)', 'ddt urbanisme'],
+            ['Maison France Services', 'france services aide demarches']
+        ];
 
+        // Organismes nationaux souvent contactés : [nom, mots-clés]
         const ORGANISMES_NATIONAUX = [
-            'Banque de France', 'ANTS', 'France Travail', 'Assurance retraite', 'URSSAF', 'Centre des impôts',
-            'OFII', 'CROUS', "Bureau d'aide juridictionnelle", 'Tribunal judiciaire', 'Notaire', 'Agence immobilière',
-            'Propriétaire (bailleur)', 'Bailleur social', 'Banque', 'Assurance', 'Employeur', 'MSA'
+            ['Banque de France', 'surendettement fichage ficp'],
+            ['ANTS', 'carte grise permis passeport carte identite'],
+            ['France Travail', 'pole emploi chomage'],
+            ['Assurance retraite (CNAV)', 'retraite cnav carsat'],
+            ['CARSAT', 'retraite sante travail'],
+            ['Agirc-Arrco', 'retraite complementaire'],
+            ['URSSAF', 'cotisations auto entrepreneur micro entreprise'],
+            ['Centre des impôts', 'impots tresor public dgfip finances publiques sip'],
+            ['Service des impôts des entreprises (SIE)', 'impots entreprise tva'],
+            ['Trésor public', 'amende impots'],
+            ['ANTAI', 'amende contravention radar'],
+            ['MSA', 'mutualite sociale agricole agriculteur'],
+            ['OFII', 'immigration integration'],
+            ['ANEF', 'titre de sejour etranger en ligne'],
+            ['OFPRA', 'asile refugie'],
+            ['Consulat', 'ambassade etranger'],
+            ['Ambassade', 'consulat etranger visa'],
+            ['CROUS', 'bourse etudiant logement etudiant'],
+            ['Rectorat', 'academie education nationale'],
+            ['Université', 'fac etudes inscription'],
+            ['Mission locale', 'jeunes emploi'],
+            ['Cap emploi', 'handicap emploi'],
+            ['APEC', 'cadres emploi'],
+            ['Action Logement', 'logement salarie visale'],
+            ['ANAH', 'renovation habitat travaux'],
+            ['Bailleur social', 'hlm logement social opac'],
+            ['CCAS', 'action sociale mairie aide'],
+            ["Bureau d'aide juridictionnelle", 'aide juridictionnelle avocat'],
+            ['Tribunal administratif', 'justice recours administration'],
+            ["Conseil de prud'hommes", 'prudhommes licenciement travail'],
+            ["Cour d'appel", 'justice appel'],
+            ['Commissaire de justice', 'huissier'],
+            ['Défenseur des droits', 'discrimination recours'],
+            ['Police nationale', 'commissariat plainte'],
+            ['Gendarmerie', 'plainte'],
+            ['INPI', 'marque brevet entreprise'],
+            ['INSEE', 'siret siren'],
+            ['CCI', 'chambre de commerce'],
+            ["Chambre de métiers et de l'artisanat (CMA)", 'artisan cma'],
+            ['Greffe du tribunal de commerce', 'kbis entreprise'],
+            ['Caisse des dépôts', 'ircantec'],
+            ['CNRACL', 'retraite fonction publique'],
+            ['Service des retraites de l\'État', 'retraite fonctionnaire'],
+            ['ARS', 'agence regionale de sante'],
+            ['Hôpital', 'sante'],
+            ['Point Conseil Budget', 'budget dettes accompagnement'],
+            ['Notaire', 'succession achat immobilier'],
+            ['Avocat', 'justice'],
+            ['Agence immobilière', 'location'],
+            ['Propriétaire (bailleur)', 'location loyer'],
+            ['Banque', 'compte credit'],
+            ['Assurance', 'assureur mutuelle'],
+            ['Mutuelle', 'complementaire sante'],
+            ['Employeur', 'travail entreprise'],
+            ['Mairie', 'etat civil'],
         ];
 
         function sansAccents(t) {
-            return String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/['’\-]/g, ' ');
+            return String(t || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().replace(/['’\-()]/g, ' ').replace(/\s+/g, ' ').trim();
         }
 
         let LISTE_ORGANISMES = null;
         function listeOrganismes() {
             if (LISTE_ORGANISMES) return LISTE_ORGANISMES;
             LISTE_ORGANISMES = [];
-            ORGANISMES_NATIONAUX.forEach(function (nom) {
-                LISTE_ORGANISMES.push({ libelle: nom, detail: '', cle: sansAccents(nom) });
+            ORGANISMES_NATIONAUX.forEach(function (o) {
+                LISTE_ORGANISMES.push({ libelle: o[0], detail: '', cle: sansAccents(o[0] + ' ' + o[1]) });
             });
-            ORGANISMES_PAR_DEPARTEMENT.forEach(function (org) {
+            ORGANISMES_PAR_DEPARTEMENT.forEach(function (o) {
                 DEPARTEMENTS.forEach(function (d) {
-                    const libelle = org + ' ' + d[2];
-                    LISTE_ORGANISMES.push({ libelle: libelle, detail: d[0], cle: sansAccents(libelle + ' ' + d[1] + ' ' + d[0]) });
+                    const libelle = o[0] + ' ' + d[2];
+                    LISTE_ORGANISMES.push({ libelle: libelle, detail: d[0], cle: sansAccents(libelle + ' ' + d[1] + ' ' + d[0] + ' ' + o[1]) });
                 });
             });
             return LISTE_ORGANISMES;
         }
 
         function chercherOrganismes(texte) {
-            const mots = sansAccents(texte).split(/\s+/).filter(Boolean);
-            const resultats = [];
-            if (mots.length === 0) return resultats;
+            const mots = sansAccents(texte).split(' ').filter(Boolean);
+            if (mots.length === 0) return [];
 
-            // « Mairie de … » : on propose ce que la personne tape
-            if (mots[0] === 'mairie' && mots.length > 1) {
-                const ville = texte.trim().replace(/^mairie\s*(de\s+|d['’]\s*)?/i, '');
-                if (ville) resultats.push({ libelle: 'Mairie de ' + ville.charAt(0).toUpperCase() + ville.slice(1), detail: '' });
+            // « Organisme + ville » : « mairie lyon », « centre des impôts villeurbanne »…
+            let villeProposee = null;
+            const brut = texte.trim();
+            const debutNorm = sansAccents(brut);
+            const typesConnus = ORGANISMES_PAR_DEPARTEMENT.map(function (o) { return o[0]; })
+                .concat(ORGANISMES_NATIONAUX.map(function (o) { return o[0]; }))
+                .sort(function (a, b) { return b.length - a.length; });
+            for (const org of typesConnus) {
+                const orgNorm = sansAccents(org);
+                if (debutNorm.startsWith(orgNorm + ' ') && debutNorm.length > orgNorm.length + 1) {
+                    let reste = debutNorm.slice(orgNorm.length).trim();
+                    // on reprend la ville telle que tapée (avec ses accents)
+                    const motsBruts = brut.split(/\s+/);
+                    reste = motsBruts.slice(motsBruts.length - reste.split(' ').length).join(' ').replace(/^(de|du|des|d['’])\s*/i, '');
+                    const resteNorm = sansAccents(reste);
+                    const estDepartement = DEPARTEMENTS.some(function (d) {
+                        return d[0].toLowerCase() === resteNorm || sansAccents(d[1]).startsWith(resteNorm);
+                    });
+                    if (reste.length >= 3 && !estDepartement) {
+                        reste = reste.charAt(0).toUpperCase() + reste.slice(1);
+                        const lien = /^[aeiouyhâéèêîôûAEIOUYHÂÉÈÊÎÔÛ]/.test(reste) ? "d'" : 'de ';
+                        villeProposee = { libelle: org + ' ' + lien + reste, detail: 'ville' };
+                    }
+                    break;
+                }
+            }
+
+            // Mot-clé + ville : « impots lyon » → Centre des impôts de Lyon, « secu villeurbanne » → CPAM de Villeurbanne
+            if (!villeProposee && mots.length >= 2) {
+                const premier = mots[0];
+                const types = ORGANISMES_PAR_DEPARTEMENT.concat(ORGANISMES_NATIONAUX);
+                for (const o of types) {
+                    const cles = sansAccents(o[1]).split(' ');
+                    if (cles.includes(premier) || sansAccents(o[0]) === premier) {
+                        // on avale tous les mots-clés du début (« pole emploi », « allocations familiales »…)
+                        let n = 1;
+                        while (n < mots.length && cles.includes(mots[n])) n++;
+                        if (n >= mots.length) break;
+                        const motsBruts = brut.split(/\s+/);
+                        let reste = motsBruts.slice(n).join(' ').replace(/^(de|du|des|d['’])\s*/i, '');
+                        const resteNorm = sansAccents(reste);
+                        const estDepartement = DEPARTEMENTS.some(function (d) {
+                            return d[0].toLowerCase() === resteNorm || sansAccents(d[1]).startsWith(resteNorm);
+                        });
+                        if (reste.length >= 3 && !estDepartement && !/^\d/.test(reste)) {
+                            reste = reste.charAt(0).toUpperCase() + reste.slice(1);
+                            const lien = /^[aeiouyhâéèêîôûAEIOUYHÂÉÈÊÎÔÛ]/.test(reste) ? "d'" : 'de ';
+                            villeProposee = { libelle: o[0] + ' ' + lien + reste, detail: 'ville' };
+                        }
+                        break;
+                    }
+                }
             }
 
             // Score : mot exact > début de mot > morceau de mot. Un numéro de département doit être exact.
             const trouves = [];
             listeOrganismes().forEach(function (o) {
-                const jetons = o.cle.split(/\s+/);
+                const jetons = o.cle.split(' ');
                 let score = 0;
                 for (const m of mots) {
-                    let s = 0;
-                    if (jetons.includes(m)) s = 3;
-                    else if (/^\d/.test(m)) s = 0;
-                    else if (jetons.some(function (j) { return j.startsWith(m); })) s = 2;
-                    else if (o.cle.includes(m)) s = 1;
-                    if (s === 0) return;
-                    score += s;
+                    let sc = 0;
+                    if (jetons.includes(m)) sc = 3;
+                    else if (/^\d/.test(m)) sc = 0;
+                    else if (jetons.some(function (j) { return j.startsWith(m); })) sc = 2;
+                    else if (m.length >= 3 && o.cle.includes(m)) sc = 1;
+                    if (sc === 0) return;
+                    score += sc;
                 }
+                // bonus si le mot tapé est dans le nom affiché (et pas seulement dans les mots-clés)
+                const libNorm = sansAccents(o.libelle);
+                if (mots.every(function (m) { return libNorm.includes(m); })) score += 2;
                 trouves.push({ o: o, score: score });
             });
             trouves.sort(function (a, b) { return b.score - a.score || a.o.libelle.length - b.o.libelle.length; });
-            return resultats.concat(trouves.slice(0, 8).map(function (t) { return t.o; }));
+
+            const liste = trouves.slice(0, 8).map(function (t) { return t.o; });
+            if (villeProposee) liste.unshift(villeProposee);
+            return liste;
+        }
+
+        function ligneSuggestion(libelle, detail, sousTexte, auChoix) {
+            const ligne = document.createElement('button');
+            ligne.type = 'button';
+            ligne.className = 'w-full text-left px-3 py-2.5 text-xs font-semibold text-slate-800 hover:bg-emerald-50 border-b border-slate-100';
+            const haut = document.createElement('div');
+            haut.className = 'flex justify-between gap-2';
+            const nom = document.createElement('span');
+            nom.textContent = libelle;
+            haut.appendChild(nom);
+            if (detail) {
+                const dep = document.createElement('span');
+                dep.className = 'text-slate-400 shrink-0';
+                dep.textContent = detail;
+                haut.appendChild(dep);
+            }
+            ligne.appendChild(haut);
+            if (sousTexte) {
+                const bas = document.createElement('div');
+                bas.className = 'text-[10px] font-normal text-slate-500 mt-0.5';
+                bas.textContent = sousTexte;
+                ligne.appendChild(bas);
+            }
+            // mousedown (et non click) pour agir avant que le champ perde le focus
+            ligne.addEventListener('mousedown', function (e) { e.preventDefault(); auChoix(); });
+            return ligne;
+        }
+
+        function choisirDestinataire(texte) {
+            document.getElementById('input-destinataire').value = texte;
+            document.getElementById('suggestions-destinataire').classList.add('hidden');
+        }
+
+        // Recherche par l'IA quand l'organisme n'est pas dans la liste (seul le texte tapé est envoyé)
+        async function chercherOrganismeIA(texte) {
+            const boite = document.getElementById('suggestions-destinataire');
+            boite.innerHTML = '';
+            const attente = document.createElement('div');
+            attente.className = 'px-3 py-3 text-xs text-slate-600 flex items-center gap-2';
+            attente.innerHTML = '<i class="fa-solid fa-spinner fa-spin text-emerald-600"></i>';
+            const t = document.createElement('span');
+            t.textContent = 'Recherche de « ' + texte + ' »…';
+            attente.appendChild(t);
+            boite.appendChild(attente);
+            boite.classList.remove('hidden');
+
+            try {
+                const reponse = await fetch('/api/verifier', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ mode: 'organisme', nomOrganisme: texte })
+                });
+                const res = await reponse.json();
+                boite.innerHTML = '';
+                if (res.ok && res.trouve && Array.isArray(res.propositions)) {
+                    const titre = document.createElement('div');
+                    titre.className = 'px-3 py-1.5 text-[10px] font-extrabold uppercase text-emerald-700 bg-emerald-50';
+                    titre.textContent = 'Trouvé par l\'IA — vérifiez que c\'est le bon';
+                    boite.appendChild(titre);
+                    res.propositions.forEach(function (p) {
+                        boite.appendChild(ligneSuggestion(p.nom_filigrane, '', p.explication, function () { choisirDestinataire(p.nom_filigrane); }));
+                    });
+                } else {
+                    const rien = document.createElement('div');
+                    rien.className = 'px-3 py-2.5 text-[11px] text-slate-500';
+                    rien.textContent = res.message || 'Aucun organisme reconnu. Vous pouvez garder votre texte.';
+                    boite.appendChild(rien);
+                }
+                boite.appendChild(ligneSuggestion('Garder : ' + texte, '', '', function () { choisirDestinataire(texte); }));
+            } catch (err) {
+                boite.innerHTML = '';
+                const erreur = document.createElement('div');
+                erreur.className = 'px-3 py-2.5 text-[11px] text-red-600';
+                erreur.textContent = 'Recherche impossible pour le moment. Vous pouvez garder votre texte.';
+                boite.appendChild(erreur);
+                boite.appendChild(ligneSuggestion('Garder : ' + texte, '', '', function () { choisirDestinataire(texte); }));
+            }
         }
 
         function afficherSuggestionsDestinataire() {
             const input = document.getElementById('input-destinataire');
             const boite = document.getElementById('suggestions-destinataire');
             if (!input || !boite) return;
-            const texte = input.value;
+            const texte = input.value.trim();
             boite.innerHTML = '';
 
-            if (!texte.trim()) {
+            if (!texte) {
                 const aide = document.createElement('div');
                 aide.className = 'px-3 py-2.5 text-[11px] text-slate-500';
                 aide.textContent = 'Tapez le nom ou le département : « CAF Rhône », « Préfecture 69 », « Mairie de Lyon »…';
@@ -2323,30 +2521,16 @@
                 return;
             }
 
-            const resultats = chercherOrganismes(texte);
-            if (resultats.length === 0) { boite.classList.add('hidden'); return; }
-
-            resultats.forEach(function (o) {
-                const ligne = document.createElement('button');
-                ligne.type = 'button';
-                ligne.className = 'w-full text-left px-3 py-2.5 text-xs font-semibold text-slate-800 hover:bg-emerald-50 border-b border-slate-100 flex justify-between gap-2';
-                const nom = document.createElement('span');
-                nom.textContent = o.libelle;
-                ligne.appendChild(nom);
-                if (o.detail) {
-                    const dep = document.createElement('span');
-                    dep.className = 'text-slate-400 shrink-0';
-                    dep.textContent = o.detail;
-                    ligne.appendChild(dep);
-                }
-                // mousedown (et non click) pour que la sélection marche avant que le champ perde le focus
-                ligne.addEventListener('mousedown', function (e) {
-                    e.preventDefault();
-                    input.value = o.libelle;
-                    boite.classList.add('hidden');
-                });
-                boite.appendChild(ligne);
+            chercherOrganismes(texte).forEach(function (o) {
+                boite.appendChild(ligneSuggestion(o.libelle, o.detail, '', function () { choisirDestinataire(o.libelle); }));
             });
+
+            if (texte.length >= 3) {
+                const ia = ligneSuggestion('Je ne trouve pas : chercher « ' + texte + ' » avec l\'IA', '', 'Seul le nom tapé est envoyé, aucune photo', function () { chercherOrganismeIA(texte); });
+                ia.classList.add('text-blue-900', 'bg-blue-50');
+                boite.appendChild(ia);
+                boite.appendChild(ligneSuggestion('Garder : ' + texte, '', '', function () { choisirDestinataire(texte); }));
+            }
             boite.classList.remove('hidden');
         }
 
@@ -2356,8 +2540,11 @@
             if (!input || !boite) return;
             input.addEventListener('input', afficherSuggestionsDestinataire);
             input.addEventListener('focus', afficherSuggestionsDestinataire);
-            input.addEventListener('blur', function () { setTimeout(function () { boite.classList.add('hidden'); }, 150); });
-            input.addEventListener('keydown', function (e) { if (e.key === 'Escape') boite.classList.add('hidden'); });
+            input.addEventListener('blur', function () { setTimeout(function () { boite.classList.add('hidden'); }, 200); });
+            input.addEventListener('keydown', function (e) {
+                if (e.key === 'Escape') boite.classList.add('hidden');
+                if (e.key === 'Enter') { e.preventDefault(); const t = input.value.trim(); if (t.length >= 3) chercherOrganismeIA(t); }
+            });
         })();
     </script>
 </body>
