@@ -7,7 +7,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#172554">
-    <title>DossierBlindé — Préparez vos papiers facilement sans erreur</title>
+    <title>DossierBlindé — Préparez vos papiers facilement</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
@@ -39,7 +39,7 @@
                 </span>
                 <button id="btn-nav-pass" onclick="ouvrirModalePaiement('upgrade')" class="text-[11px] sm:text-xs font-extrabold text-amber-950 bg-amber-300 hover:bg-amber-400 px-3 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm">
                     <i class="fa-solid fa-bolt"></i>
-                    <span id="label-essais-restants">2 essais gratuits</span>
+                    <span id="label-essais-restants">3 essais gratuits</span>
                 </button>
                 <button onclick="ouvrirCoffreFort()" class="text-xs sm:text-sm font-semibold text-blue-900 bg-blue-50 hover:bg-blue-100 px-3.5 py-2 rounded-lg border border-blue-200 transition flex items-center gap-2">
                     <i class="fa-solid fa-folder-open"></i>
@@ -73,8 +73,8 @@
                     Quelle démarche voulez-vous faire ?
                 </label>
                 <button type="button" onclick="basculerAssistantIA()" class="text-xs font-bold text-blue-900 bg-blue-50 hover:bg-blue-100 border border-blue-200 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 self-start sm:self-auto">
-                    <i class="fa-solid fa-camera text-emerald-600"></i>
-                    <span>Lire un courrier reçu</span>
+                    <i class="fa-solid fa-envelope-open-text text-emerald-600"></i>
+                    <span>Question sur un courrier</span>
                 </button>
             </div>
 
@@ -137,7 +137,7 @@
                             Comprendre un courrier reçu
                         </h3>
                         <p class="text-xs text-blue-200 mt-0.5">
-                            Prenez la lettre en photo ou importez le PDF : l'application vous dit quels papiers envoyer et prépare la réponse.
+                            Écrivez en quelques mots ce que demande la lettre : l'application vous dit quels papiers envoyer.
                         </p>
                     </div>
                     <button type="button" onclick="basculerAssistantIA()" class="text-blue-300 hover:text-white text-sm">
@@ -148,14 +148,14 @@
                 <textarea id="input-situation-ia" rows="2" placeholder="Expliquez votre question ou ce que demande le courrier (ex : la CAF me demande un avis d'imposition)..." class="w-full bg-slate-900 border border-blue-800 rounded-lg p-3 text-xs sm:text-sm text-white placeholder-slate-400 outline-none focus:border-emerald-400"></textarea>
 
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
-                    <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-blue-100 border border-blue-700 text-xs font-semibold px-3.5 py-2.5 rounded-lg flex items-center justify-center gap-2 transition">
+                    <label class="hidden cursor-pointer bg-slate-800 hover:bg-slate-700 text-blue-100 border border-blue-700 text-xs font-semibold px-3.5 py-2.5 rounded-lg flex items-center justify-center gap-2 transition">
                         <i class="fa-solid fa-camera text-emerald-400"></i>
                         <span id="label-courrier-joint">Photo ou PDF du courrier</span>
                         <input type="file" accept="image/*,application/pdf" id="input-photo-courrier" class="hidden" onchange="preparerPhotoCourrier(this)">
                     </label>
                     <button type="button" onclick="lancerDiagnosticIA()" id="btn-lancer-diag" class="bg-emerald-500 hover:bg-emerald-600 text-slate-950 font-extrabold text-xs px-4 py-2.5 rounded-lg transition flex items-center justify-center gap-2 shadow">
                         <i class="fa-solid fa-magnifying-glass"></i>
-                        <span>Lire le courrier</span>
+                        <span>Trouver les papiers</span>
                     </button>
                 </div>
 
@@ -277,12 +277,12 @@
 
             <div class="p-6 space-y-4">
                 <div id="message-contexte-paiement" class="bg-amber-50 border border-amber-300 text-amber-950 text-xs font-semibold p-3.5 rounded-xl">
-                    Vous avez utilisé vos 2 vérifications gratuites. Activez votre Pass pour continuer sans limite et télécharger votre dossier PDF protégé.
+                    Vous avez utilisé vos recherches gratuites. Activez votre Pass pour continuer et télécharger votre dossier PDF protégé.
                 </div>
 
                 <ul class="space-y-2 text-xs text-slate-700 font-medium">
-                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i><span>Vérification IA illimitée de tous vos papiers et PDF (zéro rejet)</span></li>
-                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i><span>Lecture automatique de vos courriers reçus & réponses prêtes</span></li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i><span>Listes de papiers sur mesure pour toutes vos démarches</span></li>
+                    <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i><span>Aide pour savoir quels papiers envoyer suite à un courrier</span></li>
                     <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i><span>Téléchargement direct du dossier PDF complet protégé</span></li>
                 </ul>
 
@@ -292,7 +292,7 @@
                             <span class="text-[10px] font-extrabold uppercase text-slate-500">Sans engagement</span>
                             <h4 class="font-extrabold text-slate-900 text-base mt-0.5">Pass 1 Dossier</h4>
                             <p class="text-2xl font-extrabold text-blue-950 my-2">9,90 € <span class="text-xs font-normal text-slate-500">une fois</span></p>
-                            <p class="text-[11px] text-slate-500">Idéal pour boucler un dossier complet sans se faire recaler.</p>
+                            <p class="text-[11px] text-slate-500">Idéal pour préparer un dossier complet et bien organisé.</p>
                         </div>
                         <a id="lien-stripe-unique" href="#" target="_blank" rel="noopener" class="mt-4 w-full bg-blue-900 hover:bg-blue-800 text-white text-center font-extrabold text-xs py-3 rounded-lg transition block">
                             Choisir le Pass 9,90 €
@@ -443,7 +443,11 @@
 
         const STRIPE_LIEN_UNIQUE = "https://buy.stripe.com/TON_LIEN_PASS_UNIQUE";
         const STRIPE_LIEN_MENSUEL = "https://buy.stripe.com/TON_LIEN_ABONNEMENT";
-        const QUOTA_SCANS_GRATUITS = 2;
+        // Nombre de recherches IA gratuites (doit être égal à FREE_DIAGS côté serveur). Les scans, eux, sont gratuits et illimités.
+        const QUOTA_SCANS_GRATUITS = 3;
+        // Seuils du contrôle de netteté des photos (sur l'appareil). Plus haut = plus sévère.
+        const SEUIL_NETTETE_REFUS = 20;
+        const SEUIL_NETTETE_ALERTE = 60;
 
         document.getElementById('lien-stripe-unique').href = STRIPE_LIEN_UNIQUE;
         document.getElementById('lien-stripe-mensuel').href = STRIPE_LIEN_MENSUEL;
@@ -480,11 +484,11 @@
         function ouvrirModalePaiement(raison) {
             const msg = document.getElementById('message-contexte-paiement');
             if (raison === 'pdf') {
-                msg.textContent = "La vérification de vos 2 premiers papiers est offerte ! Activez votre Pass pour télécharger votre dossier PDF complet.";
+                msg.textContent = "Ajouter vos papiers est gratuit ! Activez votre Pass pour télécharger votre dossier complet en un seul PDF protégé.";
             } else if (raison === 'courrier') {
-                msg.textContent = "La lecture automatique de courrier et la génération de réponse sont réservées aux membres Pass DossierBlindé.";
+                msg.textContent = "Vous avez utilisé vos " + QUOTA_SCANS_GRATUITS + " recherches gratuites. Activez votre Pass pour continuer à poser vos questions.";
             } else {
-                msg.textContent = "Vous avez utilisé vos " + QUOTA_SCANS_GRATUITS + " vérifications gratuites. Activez votre Pass pour scanner vos papiers en illimité et télécharger votre dossier PDF.";
+                msg.textContent = "Vous avez utilisé vos " + QUOTA_SCANS_GRATUITS + " recherches gratuites. Activez votre Pass pour créer d'autres listes et télécharger votre dossier PDF.";
             }
             document.getElementById('modal-paiement').classList.remove('hidden');
         }
@@ -879,7 +883,20 @@
                 });
                 const res = await reponse.json();
 
+                if (res.code === 'quota') {
+                    scansUtilises = QUOTA_SCANS_GRATUITS;
+                    localStorage.setItem('dossierBlinde_scans_utilises', String(scansUtilises));
+                    mettreAJourStatutAbonnement();
+                    ouvrirModalePaiement('recherche');
+                    return;
+                }
+
                 if (res.ok && Array.isArray(res.pieces) && res.pieces.length > 0) {
+                    if (!estPremium) {
+                        scansUtilises++;
+                        localStorage.setItem('dossierBlinde_scans_utilises', String(scansUtilises));
+                        mettreAJourStatutAbonnement();
+                    }
                     const listePropre = res.pieces.map((p, idx) => normaliserPieceIA(p, idx)).filter(Boolean);
                     if (listePropre.length === 0) {
                         alert("Impossible de lire la liste des papiers pour le moment.");
@@ -895,7 +912,7 @@
 
                     piecesSupplementaires['dossier_recherche'] = listePropre;
 
-                    document.getElementById('detail-alerte-ia').textContent = res.resume || ("Liste officielle complète des papiers pour : " + texte);
+                    document.getElementById('detail-alerte-ia').textContent = res.resume || ("Liste des papiers généralement demandés pour : " + texte);
                     document.getElementById('banniere-alerte-ia').classList.remove('hidden');
                     document.getElementById('zone-proposition-recherche').classList.add('hidden');
                     document.getElementById('liste-suggestions-instantanees').classList.add('hidden');
@@ -915,10 +932,6 @@
         }
 
         function basculerAssistantIA() {
-            if (!estPremium && scansUtilises >= QUOTA_SCANS_GRATUITS) {
-                ouvrirModalePaiement('courrier');
-                return;
-            }
             const bloc = document.getElementById('bloc-assistant-ia');
             bloc.classList.toggle('hidden');
         }
@@ -965,10 +978,6 @@
         }
 
         async function lancerDiagnosticIA() {
-            if (!estPremium && scansUtilises >= QUOTA_SCANS_GRATUITS) {
-                ouvrirModalePaiement('courrier');
-                return;
-            }
 
             const situation = document.getElementById('input-situation-ia').value.trim();
             if (!situation) {
@@ -978,7 +987,7 @@
 
             const btn = document.getElementById('btn-lancer-diag');
             btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Lecture en cours...</span>';
+            btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i><span>Recherche en cours...</span>';
 
             try {
                 const reponse = await fetch('/api/verifier', {
@@ -990,6 +999,14 @@
                     })
                 });
                 const res = await reponse.json();
+
+                if (res.code === 'quota') {
+                    scansUtilises = QUOTA_SCANS_GRATUITS;
+                    localStorage.setItem('dossierBlinde_scans_utilises', String(scansUtilises));
+                    mettreAJourStatutAbonnement();
+                    ouvrirModalePaiement('courrier');
+                    return;
+                }
 
                 if (res.ok) {
                     if (!estPremium) {
@@ -1036,7 +1053,7 @@
                 alert("Erreur réseau : " + err.message);
             } finally {
                 btn.disabled = false;
-                btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i><span>Lire le courrier</span>';
+                btn.innerHTML = '<i class="fa-solid fa-magnifying-glass"></i><span>Trouver les papiers</span>';
             }
         }
 
@@ -1356,7 +1373,12 @@
         }
 
         function renderBadgeIA(doc) {
-            const msg = doc.messageIA || (doc.statut === 'valide' ? 'Papier validé et enregistré' : 'À refaire, rescannez');
+            const msg = doc.messageIA || (doc.statut === 'valide' ? 'Papier ajouté' : 'À refaire, rescannez');
+            if (doc.statut === 'valide' && doc.alerte) {
+                return '<span class="inline-flex items-center gap-1.5 bg-amber-50 border border-amber-300 text-amber-900 text-[11px] font-semibold px-2.5 py-1 rounded-md">' +
+                    '<i class="fa-solid fa-circle-exclamation text-amber-600 shrink-0"></i> <span>' + msg + '</span>' +
+                '</span>';
+            }
             if (doc.statut === 'valide') {
                 return '<span class="inline-flex items-center gap-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 text-[11px] font-semibold px-2.5 py-1 rounded-md">' +
                     '<i class="fa-solid fa-check-circle text-emerald-600 shrink-0"></i> <span>' + msg + '</span>' +
@@ -1369,11 +1391,6 @@
         }
 
         function ouvrirStudioScanDepuisInput(input) {
-            if (!estPremium && scansUtilises >= QUOTA_SCANS_GRATUITS) {
-                input.value = '';
-                ouvrirModalePaiement('scan');
-                return;
-            }
             if (!input.files || !input.files[0]) return;
             const cleId = input.getAttribute('data-cle');
             const titreDoc = input.getAttribute('data-titre');
@@ -1697,6 +1714,87 @@
             ctx.putImageData(imgData, 0, 0);
         }
 
+
+        // ===== Contrôle de qualité de la photo, fait UNIQUEMENT sur l'appareil (rien n'est envoyé) =====
+        // Mesure la netteté, la luminosité, les reflets et le cadrage du document.
+        // Résultat : { niveau: 'ok' | 'alerte' | 'refuse', message: '...' }
+        function analyserQualitePhoto() {
+            const img = scanEnCours.imgSource;
+            if (!img) return { niveau: 'ok', message: '' };
+            const depuisPdf = !!scanEnCours.pdfDoc;
+
+            // 1. Taille minimale
+            const largeurOrig = img.naturalWidth || img.width;
+            const hauteurOrig = img.naturalHeight || img.height;
+            if (Math.min(largeurOrig, hauteurOrig) < 500) {
+                return { niveau: 'refuse', message: 'Photo trop petite ou de mauvaise qualité : reprenez-la de plus près.' };
+            }
+
+            // 2. Image réduite à 1000 px, avec la rotation choisie, SANS filtre
+            const rot = scanEnCours.rotation;
+            const echelle = Math.min(1, 1000 / Math.max(largeurOrig, hauteurOrig));
+            const lw = Math.round(largeurOrig * echelle);
+            const lh = Math.round(hauteurOrig * echelle);
+            const c = document.createElement('canvas');
+            if (rot === 90 || rot === 270) { c.width = lh; c.height = lw; } else { c.width = lw; c.height = lh; }
+            const cx = c.getContext('2d', { willReadFrequently: true });
+            cx.translate(c.width / 2, c.height / 2);
+            cx.rotate((rot * Math.PI) / 180);
+            cx.drawImage(img, -lw / 2, -lh / 2, lw, lh);
+
+            const w = c.width, h = c.height;
+            const data = cx.getImageData(0, 0, w, h).data;
+            const gris = new Float32Array(w * h);
+            let somme = 0, nbBrules = 0;
+            for (let i = 0, j = 0; i < data.length; i += 4, j++) {
+                const l = 0.299 * data[i] + 0.587 * data[i + 1] + 0.114 * data[i + 2];
+                gris[j] = l;
+                somme += l;
+                if (l >= 250) nbBrules++;
+            }
+            const moyenne = somme / (w * h);
+            const partBrulee = nbBrules / (w * h);
+
+            // 3. Netteté : variance du Laplacien (plus c'est bas, plus c'est flou)
+            let sL = 0, sL2 = 0, n = 0;
+            for (let y = 1; y < h - 1; y += 2) {
+                for (let x = 1; x < w - 1; x += 2) {
+                    const k = y * w + x;
+                    const lap = gris[k - w] + gris[k + w] + gris[k - 1] + gris[k + 1] - 4 * gris[k];
+                    sL += lap; sL2 += lap * lap; n++;
+                }
+            }
+            const moyL = sL / n;
+            const nettete = sL2 / n - moyL * moyL;
+
+            // --- Refus (il faut reprendre la photo) ---
+            if (moyenne < 50) {
+                return { niveau: 'refuse', message: 'Photo trop sombre : reprenez-la près d\'une fenêtre ou avec plus de lumière.' };
+            }
+            if (nettete < SEUIL_NETTETE_REFUS) {
+                return { niveau: 'refuse', message: 'Photo floue ou sans texte lisible : tenez le téléphone immobile et reprenez-la.' };
+            }
+
+            // --- Alertes (le papier est gardé, mais l'utilisateur est prévenu) ---
+            if (nettete < SEUIL_NETTETE_ALERTE) {
+                return { niveau: 'alerte', message: 'Papier ajouté, mais un peu flou : vérifiez que tout se lit bien.' };
+            }
+            if (moyenne < 80) {
+                return { niveau: 'alerte', message: 'Papier ajouté, mais un peu sombre : vérifiez que tout se lit bien.' };
+            }
+            if (!depuisPdf && partBrulee > 0.06) {
+                return { niveau: 'alerte', message: 'Papier ajouté, mais il y a un reflet : vérifiez qu\'aucune information n\'est cachée.' };
+            }
+            if (!depuisPdf) {
+                const zone = detecterZoneDocument(c);
+                const pleinCadre = zone.x === 0 && zone.y === 0 && zone.w === w && zone.h === h;
+                if (pleinCadre) {
+                    return { niveau: 'alerte', message: 'Papier ajouté. Vérifiez qu\'il est entier, sans bord coupé.' };
+                }
+            }
+            return { niveau: 'ok', message: 'Papier ajouté : photo nette et lumineuse.' };
+        }
+
         async function validerEtEnvoyerScan() {
             // Les photos restent sur l'appareil : aucune image n'est envoyée au serveur.
             if (!scanEnCours.imgSource) return;
@@ -1707,6 +1805,7 @@
             dessinerScanSurCanvas(canvasHD, 1400);
             const imageHD = canvasHD.toDataURL('image/jpeg', 0.82);
 
+            const qualite = analyserQualitePhoto();
             fermerStudioScan();
 
             coffrePhotos[id] = {
@@ -1714,8 +1813,9 @@
                 titre: titre,
                 image: imageHD,
                 dateAjout: new Date().toLocaleDateString('fr-FR'),
-                statut: 'valide',
-                messageIA: 'Papier ajouté. Vérifiez qu\'il est net et complet.'
+                statut: qualite.niveau === 'refuse' ? 'refuse' : 'valide',
+                alerte: qualite.niveau === 'alerte',
+                messageIA: qualite.message
             };
 
             sauvegarderCoffre();
@@ -1768,7 +1868,7 @@
             });
 
             if (docsValides.length === 0) {
-                alert("Ajoutez d'abord au moins un papier validé dans la liste ci-dessus.");
+                alert("Ajoutez d'abord au moins un papier dans la liste ci-dessus.");
                 return;
             }
 
@@ -1916,8 +2016,8 @@
                 contenu.innerHTML = '<p class="text-sm text-slate-500 text-center py-8">Aucun papier enregistré pour le moment. Vos photos restent uniquement sur votre téléphone.</p>';
             } else {
                 contenu.innerHTML = '<div class="grid sm:grid-cols-2 gap-4">' + docs.map(function(d) {
-                    const couleur = d.statut === 'valide' ? 'text-emerald-700' : 'text-red-600';
-                    const icone = d.statut === 'valide' ? 'fa-check-circle' : 'fa-triangle-exclamation';
+                    const couleur = d.statut !== 'valide' ? 'text-red-600' : (d.alerte ? 'text-amber-700' : 'text-emerald-700');
+                    const icone = d.statut !== 'valide' ? 'fa-triangle-exclamation' : (d.alerte ? 'fa-circle-exclamation' : 'fa-check-circle');
                     return '<div class="border border-slate-200 rounded-xl p-3 bg-slate-50">' +
                         '<img src="' + d.image + '" class="w-full h-44 object-contain bg-white rounded-lg mb-2 border border-slate-200">' +
                         '<p class="font-bold text-xs text-slate-900">' + d.titre + '</p>' +
