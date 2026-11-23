@@ -420,6 +420,7 @@
                         Mes papiers enregistrés sur ce téléphone
                     </h3>
                     <p class="text-[11px] text-blue-200">Rien n'est envoyé ailleurs — vos papiers se réutilisent automatiquement</p>
+                    <p class="text-[11px] text-amber-200 mt-1"><i class="fa-solid fa-shield-halved mr-1"></i>Sur un appareil partagé, appuyez sur « Tout effacer » quand vous avez fini. Effacement automatique après 30 jours sans utilisation.</p>
                 </div>
                 <button onclick="fermerCoffreFort()" class="text-slate-300 hover:text-white text-xl">
                     <i class="fa-solid fa-xmark"></i>
@@ -733,6 +734,16 @@
             pdfTotalPages: 1
         };
 
+        // Sécurité : si l'app n'a pas servi depuis 30 jours, on efface les papiers stockés sur cet appareil
+        const DUREE_CONSERVATION_JOURS = 30;
+        try {
+            const derniere = parseInt(localStorage.getItem('dossierBlinde_derniere_activite') || '0', 10);
+            if (derniere && Date.now() - derniere > DUREE_CONSERVATION_JOURS * 86400000) {
+                ['dossierBlinde_coffre_local', 'dossierBlinde_choix_id', 'dossierBlinde_mode_domicile', 'dossierBlinde_pieces_supp']
+                    .forEach(function (k) { localStorage.removeItem(k); });
+            }
+        } catch (e) { /* stockage indisponible : rien à faire */ }
+
         try {
             coffrePhotos = JSON.parse(localStorage.getItem('dossierBlinde_coffre_local') || '{}');
             choixIdentite = JSON.parse(localStorage.getItem('dossierBlinde_choix_id') || '{}');
@@ -751,6 +762,7 @@
                 localStorage.setItem('dossierBlinde_choix_id', JSON.stringify(choixIdentite));
                 localStorage.setItem('dossierBlinde_mode_domicile', modeDomicile);
                 localStorage.setItem('dossierBlinde_pieces_supp', JSON.stringify(piecesSupplementaires));
+                localStorage.setItem('dossierBlinde_derniere_activite', String(Date.now()));
                 mettreAJourCompteurCoffre();
             } catch (err) {
                 alert("Mémoire pleine sur le téléphone. Supprimez d'anciens papiers dans 'Mes papiers'.");
