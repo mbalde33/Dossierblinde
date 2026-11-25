@@ -4,9 +4,16 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Préparez vos dossiers administratifs sans oublier un seul papier. Vos photos restent sur votre téléphone.">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#172554">
+    <meta name="apple-mobile-web-app-title" content="DossierBlindé">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="theme-color" content="#1e3a8a">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png">
+    <link rel="icon" href="/favicon.ico" sizes="any">
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png">
     <title>DossierBlindé — Préparez vos papiers facilement</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -264,6 +271,12 @@
 
     </main>
 
+    <footer class="max-w-3xl mx-auto px-4 pb-24 pt-2 text-center text-[11px] text-slate-500 space-x-3">
+        <a href="/legal.html#mentions" class="hover:text-blue-900 underline">Mentions légales</a>
+        <a href="/legal.html#confidentialite" class="hover:text-blue-900 underline">Confidentialité</a>
+        <a href="/legal.html#cgv" class="hover:text-blue-900 underline">CGV</a>
+    </footer>
+
     <div id="modal-paiement" class="hidden fixed inset-0 bg-slate-950/85 z-50 flex items-center justify-center p-4">
         <div class="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200">
             <div class="bg-blue-950 text-white px-6 py-4 flex items-center justify-between">
@@ -287,31 +300,21 @@
                     <li class="flex items-center gap-2"><i class="fa-solid fa-circle-check text-emerald-600"></i><span>Téléchargement direct du dossier PDF complet protégé</span></li>
                 </ul>
 
-                <div class="grid sm:grid-cols-2 gap-3 pt-2">
-                    <div class="border-2 border-slate-200 hover:border-blue-900 rounded-xl p-4 flex flex-col justify-between transition">
-                        <div>
-                            <span class="text-[10px] font-extrabold uppercase text-slate-500">Sans engagement</span>
-                            <h4 class="font-extrabold text-slate-900 text-base mt-0.5">Pass 1 Dossier</h4>
-                            <p class="text-2xl font-extrabold text-blue-950 my-2">9,90 € <span class="text-xs font-normal text-slate-500">une fois</span></p>
-                            <p class="text-[11px] text-slate-500">Idéal pour préparer un dossier complet et bien organisé.</p>
-                        </div>
-                        <a id="lien-stripe-unique" href="#" target="_blank" rel="noopener" class="mt-4 w-full bg-blue-900 hover:bg-blue-800 text-white text-center font-extrabold text-xs py-3 rounded-lg transition block">
-                            Choisir le Pass 9,90 €
-                        </a>
+                <div id="zone-achat" class="pt-2 space-y-3">
+                    <div class="border-2 border-blue-900 rounded-xl p-4">
+                        <span class="text-[10px] font-extrabold uppercase text-slate-500">Paiement unique · sans abonnement</span>
+                        <h4 class="font-extrabold text-slate-900 text-base mt-0.5">Pass 1 Dossier</h4>
+                        <p class="text-2xl font-extrabold text-blue-950 my-1"><span class="prix-pass">9,90 €</span> <span class="text-xs font-normal text-slate-500">une fois</span></p>
+                        <p class="text-[11px] text-slate-500">Accès pendant 14 jours : votre dossier complet en PDF protégé et des recherches sans limite.</p>
                     </div>
-
-                    <div class="border-2 border-emerald-500 bg-emerald-50/40 rounded-xl p-4 flex flex-col justify-between relative">
-                        <span class="absolute -top-2.5 right-3 bg-emerald-600 text-white text-[10px] font-extrabold px-2 py-0.5 rounded-full">POPULAIRE</span>
-                        <div>
-                            <span class="text-[10px] font-extrabold uppercase text-emerald-700">Accès total</span>
-                            <h4 class="font-extrabold text-slate-900 text-base mt-0.5">Pass Illimité</h4>
-                            <p class="text-2xl font-extrabold text-emerald-700 my-2">9,90 € <span class="text-xs font-normal text-slate-600">/ mois</span></p>
-                            <p class="text-[11px] text-slate-600">Tous vos dossiers et courriers illimités, résiliable en 1 clic.</p>
-                        </div>
-                        <a id="lien-stripe-mensuel" href="#" target="_blank" rel="noopener" class="mt-4 w-full bg-emerald-600 hover:bg-emerald-700 text-white text-center font-extrabold text-xs py-3 rounded-lg transition block shadow">
-                            Activer l'illimité
-                        </a>
-                    </div>
+                    <label class="flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer">
+                        <input type="checkbox" id="case-renonciation" onchange="majBoutonPayer()" class="mt-0.5 w-4 h-4 shrink-0">
+                        <span>Je demande l'accès immédiat au Pass et je reconnais perdre mon droit de rétractation une fois l'accès fourni. J'accepte les <a href="/legal.html#cgv" target="_blank" rel="noopener" class="underline text-blue-900">conditions de vente</a>.</span>
+                    </label>
+                    <button type="button" id="btn-payer" onclick="lancerPaiement()" disabled class="w-full bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-sm py-3 rounded-xl transition opacity-40">
+                        Payer <span class="prix-pass">9,90 €</span> avec Stripe
+                    </button>
+                    <p id="erreur-paiement" class="hidden text-xs font-bold text-red-600 text-center"></p>
                 </div>
 
                 <p class="text-[11px] text-center text-slate-400 pt-1">
@@ -443,8 +446,12 @@
             pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
 
-        const STRIPE_LIEN_UNIQUE = "https://buy.stripe.com/TON_LIEN_PASS_UNIQUE";
-        const STRIPE_LIEN_MENSUEL = "https://buy.stripe.com/TON_LIEN_ABONNEMENT";
+        // 👉 MODE TEST : true = le PDF est offert et le paiement est masqué (pendant la phase de test).
+        //    Mettre à false quand Stripe sera branché.
+        const MODE_TEST = true;
+
+        // Prix affiché (doit être le même que le prix créé dans Stripe)
+        const PRIX_PASS = '9,90 €';
         // Nombre de recherches IA gratuites (doit être égal à FREE_DIAGS côté serveur). Les scans, eux, sont gratuits et illimités.
         const QUOTA_SCANS_GRATUITS = 3;
         // Seuils du contrôle de netteté des photos (sur l'appareil). Plus haut = plus sévère.
@@ -454,20 +461,107 @@
         const SEUIL_TEXTE_MIN = 0.012;
         const SEUIL_TEXTE_SANS_CADRE = 0.04;
 
-        document.getElementById('lien-stripe-unique').href = STRIPE_LIEN_UNIQUE;
-        document.getElementById('lien-stripe-mensuel').href = STRIPE_LIEN_MENSUEL;
+        document.querySelectorAll('.prix-pass').forEach(function (el) { el.textContent = PRIX_PASS; });
 
-        let estPremium = localStorage.getItem('dossierBlinde_premium') === 'true';
+        // Le Pass n'est plus décidé par le navigateur : c'est le serveur qui le confirme (jeton signé).
+        let estPremium = false;
+        try { localStorage.removeItem('dossierBlinde_premium'); } catch (e) { /* rien */ }
         let scansUtilises = parseInt(localStorage.getItem('dossierBlinde_scans_utilises') || '0', 10);
 
-        const paramsUrl = new URLSearchParams(window.location.search);
-        if (paramsUrl.get('paiement') === 'ok') {
-            estPremium = true;
-            localStorage.setItem('dossierBlinde_premium', 'true');
+        // ===== Paiement Stripe =====
+        // Identifiant technique aléatoire de l'appareil (sert seulement à compter les essais gratuits côté serveur)
+        function idAppareilLocal() {
+            try {
+                let id = localStorage.getItem('dossierBlinde_device');
+                if (!id || !/^[a-zA-Z0-9-]{16,64}$/.test(id)) {
+                    id = (window.crypto && crypto.randomUUID) ? crypto.randomUUID()
+                        : (Date.now().toString(36) + '-' + Math.random().toString(36).slice(2) + Math.random().toString(36).slice(2));
+                    localStorage.setItem('dossierBlinde_device', id);
+                }
+                return id;
+            } catch (e) { return null; }
+        }
+        function lireTokenPass() {
+            try { return localStorage.getItem('dossierBlinde_token') || ''; } catch (e) { return ''; }
+        }
+        function entetesApi() {
+            const h = { 'Content-Type': 'application/json' };
+            const d = idAppareilLocal();
+            if (d) h['x-device-id'] = d;
+            const t = lireTokenPass();
+            if (t) h['Authorization'] = 'Bearer ' + t;
+            return h;
+        }
+
+        // Au démarrage : le serveur confirme-t-il que le Pass est actif ?
+        async function verifierPassServeur() {
+            if (!lireTokenPass()) return;
+            try {
+                const r = await fetch('/api/verifier', { method: 'POST', headers: entetesApi(), body: JSON.stringify({ mode: 'statut' }) });
+                const j = await r.json();
+                estPremium = !!(j.ok && j.acces && j.acces.premium);
+                if (j.ok && !estPremium) { try { localStorage.removeItem('dossierBlinde_token'); } catch (e) { /* rien */ } }
+                mettreAJourStatutAbonnement();
+            } catch (e) { /* hors ligne : on réessaiera au prochain chargement */ }
+        }
+
+        // Retour de Stripe : on échange l'identifiant de paiement contre un jeton signé par le serveur
+        async function activerPassApresPaiement(sid) {
             window.history.replaceState({}, document.title, window.location.pathname);
-            setTimeout(function() {
-                alert("Paiement confirmé ! Votre Pass DossierBlindé est activé en illimité.");
-            }, 300);
+            try {
+                const r = await fetch('/api/activer', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ session_id: sid }) });
+                const j = await r.json();
+                if (r.ok && j.ok && j.token) {
+                    localStorage.setItem('dossierBlinde_token', j.token);
+                    estPremium = true;
+                    mettreAJourStatutAbonnement();
+                    alert('Paiement confirmé ! Votre Pass DossierBlindé est activé.');
+                } else {
+                    alert((j.message || 'Activation impossible.') + ' Si vous avez été débité, contactez-nous avec le bouton « Aide ».');
+                }
+            } catch (e) {
+                alert("Activation impossible pour le moment. Rechargez la page. Si le problème continue, contactez-nous avec le bouton « Aide ».");
+            }
+        }
+
+        function majBoutonPayer() {
+            const ok = document.getElementById('case-renonciation').checked;
+            const btn = document.getElementById('btn-payer');
+            btn.disabled = !ok;
+            btn.classList.toggle('opacity-40', !ok);
+        }
+
+        async function lancerPaiement() {
+            const btn = document.getElementById('btn-payer');
+            const err = document.getElementById('erreur-paiement');
+            err.classList.add('hidden');
+            if (!document.getElementById('case-renonciation').checked) return;
+            btn.disabled = true;
+            btn.textContent = 'Redirection vers le paiement…';
+            try {
+                const r = await fetch('/api/checkout', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ offre: 'unique', renonciation: true }) });
+                const j = await r.json();
+                if (r.ok && j.url) { window.location.href = j.url; return; }
+                throw new Error(j.message || 'Paiement indisponible');
+            } catch (e) {
+                err.textContent = e.message + ' Réessayez dans un instant.';
+                err.classList.remove('hidden');
+                btn.disabled = false;
+                btn.textContent = 'Payer ' + PRIX_PASS + ' avec Stripe';
+            }
+        }
+
+        const paramsUrl = new URLSearchParams(window.location.search);
+        // Test du paiement réservé au propriétaire : ouvrir le site avec ?stripe=test (reste actif dans l'onglet)
+        try { if (paramsUrl.get('stripe') === 'test') sessionStorage.setItem('dossierBlinde_stripe_test', '1'); } catch (e) { /* rien */ }
+        const STRIPE_TEST_ACTIF = (function () { try { return sessionStorage.getItem('dossierBlinde_stripe_test') === '1'; } catch (e) { return false; } })();
+        // Le paiement est demandé si le mode test est coupé, ou si le propriétaire teste le paiement
+        const PAIEMENT_ACTIF = !MODE_TEST || STRIPE_TEST_ACTIF;
+
+        if (paramsUrl.get('session_id')) {
+            activerPassApresPaiement(paramsUrl.get('session_id'));
+        } else if (paramsUrl.get('paiement') === 'annule' || paramsUrl.get('stripe')) {
+            window.history.replaceState({}, document.title, window.location.pathname);
         }
 
         function mettreAJourStatutAbonnement() {
@@ -494,6 +588,10 @@
                 msg.textContent = "Vous avez utilisé vos " + QUOTA_SCANS_GRATUITS + " recherches gratuites. Activez votre Pass pour continuer à poser vos questions.";
             } else {
                 msg.textContent = "Vous avez utilisé vos " + QUOTA_SCANS_GRATUITS + " recherches gratuites. Activez votre Pass pour créer d'autres listes et télécharger votre dossier PDF.";
+            }
+            document.getElementById('zone-achat').classList.toggle('hidden', !PAIEMENT_ACTIF);
+            if (!PAIEMENT_ACTIF) {
+                msg.textContent = "Version de test : vous avez utilisé vos recherches gratuites. Le paiement n'est pas encore ouvert. Merci de tester DossierBlindé et de nous donner votre avis avec le bouton « Aide » !";
             }
             document.getElementById('modal-paiement').classList.remove('hidden');
         }
@@ -971,7 +1069,7 @@
             try {
                 const reponse = await fetch('/api/verifier', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: entetesApi(),
                     body: JSON.stringify({
                         mode: 'diagnostic',
                         descriptionSituation: "Démarche administrative en France demandée par l'usager : " + texte
@@ -1088,7 +1186,7 @@
             try {
                 const reponse = await fetch('/api/verifier', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: entetesApi(),
                     body: JSON.stringify({
                         mode: 'diagnostic',
                         descriptionSituation: situation || "Lis attentivement ce courrier reçu et indique en mots très simples quels documents fournir pour y répondre."
@@ -2066,7 +2164,7 @@
         }
 
         async function assemblerEtTelechargerTout() {
-            if (!estPremium) {
+            if (!estPremium && PAIEMENT_ACTIF) {
                 ouvrirModalePaiement('pdf');
                 return;
             }
@@ -2307,6 +2405,17 @@
         mettreAJourCompteurCoffre();
         chargerChecklist();
         chargerCoffreDepuisAppareil();
+        verifierPassServeur();
+
+        if (!PAIEMENT_ACTIF) {
+            const btnPdf = document.getElementById('btn-telecharger-tout');
+            if (btnPdf) {
+                const info = document.createElement('p');
+                info.className = 'text-center text-[11px] font-bold text-emerald-300 mt-2';
+                info.textContent = '🎁 Version de test : le PDF est offert. Merci de nous dire ce que vous en pensez !';
+                btnPdf.insertAdjacentElement('afterend', info);
+            }
+        }
 
         // ===== Suggestions d'organismes pour le filigrane (tout est calculé sur l'appareil) =====
         const DEPARTEMENTS = [
@@ -2564,7 +2673,7 @@
             try {
                 const reponse = await fetch('/api/verifier', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: entetesApi(),
                     body: JSON.stringify({ mode: 'organisme', nomOrganisme: texte })
                 });
                 const res = await reponse.json();
