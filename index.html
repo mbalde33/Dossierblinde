@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="fr" class="scroll-smooth">
 <head>
@@ -46,7 +47,7 @@
                 </span>
                 <button id="btn-nav-pass" onclick="ouvrirModalePaiement('upgrade')" class="text-[11px] sm:text-xs font-extrabold text-amber-950 bg-amber-300 hover:bg-amber-400 px-3 py-2 rounded-lg transition flex items-center gap-1.5 shadow-sm">
                     <i class="fa-solid fa-bolt"></i>
-                    <span id="label-essais-restants">3 essais gratuits</span>
+                    <span id="label-essais-restants">10 essais gratuits</span>
                 </button>
                 <button onclick="ouvrirCoffreFort()" class="text-xs sm:text-sm font-semibold text-blue-900 bg-blue-50 hover:bg-blue-100 px-3.5 py-2 rounded-lg border border-blue-200 transition flex items-center gap-2">
                     <i class="fa-solid fa-folder-open"></i>
@@ -58,7 +59,7 @@
 
     <div class="bg-emerald-950 text-emerald-100 text-xs py-2.5 px-4 text-center font-medium">
         <i class="fa-solid fa-lock text-emerald-400 mr-1.5"></i>
-        <strong>100 % Privé :</strong> Vos photos restent sur votre appareil et ne sont envoyées à aucun serveur.
+        <strong>100 % Privé :</strong> Vos papiers restent sur votre appareil. Seule la photo d'un courrier, si vous choisissez de la faire lire, est envoyée à notre IA.
     </div>
 
     <header class="bg-white border-b border-slate-200 pt-7 pb-8 px-4">
@@ -144,7 +145,7 @@
                             Comprendre un courrier reçu
                         </h3>
                         <p class="text-xs text-blue-200 mt-0.5">
-                            Écrivez en quelques mots ce que demande la lettre : l'application vous dit quels papiers envoyer.
+                            Prenez la lettre en photo ou écrivez ce qu'elle demande : l'application vous dit quels papiers envoyer.
                         </p>
                     </div>
                     <button type="button" onclick="basculerAssistantIA()" class="text-blue-300 hover:text-white text-sm">
@@ -152,10 +153,10 @@
                     </button>
                 </div>
 
-                <textarea id="input-situation-ia" rows="2" placeholder="Expliquez votre question ou ce que demande le courrier (ex : la CAF me demande un avis d'imposition)..." class="w-full bg-slate-900 border border-blue-800 rounded-lg p-3 text-xs sm:text-sm text-white placeholder-slate-400 outline-none focus:border-emerald-400"></textarea>
+                <textarea id="input-situation-ia" rows="2" placeholder="Facultatif si vous prenez le courrier en photo. Ex : la CAF me demande un avis d'imposition…" class="w-full bg-slate-900 border border-blue-800 rounded-lg p-3 text-xs sm:text-sm text-white placeholder-slate-400 outline-none focus:border-emerald-400"></textarea>
 
                 <div class="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2">
-                    <label class="hidden cursor-pointer bg-slate-800 hover:bg-slate-700 text-blue-100 border border-blue-700 text-xs font-semibold px-3.5 py-2.5 rounded-lg flex items-center justify-center gap-2 transition">
+                    <label class="cursor-pointer bg-slate-800 hover:bg-slate-700 text-blue-100 border border-blue-700 text-xs font-semibold px-3.5 py-2.5 rounded-lg flex items-center justify-center gap-2 transition">
                         <i class="fa-solid fa-camera text-emerald-400"></i>
                         <span id="label-courrier-joint">Photo ou PDF du courrier</span>
                         <input type="file" accept="image/*,application/pdf" id="input-photo-courrier" class="hidden" onchange="preparerPhotoCourrier(this)">
@@ -165,6 +166,13 @@
                         <span>Trouver les papiers</span>
                     </button>
                 </div>
+                <button type="button" id="btn-recacher" onclick="ouvrirMasquageCourrier()" class="hidden w-full bg-slate-800 hover:bg-slate-700 text-emerald-300 border border-blue-700 text-xs font-bold px-3.5 py-2 rounded-lg">
+                    <i class="fa-solid fa-eraser mr-1"></i>Cacher d'autres infos sur le courrier
+                </button>
+                <label id="consentement-courrier" class="hidden flex items-start gap-2 text-[11px] text-blue-100 cursor-pointer bg-blue-900/60 border border-blue-700 rounded-lg p-2.5">
+                    <input type="checkbox" id="case-courrier-ia" class="mt-0.5 w-4 h-4 shrink-0">
+                    <span>J'accepte que la photo de ce courrier soit envoyée à l'IA pour être lue. Les zones que j'ai noircies ne sont pas visibles. La photo n'est pas conservée par DossierBlindé.</span>
+                </label>
 
                 <div id="resultat-diagnostic-ia" class="hidden bg-slate-900/90 border border-emerald-500/40 rounded-lg p-3.5 text-xs space-y-2">
                     <p id="texte-resume-diag" class="text-emerald-200 font-medium leading-relaxed"></p>
@@ -453,7 +461,7 @@
         // Prix affiché (doit être le même que le prix créé dans Stripe)
         const PRIX_PASS = '9,90 €';
         // Nombre de recherches IA gratuites (doit être égal à FREE_DIAGS côté serveur). Les scans, eux, sont gratuits et illimités.
-        const QUOTA_SCANS_GRATUITS = 3;
+        const QUOTA_SCANS_GRATUITS = 10;
         // Seuils du contrôle de netteté des photos (sur l'appareil). Plus haut = plus sévère.
         const SEUIL_NETTETE_REFUS = 20;
         const SEUIL_NETTETE_ALERTE = 60;
@@ -814,6 +822,123 @@
         let modeDomicile = 'direct';
         let piecesSupplementaires = {};
         let photoCourrierBase64 = null;
+        let photoCourrierOriginale = null; // image du courrier, jamais envoyée telle quelle
+        let zonesCachees = [];             // rectangles noircis par l'utilisateur
+
+        // ===== Outil « Cacher mes infos » : tout se passe sur le téléphone =====
+        function dessinerCourrierMasque(canvas, enCours) {
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(photoCourrierOriginale, 0, 0);
+            ctx.fillStyle = '#000';
+            zonesCachees.forEach(function (z) { ctx.fillRect(z.x, z.y, z.w, z.h); });
+            if (enCours) {
+                ctx.fillStyle = 'rgba(0,0,0,0.55)';
+                ctx.fillRect(enCours.x, enCours.y, enCours.w, enCours.h);
+            }
+        }
+
+        function ouvrirMasquageCourrier() {
+            if (!photoCourrierOriginale) return;
+            fermerMasquageCourrier();
+            const fond = document.createElement('div');
+            fond.id = 'modal-masquage';
+            fond.style.zIndex = '9999';
+            fond.className = 'fixed inset-0 bg-slate-950/95 flex items-center justify-center p-2';
+            fond.innerHTML =
+                '<div class="bg-white rounded-2xl w-full max-w-lg max-h-[96vh] flex flex-col overflow-hidden">' +
+                    '<div class="bg-blue-950 text-white px-4 py-3">' +
+                        '<h3 class="font-extrabold text-sm"><i class="fa-solid fa-eraser text-emerald-400 mr-1.5"></i>Cachez vos informations personnelles</h3>' +
+                        '<p class="text-[11px] text-blue-200 mt-0.5">Passez le doigt sur votre nom, votre adresse et vos numéros (allocataire, sécurité sociale, compte…). Ces zones seront noircies avant l\'envoi. L\'IA n\'en a pas besoin pour comprendre le courrier.</p>' +
+                    '</div>' +
+                    '<div class="flex-1 overflow-auto bg-slate-200 flex items-center justify-center p-2">' +
+                        '<canvas id="canvas-masquage" style="touch-action:none;max-width:100%;max-height:62vh" class="shadow rounded cursor-crosshair"></canvas>' +
+                    '</div>' +
+                    '<p id="masquage-info" class="text-[11px] font-bold text-center px-3 pt-2 text-slate-600"></p>' +
+                    '<div class="flex gap-2 p-3">' +
+                        '<button type="button" id="masquage-annuler" class="w-1/3 bg-slate-100 hover:bg-slate-200 text-slate-800 font-bold text-xs py-2.5 rounded-xl"><i class="fa-solid fa-rotate-left mr-1"></i>Annuler</button>' +
+                        '<button type="button" id="masquage-terminer" class="w-2/3 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold text-sm py-2.5 rounded-xl">Terminé</button>' +
+                    '</div>' +
+                '</div>';
+            document.body.appendChild(fond);
+
+            const canvas = document.getElementById('canvas-masquage');
+            canvas.width = photoCourrierOriginale.width;
+            canvas.height = photoCourrierOriginale.height;
+            dessinerCourrierMasque(canvas, null);
+
+            const info = document.getElementById('masquage-info');
+            let avertiVide = false;
+            const majInfo = function () {
+                info.textContent = zonesCachees.length === 0
+                    ? 'Aucune zone cachée pour l\'instant.'
+                    : zonesCachees.length + ' zone' + (zonesCachees.length > 1 ? 's' : '') + ' cachée' + (zonesCachees.length > 1 ? 's' : '') + ' ✓';
+                info.className = 'text-[11px] font-bold text-center px-3 pt-2 ' + (zonesCachees.length ? 'text-emerald-700' : 'text-slate-600');
+            };
+            majInfo();
+
+            let depart = null, enCours = null;
+            const point = function (e) {
+                const r = canvas.getBoundingClientRect();
+                return {
+                    x: Math.max(0, Math.min(canvas.width, (e.clientX - r.left) * canvas.width / r.width)),
+                    y: Math.max(0, Math.min(canvas.height, (e.clientY - r.top) * canvas.height / r.height))
+                };
+            };
+            canvas.addEventListener('pointerdown', function (e) {
+                e.preventDefault();
+                canvas.setPointerCapture && canvas.setPointerCapture(e.pointerId);
+                depart = point(e); enCours = null;
+            });
+            canvas.addEventListener('pointermove', function (e) {
+                if (!depart) return;
+                const p = point(e);
+                enCours = { x: Math.min(depart.x, p.x), y: Math.min(depart.y, p.y), w: Math.abs(p.x - depart.x), h: Math.abs(p.y - depart.y) };
+                dessinerCourrierMasque(canvas, enCours);
+            });
+            const finir = function () {
+                if (depart && enCours && enCours.w > 6 && enCours.h > 6) {
+                    // petite marge pour bien couvrir le texte
+                    zonesCachees.push({ x: Math.max(0, enCours.x - 3), y: Math.max(0, enCours.y - 3), w: enCours.w + 6, h: enCours.h + 6 });
+                }
+                depart = null; enCours = null;
+                dessinerCourrierMasque(canvas, null);
+                avertiVide = false;
+                majInfo();
+            };
+            canvas.addEventListener('pointerup', finir);
+            canvas.addEventListener('pointercancel', finir);
+
+            document.getElementById('masquage-annuler').addEventListener('click', function () {
+                zonesCachees.pop();
+                dessinerCourrierMasque(canvas, null);
+                majInfo();
+            });
+            document.getElementById('masquage-terminer').addEventListener('click', function () {
+                if (zonesCachees.length === 0 && !avertiVide) {
+                    avertiVide = true;
+                    info.textContent = 'Vous n\'avez rien caché. Appuyez encore sur « Terminé » pour envoyer le courrier tel quel.';
+                    info.className = 'text-[11px] font-bold text-center px-3 pt-2 text-amber-700';
+                    return;
+                }
+                // l'image envoyée est celle avec les zones noircies, calculée ici sur le téléphone
+                const sortie = document.createElement('canvas');
+                sortie.width = photoCourrierOriginale.width;
+                sortie.height = photoCourrierOriginale.height;
+                dessinerCourrierMasque(sortie, null);
+                photoCourrierBase64 = sortie.toDataURL('image/jpeg', 0.8);
+                const n = zonesCachees.length;
+                document.getElementById('label-courrier-joint').textContent = 'Courrier prêt ✓' + (n ? ' (' + n + ' zone' + (n > 1 ? 's' : '') + ' cachée' + (n > 1 ? 's' : '') + ')' : '');
+                document.getElementById('case-courrier-ia').checked = false;
+                document.getElementById('consentement-courrier').classList.remove('hidden');
+                document.getElementById('btn-recacher').classList.remove('hidden');
+                fermerMasquageCourrier();
+            });
+        }
+
+        function fermerMasquageCourrier() {
+            const m = document.getElementById('modal-masquage');
+            if (m) m.remove();
+        }
         let dernierDocsDossierGenere = [];
         let dernierMentionDest = '';
         let dernierActiverFiligrane = true;
@@ -1167,15 +1292,22 @@
             canvas.width = Math.round(w);
             canvas.height = Math.round(h);
             canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-            photoCourrierBase64 = canvas.toDataURL('image/jpeg', 0.75);
-            document.getElementById('label-courrier-joint').textContent = "Courrier prêt ✓";
+            photoCourrierOriginale = canvas;
+            zonesCachees = [];
+            photoCourrierBase64 = null;
+            document.getElementById('label-courrier-joint').textContent = "Photo ou PDF du courrier";
+            ouvrirMasquageCourrier();
         }
 
         async function lancerDiagnosticIA() {
 
             const situation = document.getElementById('input-situation-ia').value.trim();
-            if (!situation) {
-                alert("Écrivez en quelques mots ce que demande le courrier ou votre question. Les photos restent sur votre appareil et ne sont pas envoyées.");
+            if (!situation && !photoCourrierBase64) {
+                alert("Prenez le courrier en photo, ou écrivez en quelques mots ce qu'il demande.");
+                return;
+            }
+            if (photoCourrierBase64 && !document.getElementById('case-courrier-ia').checked) {
+                alert("Cochez la case pour accepter que la photo du courrier soit lue par l'IA, ou retirez la photo et écrivez votre question.");
                 return;
             }
 
@@ -1189,7 +1321,8 @@
                     headers: entetesApi(),
                     body: JSON.stringify({
                         mode: 'diagnostic',
-                        descriptionSituation: situation || "Lis attentivement ce courrier reçu et indique en mots très simples quels documents fournir pour y répondre."
+                        descriptionSituation: situation || "Lis attentivement ce courrier reçu et indique en mots très simples quels documents fournir pour y répondre.",
+                        imageBase64: photoCourrierBase64 || undefined
                     })
                 });
                 const res = await reponse.json();
@@ -2754,7 +2887,7 @@
             ['Ma photo est refusée', "Posez le papier à plat, de préférence sur un fond sombre, près d'une fenêtre ou d'une lampe. Tenez le téléphone immobile et cadrez le papier en entier. Évitez les reflets (sortez la carte de sa pochette plastique)."],
             ['Mes papiers ont disparu', "Vos papiers sont gardés uniquement sur ce téléphone, dans ce navigateur. Ils disparaissent si vous changez de navigateur, utilisez la navigation privée, appuyez sur « Tout effacer », ou après 30 jours sans utilisation. Sur iPhone, Safari peut aussi les effacer après 7 jours sans visite : ajoutez DossierBlindé à votre écran d'accueil (Partager → « Sur l'écran d'accueil ») pour l'éviter."],
             ['Je n\'arrive pas à télécharger le PDF', "Vérifiez qu'au moins un papier est en vert dans la liste. Sur iPhone, le PDF peut s'ouvrir dans un nouvel onglet : appuyez sur Partager puis « Enregistrer dans Fichiers ». Si votre navigateur bloque le téléchargement, autorisez-le dans ses réglages."],
-            ['Mes papiers sont-ils en sécurité ?', "Vos photos restent sur votre téléphone : elles ne sont envoyées à aucun serveur. Seuls le nom de votre démarche et le nom de l'organisme, si vous utilisez la recherche, sont envoyés pour trouver la bonne liste. Le filigrane protège vos copies contre le vol d'identité."],
+            ['Mes papiers sont-ils en sécurité ?', "Vos papiers restent sur votre téléphone : ils ne sont envoyés à aucun serveur. Seuls le texte de vos recherches et, si vous l'acceptez, la photo d'un courrier à faire lire sont envoyés à notre IA. Ils ne sont pas conservés par DossierBlindé. Le filigrane protège vos copies contre le vol d'identité."],
             ['La liste de papiers est-elle officielle ?', "C'est une liste indicative préparée pour vous aider. Les exigences peuvent varier selon l'organisme : vérifiez toujours sur service-public.fr ou auprès de l'organisme avant d'envoyer votre dossier."],
             ['J\'ai payé mais ça ne marche pas', "Écrivez-nous avec l'adresse e-mail utilisée pour le paiement et la date. Ne nous envoyez jamais votre numéro de carte bancaire."]
         ];
