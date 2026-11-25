@@ -17,9 +17,13 @@ export default async function handler(req, res) {
       return repondre(res, 429, { ok: false, message: 'Trop de tentatives. Réessayez plus tard.' });
     }
 
-    const { offre } = lireJson(req);
+    const { offre, renonciation } = lireJson(req);
     const o = OFFRES[offre];
     if (!o) return repondre(res, 400, { ok: false, message: 'Offre inconnue.' });
+    // Contenu numérique fourni immédiatement : l'accord de l'acheteur est obligatoire (art. L221-28 13° Code conso)
+    if (renonciation !== true) {
+      return repondre(res, 400, { ok: false, message: 'Cochez la case d\'accord avant de payer.' });
+    }
 
     const site = (process.env.SITE_URL || '').replace(/\/$/, '');
     const prix = o.prix();
@@ -33,7 +37,9 @@ export default async function handler(req, res) {
       cancel_url: `${site}/?paiement=annule`,
       locale: 'fr',
       'metadata[app]': 'dossierblinde',
-      'metadata[offre]': offre
+      'metadata[offre]': offre,
+      'metadata[renonciation_retractation]': 'oui',
+      'metadata[date_accord]': new Date().toISOString()
     });
 
     return repondre(res, 200, { ok: true, url: session.url });
@@ -42,4 +48,3 @@ export default async function handler(req, res) {
     return repondre(res, 500, { ok: false, message: 'Impossible de lancer le paiement.' });
   }
 }
-
