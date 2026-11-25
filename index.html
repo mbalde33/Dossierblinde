@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="fr" class="scroll-smooth">
 <head>
@@ -312,7 +311,7 @@
                     <div class="border-2 border-blue-900 rounded-xl p-4">
                         <span class="text-[10px] font-extrabold uppercase text-slate-500">Paiement unique · sans abonnement</span>
                         <h4 class="font-extrabold text-slate-900 text-base mt-0.5">Pass 1 Dossier</h4>
-                        <p class="text-2xl font-extrabold text-blue-950 my-1"><span class="prix-pass">9,90 €</span> <span class="text-xs font-normal text-slate-500">une fois</span></p>
+                        <p class="text-2xl font-extrabold text-blue-950 my-1"><span class="prix-pass">4,90 €</span> <span class="text-xs font-normal text-slate-500">une fois</span></p>
                         <p class="text-[11px] text-slate-500">Accès pendant 14 jours : votre dossier complet en PDF protégé et des recherches sans limite.</p>
                     </div>
                     <label class="flex items-start gap-2 text-[11px] text-slate-700 cursor-pointer">
@@ -320,7 +319,7 @@
                         <span>Je demande l'accès immédiat au Pass et je reconnais perdre mon droit de rétractation une fois l'accès fourni. J'accepte les <a href="/legal.html#cgv" target="_blank" rel="noopener" class="underline text-blue-900">conditions de vente</a>.</span>
                     </label>
                     <button type="button" id="btn-payer" onclick="lancerPaiement()" disabled class="w-full bg-blue-900 hover:bg-blue-800 text-white font-extrabold text-sm py-3 rounded-xl transition opacity-40">
-                        Payer <span class="prix-pass">9,90 €</span> avec Stripe
+                        Payer <span class="prix-pass">4,90 €</span> avec Stripe
                     </button>
                     <p id="erreur-paiement" class="hidden text-xs font-bold text-red-600 text-center"></p>
                 </div>
@@ -371,7 +370,15 @@
             </div>
 
             <div class="bg-slate-900 flex-1 overflow-auto flex flex-col items-center justify-center p-3 min-h-[240px]">
-                <canvas id="canvas-apercu-scan" class="max-w-full max-h-[42vh] rounded shadow-lg border-2 border-emerald-400"></canvas>
+                <div id="barre-cadre" class="hidden w-full mb-2 space-y-1.5">
+                    <p class="text-[11px] font-bold text-emerald-300 text-center">Glissez le doigt d'un coin à l'autre du papier pour l'entourer.</p>
+                    <div class="flex gap-1.5 justify-center">
+                        <button type="button" onclick="cadreAutomatique()" class="bg-slate-700 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg">Automatique</button>
+                        <button type="button" onclick="sortirModeCadre(false)" class="bg-slate-700 text-white text-[11px] font-bold px-3 py-1.5 rounded-lg">Annuler</button>
+                        <button type="button" onclick="sortirModeCadre(true)" class="bg-emerald-500 text-slate-950 text-[11px] font-extrabold px-4 py-1.5 rounded-lg">OK</button>
+                    </div>
+                </div>
+                <canvas id="canvas-apercu-scan" style="touch-action:none" class="max-w-full max-h-[42vh] rounded shadow-lg border-2 border-emerald-400"></canvas>
             </div>
 
             <div class="p-3.5 sm:p-4 bg-slate-50 border-t border-slate-200 space-y-2.5 text-xs">
@@ -397,7 +404,7 @@
                             </button>
                         </div>
                         <div class="flex items-center gap-1.5">
-                            <button type="button" id="btn-recadrer-auto" onclick="basculerRecadrageAuto()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold px-2.5 py-1 rounded-lg flex items-center gap-1" title="Couper les bords autour de la feuille">
+                            <button type="button" id="btn-recadrer-auto" onclick="entrerModeCadre()" class="bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold px-2.5 py-1 rounded-lg flex items-center gap-1" title="Choisir la partie de la photo à garder">
                                 <i class="fa-solid fa-crop-simple"></i>
                                 <span>Recadrer</span>
                             </button>
@@ -459,7 +466,7 @@
         const MODE_TEST = true;
 
         // Prix affiché (doit être le même que le prix créé dans Stripe)
-        const PRIX_PASS = '9,90 €';
+        const PRIX_PASS = '4,90 €';
         // Nombre de recherches IA gratuites (doit être égal à FREE_DIAGS côté serveur). Les scans, eux, sont gratuits et illimités.
         const QUOTA_SCANS_GRATUITS = 10;
         // Seuils du contrôle de netteté des photos (sur l'appareil). Plus haut = plus sévère.
@@ -1357,7 +1364,9 @@
                     });
 
                     document.getElementById('texte-resume-diag').textContent = res.resume || "Liste mise à jour.";
-                    document.getElementById('resultat-diagnostic-ia').classList.remove('hidden');
+                    const blocReponse = document.getElementById('resultat-diagnostic-ia');
+                    blocReponse.classList.remove('hidden');
+                    setTimeout(function () { blocReponse.scrollIntoView({ behavior: 'smooth', block: 'start' }); }, 150);
 
                     if (res.reponse_type && res.reponse_type.trim().length > 5) {
                         document.getElementById('texte-reponse-type').textContent = res.reponse_type;
@@ -1651,7 +1660,7 @@
                         '<div>' +
                             '<div class="flex items-center gap-2">' +
                                 '<h3 class="font-bold text-slate-900 text-sm sm:text-base">' + item.titre + '</h3>' +
-                                (item.estSupplementaire ? '<span class="bg-amber-100 text-amber-900 text-[10px] font-extrabold px-2 py-0.5 rounded">Ajouté</span>' : '') +
+                                (item.estSupplementaire ? '<span class="bg-amber-100 text-amber-900 text-[10px] font-extrabold px-2 py-0.5 rounded">Sur mesure</span>' : '') +
                             '</div>' +
                             '<p class="text-xs text-slate-500 mt-0.5">' + item.info + '</p>' +
                             '<div id="status-' + cleCoffreCorrespondante + '" class="mt-2">' + badge + '</div>' +
@@ -1850,6 +1859,9 @@
 
         function fermerStudioScan() {
             cacherMessageStudio();
+            scanEnCours.modeCadre = false;
+            const barreCadre = document.getElementById('barre-cadre');
+            if (barreCadre) barreCadre.classList.add('hidden');
             document.getElementById('modal-scanner').classList.add('hidden');
             scanEnCours.imgSource = null;
             scanEnCours.pdfDoc = null;
@@ -1857,6 +1869,9 @@
 
         function pivoterScan90() {
             scanEnCours.rotation = (scanEnCours.rotation + 90) % 360;
+            scanEnCours.cadre = null; // le cadre ne correspond plus après rotation
+            scanEnCours.cadreTemp = null;
+            mettreAJourBoutonRecadrage();
             actualiserApercuScan();
         }
 
@@ -1869,7 +1884,7 @@
         function mettreAJourBoutonRecadrage() {
             const btn = document.getElementById('btn-recadrer-auto');
             if (!btn) return;
-            if (scanEnCours.recadrageAuto) {
+            if (scanEnCours.recadrageAuto || scanEnCours.cadre) {
                 btn.className = 'bg-emerald-600 text-white border border-emerald-700 font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 transition';
             } else {
                 btn.className = 'bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 font-bold px-2.5 py-1 rounded-lg flex items-center gap-1 transition';
@@ -1967,8 +1982,13 @@
             rCtx.restore();
 
             let zone = { x: 0, y: 0, w: rotCanvas.width, h: rotCanvas.height };
-            if (scanEnCours.recadrageAuto) {
-                zone = detecterZoneDocument(rotCanvas);
+            if (!scanEnCours.modeCadre) {
+                if (scanEnCours.cadre) {
+                    const c = scanEnCours.cadre;
+                    zone = { x: c.x * rotCanvas.width, y: c.y * rotCanvas.height, w: Math.max(10, c.w * rotCanvas.width), h: Math.max(10, c.h * rotCanvas.height) };
+                } else if (scanEnCours.recadrageAuto) {
+                    zone = detecterZoneDocument(rotCanvas);
+                }
             }
 
             let outW = zone.w;
@@ -1992,7 +2012,79 @@
         function actualiserApercuScan() {
             const canvasApercu = document.getElementById('canvas-apercu-scan');
             dessinerScanSurCanvas(canvasApercu, 800);
+            if (scanEnCours.modeCadre && scanEnCours.cadreTemp) {
+                const c = scanEnCours.cadreTemp, W = canvasApercu.width, H = canvasApercu.height;
+                const ctx = canvasApercu.getContext('2d');
+                ctx.save();
+                ctx.fillStyle = 'rgba(0,0,0,0.55)';
+                ctx.fillRect(0, 0, W, c.y * H);
+                ctx.fillRect(0, (c.y + c.h) * H, W, H - (c.y + c.h) * H);
+                ctx.fillRect(0, c.y * H, c.x * W, c.h * H);
+                ctx.fillRect((c.x + c.w) * W, c.y * H, W - (c.x + c.w) * W, c.h * H);
+                ctx.strokeStyle = '#34d399';
+                ctx.lineWidth = Math.max(3, W / 200);
+                ctx.strokeRect(c.x * W, c.y * H, c.w * W, c.h * H);
+                ctx.restore();
+            }
         }
+
+        // ===== Recadrage à la main : on entoure le papier avec le doigt =====
+        function entrerModeCadre() {
+            scanEnCours.modeCadre = true;
+            scanEnCours.cadreTemp = scanEnCours.cadre || null;
+            document.getElementById('barre-cadre').classList.remove('hidden');
+            actualiserApercuScan();
+        }
+        function sortirModeCadre(valider) {
+            if (valider && scanEnCours.cadreTemp) {
+                scanEnCours.cadre = scanEnCours.cadreTemp;
+                scanEnCours.recadrageAuto = false;
+            }
+            scanEnCours.modeCadre = false;
+            scanEnCours.cadreTemp = null;
+            document.getElementById('barre-cadre').classList.add('hidden');
+            mettreAJourBoutonRecadrage();
+            actualiserApercuScan();
+        }
+        function cadreAutomatique() {
+            scanEnCours.cadre = null;
+            scanEnCours.cadreTemp = null;
+            scanEnCours.recadrageAuto = true;
+            scanEnCours.modeCadre = false;
+            document.getElementById('barre-cadre').classList.add('hidden');
+            mettreAJourBoutonRecadrage();
+            actualiserApercuScan();
+        }
+        (function initialiserCadreManuel() {
+            const canvas = document.getElementById('canvas-apercu-scan');
+            if (!canvas) return;
+            let depart = null;
+            const frac = function (e) {
+                const r = canvas.getBoundingClientRect();
+                return { x: Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)), y: Math.max(0, Math.min(1, (e.clientY - r.top) / r.height)) };
+            };
+            canvas.addEventListener('pointerdown', function (e) {
+                if (!scanEnCours.modeCadre) return;
+                e.preventDefault();
+                if (canvas.setPointerCapture) canvas.setPointerCapture(e.pointerId);
+                depart = frac(e);
+            });
+            canvas.addEventListener('pointermove', function (e) {
+                if (!scanEnCours.modeCadre || !depart) return;
+                const p = frac(e);
+                scanEnCours.cadreTemp = { x: Math.min(depart.x, p.x), y: Math.min(depart.y, p.y), w: Math.abs(p.x - depart.x), h: Math.abs(p.y - depart.y) };
+                actualiserApercuScan();
+            });
+            const fin = function () {
+                if (!depart) return;
+                depart = null;
+                const c = scanEnCours.cadreTemp;
+                if (c && (c.w < 0.05 || c.h < 0.05)) scanEnCours.cadreTemp = null; // trop petit : ignoré
+                actualiserApercuScan();
+            };
+            canvas.addEventListener('pointerup', fin);
+            canvas.addEventListener('pointercancel', fin);
+        })();
 
         function appliquerTraitementScannerPro(ctx, width, height, modeFiltre, lumBoost) {
             const imgData = ctx.getImageData(0, 0, width, height);
@@ -2199,6 +2291,7 @@
         async function validerEtEnvoyerScan() {
             // Les photos restent sur l'appareil : aucune image n'est envoyée au serveur.
             if (!scanEnCours.imgSource) return;
+            if (scanEnCours.modeCadre) sortirModeCadre(true);
 
             const qualite = analyserQualitePhoto();
             if (qualite.niveau === 'refuse') {
@@ -2307,38 +2400,15 @@
             const nomDossier = selectEl.options[selectEl.selectedIndex].text;
             const liste = obtenirListeCompleteDossier(type);
 
+            // On prend exactement les emplacements affichés dans la liste (mêmes clés que les boutons « Photo / PDF »)
             const docsValides = [];
-            liste.forEach(function(item) {
-                if (item.typeSpecifique === 'identite') {
-                    const typeChoisi = choixIdentite[item.id] || 'cni';
-                    const configId = TYPES_PIECE_IDENTITE[typeChoisi] || TYPES_PIECE_IDENTITE.cni;
-                    const r = coffrePhotos[item.id + '_recto'];
-                    if (r && r.statut === 'valide') docsValides.push(r);
-                    if (configId.rectoVerso) {
-                        const v = coffrePhotos[item.id + '_verso'];
-                        if (v && v.statut === 'valide') docsValides.push(v);
-                    }
-                } else if (item.typeSpecifique === 'domicile') {
-                    const d = coffrePhotos['domicile'];
-                    if (d && d.statut === 'valide') docsValides.push(d);
-                    if (modeDomicile === 'heberge') {
-                        const att = coffrePhotos['heb_attestation'];
-                        if (att && att.statut === 'valide') docsValides.push(att);
-
-                        const typeLogeur = choixIdentite['heb_cni'] || 'cni';
-                        const configLogeur = TYPES_PIECE_IDENTITE[typeLogeur] || TYPES_PIECE_IDENTITE.cni;
-                        const lr = coffrePhotos['heb_cni_recto'];
-                        if (lr && lr.statut === 'valide') docsValides.push(lr);
-                        if (configLogeur.rectoVerso) {
-                            const lv = coffrePhotos['heb_cni_verso'];
-                            if (lv && lv.statut === 'valide') docsValides.push(lv);
-                        }
-                    }
-                } else {
-                    const cle = (item.id.startsWith('ia_') && coffrePhotos['impots'] && item.titre.toLowerCase().includes('imposition')) ? 'impots' : item.id;
-                    const d = coffrePhotos[cle];
-                    if (d && d.statut === 'valide') docsValides.push(d);
-                }
+            const clesVues = new Set();
+            document.querySelectorAll('#checklist-container input[type="file"][data-cle]').forEach(function (inp) {
+                const cle = inp.getAttribute('data-cle');
+                if (clesVues.has(cle)) return;
+                clesVues.add(cle);
+                const d = coffrePhotos[cle];
+                if (d && d.statut === 'valide') docsValides.push(d);
             });
 
             if (docsValides.length === 0) {
@@ -2694,9 +2764,10 @@
                     reste = motsBruts.slice(motsBruts.length - reste.split(' ').length).join(' ').replace(/^(de|du|des|d['’])\s*/i, '');
                     const resteNorm = sansAccents(reste);
                     const estDepartement = DEPARTEMENTS.some(function (d) {
-                        return d[0].toLowerCase() === resteNorm || sansAccents(d[1]).startsWith(resteNorm);
+                        return d[0].toLowerCase() === resteNorm || sansAccents(d[1]).startsWith(resteNorm) || resteNorm.includes(sansAccents(d[1]));
                     });
-                    if (reste.length >= 3 && !estDepartement) {
+                    const contientOrganisme = typesConnus.some(function (t) { return (' ' + resteNorm + ' ').includes(' ' + sansAccents(t) + ' '); });
+                    if (reste.length >= 3 && !estDepartement && !contientOrganisme) {
                         reste = reste.charAt(0).toUpperCase() + reste.slice(1);
                         const lien = /^[aeiouyhâéèêîôûAEIOUYHÂÉÈÊÎÔÛ]/.test(reste) ? "d'" : 'de ';
                         villeProposee = { libelle: org + ' ' + lien + reste, detail: 'ville' };
@@ -2720,9 +2791,10 @@
                         let reste = motsBruts.slice(n).join(' ').replace(/^(de|du|des|d['’])\s*/i, '');
                         const resteNorm = sansAccents(reste);
                         const estDepartement = DEPARTEMENTS.some(function (d) {
-                            return d[0].toLowerCase() === resteNorm || sansAccents(d[1]).startsWith(resteNorm);
+                            return d[0].toLowerCase() === resteNorm || sansAccents(d[1]).startsWith(resteNorm) || resteNorm.includes(sansAccents(d[1]));
                         });
-                        if (reste.length >= 3 && !estDepartement && !/^\d/.test(reste)) {
+                        const contientOrganisme = typesConnus.some(function (t) { return (' ' + resteNorm + ' ').includes(' ' + sansAccents(t) + ' '); });
+                        if (reste.length >= 3 && !estDepartement && !contientOrganisme && !/^\d/.test(reste)) {
                             reste = reste.charAt(0).toUpperCase() + reste.slice(1);
                             const lien = /^[aeiouyhâéèêîôûAEIOUYHÂÉÈÊÎÔÛ]/.test(reste) ? "d'" : 'de ';
                             villeProposee = { libelle: o[0] + ' ' + lien + reste, detail: 'ville' };
@@ -2888,6 +2960,7 @@
             ['Mes papiers ont disparu', "Vos papiers sont gardés uniquement sur ce téléphone, dans ce navigateur. Ils disparaissent si vous changez de navigateur, utilisez la navigation privée, appuyez sur « Tout effacer », ou après 30 jours sans utilisation. Sur iPhone, Safari peut aussi les effacer après 7 jours sans visite : ajoutez DossierBlindé à votre écran d'accueil (Partager → « Sur l'écran d'accueil ») pour l'éviter."],
             ['Je n\'arrive pas à télécharger le PDF', "Vérifiez qu'au moins un papier est en vert dans la liste. Sur iPhone, le PDF peut s'ouvrir dans un nouvel onglet : appuyez sur Partager puis « Enregistrer dans Fichiers ». Si votre navigateur bloque le téléchargement, autorisez-le dans ses réglages."],
             ['Mes papiers sont-ils en sécurité ?', "Vos papiers restent sur votre téléphone : ils ne sont envoyés à aucun serveur. Seuls le texte de vos recherches et, si vous l'acceptez, la photo d'un courrier à faire lire sont envoyés à notre IA. Ils ne sont pas conservés par DossierBlindé. Le filigrane protège vos copies contre le vol d'identité."],
+            ['Installer DossierBlindé sur mon téléphone', "Sur iPhone (Safari) : appuyez sur le bouton Partager (le carré avec une flèche vers le haut), puis « Sur l'écran d'accueil ». Sur Android (Chrome) : appuyez sur les trois points en haut à droite, puis « Installer l'application » ou « Ajouter à l'écran d'accueil ». L'icône DossierBlindé apparaît alors avec vos autres applications."],
             ['La liste de papiers est-elle officielle ?', "C'est une liste indicative préparée pour vous aider. Les exigences peuvent varier selon l'organisme : vérifiez toujours sur service-public.fr ou auprès de l'organisme avant d'envoyer votre dossier."],
             ['J\'ai payé mais ça ne marche pas', "Écrivez-nous avec l'adresse e-mail utilisée pour le paiement et la date. Ne nous envoyez jamais votre numéro de carte bancaire."]
         ];
