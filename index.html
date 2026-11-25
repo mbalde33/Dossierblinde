@@ -261,7 +261,7 @@
                         <p id="titre-dossier-pdf" class="text-xs font-semibold text-slate-500 uppercase mt-0.5"></p>
                     </div>
                     <span class="bg-emerald-100 text-emerald-900 text-[11px] font-bold px-3 py-1 rounded-full border border-emerald-300">
-                        PAPIERS VÉRIFIÉS
+                        DOSSIER PRÊT
                     </span>
                 </div>
 
@@ -2216,7 +2216,7 @@
             const activerFiligrane = document.getElementById('check-protection-filigrane').checked;
             const destinataire = document.getElementById('input-destinataire').value.trim().toUpperCase();
             const dateEnvoi = new Date().toLocaleDateString('fr-FR');
-            const mentionDest = destinataire ? ('UNIQUEMENT POUR : ' + destinataire + ' — ' + dateEnvoi) : ('DÉMARCHE ADMINISTRATIVE — ' + dateEnvoi);
+            const mentionDest = destinataire ? ('UNIQUEMENT POUR : ' + destinataire) : 'DÉMARCHE ADMINISTRATIVE';
 
             dernierDocsDossierGenere = docsValides;
             dernierMentionDest = mentionDest;
@@ -2230,7 +2230,7 @@
                 const badgeFiligrane = activerFiligrane
                     ? '<div class="absolute inset-0 flex items-center justify-center pointer-events-none select-none">' +
                         '<span class="text-red-600/35 font-extrabold text-base sm:text-xl uppercase tracking-widest -rotate-12 border-2 border-red-600/35 px-4 py-2 text-center">' +
-                            'DOCUMENT PROTÉGÉ • ' + mentionDest + ' • ' + doc.dateAjout +
+                            'DOCUMENT PROTÉGÉ • ' + mentionDest + ' • ' + dateEnvoi +
                         '</span>' +
                       '</div>'
                     : '';
@@ -2238,7 +2238,7 @@
                 return '<div class="page-a4-scan border border-slate-300 rounded-xl p-4 bg-white shadow-sm relative overflow-hidden">' +
                     '<div class="flex justify-between items-center border-b border-slate-200 pb-2 mb-3">' +
                         '<p class="text-xs font-extrabold uppercase text-blue-950">Page ' + (index + 1) + ' — ' + doc.titre + '</p>' +
-                        '<span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">VÉRIFIÉ</span>' +
+                        '<span class="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">AJOUTÉ</span>' +
                     '</div>' +
                     '<div class="relative flex justify-center bg-white rounded-lg overflow-hidden p-2">' +
                         '<img src="' + doc.image + '" class="max-h-[460px] object-contain shadow-sm">' +
@@ -2322,7 +2322,7 @@
                     pdf.setTextColor(100, 116, 139);
                     pdf.text(dernierNomDossier + ' • Préparé le ' + doc.dateAjout, 14, 19);
 
-                    const texteFiligrane = 'DOCUMENT PROTÉGÉ • ' + dernierMentionDest + ' • ' + doc.dateAjout;
+                    const texteFiligrane = 'DOCUMENT PROTÉGÉ • ' + dernierMentionDest + ' • ' + new Date().toLocaleDateString('fr-FR');
                     const imgPrete = await fusionnerImageAvecFiligrane(doc.image, texteFiligrane, dernierActiverFiligrane);
 
                     const maxW = pageW - 28;
